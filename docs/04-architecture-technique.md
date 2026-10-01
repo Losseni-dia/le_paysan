@@ -135,6 +135,14 @@ Côté backend, les messages renvoyés à l'utilisateur (erreurs de validation, 
 
 - `application.yml` par profil Spring (`dev`, `prod`) : connexion DB, secrets JWT, clés Fedapay, config SMTP — via variables d'environnement, jamais en dur.
 - `environment.ts` / `environment.prod.ts` côté Angular pour l'URL de l'API.
+- **Chargement local via `.env`** : en dev, `backend/.env` (non committé, cf. `.gitignore`) peut définir `DB_HOST`/`DB_PORT`/`DB_NAME`/`DB_USERNAME`/`DB_PASSWORD` (et autres variables) sans avoir à les positionner manuellement dans chaque session de terminal. Chargé automatiquement par un `EnvironmentPostProcessor` maison (`shop.le_paysan.backend.config.DotenvEnvironmentPostProcessor`, enregistré via `META-INF/spring.factories`) — la librairie tierce `spring-dotenv` a été testée mais ne se charge pas correctement avec Spring Boot 4.1.1 (mécanisme d'enregistrement obsolète). De vraies variables d'environnement OS, si définies, restent prioritaires sur `.env`.
+- Base de données locale de développement : rôle applicatif dédié `le_paysan` (pas le superuser `postgres`), propriétaire de la base `le_paysan`, créé via :
+  ```sql
+  CREATE ROLE le_paysan WITH LOGIN PASSWORD '...';
+  ALTER DATABASE le_paysan OWNER TO le_paysan;
+  GRANT ALL PRIVILEGES ON DATABASE le_paysan TO le_paysan;
+  ```
+  Le mot de passe réel est stocké uniquement dans `backend/.env` (non committé), jamais dans la documentation versionnée.
 
 ## 10. Déploiement (cible simple)
 

@@ -8,7 +8,7 @@ Découpage en phases livrables, chacune apportant une valeur testable de bout en
 
 ## 2. Phase 0 — Socle technique
 - [x] Backend : structure des packages (`auth`, `user`, `shop`, `product`, `category`, `cart`, `order`, `payment`, `commission`, `admin`, `common`, `config`). *(2026-10-01)*
-- [x] Configuration Postgres (`application.yml`, profils `dev`/`prod`). *(2026-10-01 — reste à exécuter [sql/schema.sql](./sql/schema.sql) sur la base.)*
+- [x] Configuration Postgres (`application.yml`, profils `dev`/`prod`), rôle applicatif `le_paysan` créé (propriétaire de la base), [sql/schema.sql](./sql/schema.sql) exécuté (26 tables + index), connexion backend vérifiée (démarrage OK, Hikari connecté). *(2026-10-01)*
 - [x] Frontend : `ng new` dans `frontend/` (SCSS, routing, standalone, sans SSR), structure de dossiers (`core`, `shared/ui`, `layout`), intégration des tokens CSS de la charte graphique dans `styles.scss`. *(2026-10-01 — nécessite `npm install --legacy-peer-deps`, cf. [04-architecture-technique.md §11](./04-architecture-technique.md).)*
 - [x] Mise en place i18n Angular (`@ngx-translate/core`, FR par défaut + EN), fichiers de traduction `public/i18n/fr.json`/`en.json`, composant `language-switcher` partagé. *(2026-10-01)*
 - [x] Composant Stepper/wizard générique (`shared/ui/stepper`) — header d'étapes + navigation précédent/suivant + projection de contenu ; intégration dans les formulaires concrets prévue en Phase 2/3. *(2026-10-01)*
