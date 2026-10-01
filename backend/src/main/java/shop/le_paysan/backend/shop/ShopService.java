@@ -27,6 +27,9 @@ public class ShopService {
 
     private static final String LEGAL_DOCS_VERSION = "1.0";
     private static final String FILE_CATEGORY = "shop-kyc";
+    // Logo et photo de couverture sont affiches publiquement sur la fiche boutique :
+    // categorie distincte des justificatifs KYC (qui restent authentifies).
+    private static final String PUBLIC_FILE_CATEGORY = "shop-public";
 
     private final ShopRepository shopRepository;
     private final ShopValidationRepository shopValidationRepository;
@@ -88,9 +91,9 @@ public class ShopService {
         shop.setLatitude(form.getLatitude());
         shop.setLongitude(form.getLongitude());
         shop.setPhone(form.getPhone());
-        shop.setLogoUrl(fileStorageService.store(form.getLogo(), FILE_CATEGORY));
+        shop.setLogoUrl(fileStorageService.store(form.getLogo(), PUBLIC_FILE_CATEGORY));
         if (form.getCover() != null && !form.getCover().isEmpty()) {
-            shop.setCoverUrl(fileStorageService.store(form.getCover(), FILE_CATEGORY));
+            shop.setCoverUrl(fileStorageService.store(form.getCover(), PUBLIC_FILE_CATEGORY));
         }
         shop.setStatus(Shop.STATUS_EN_ATTENTE);
         shop.setCgvVendeurAcceptedAt(LocalDateTime.now());

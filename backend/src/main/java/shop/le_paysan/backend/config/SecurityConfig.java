@@ -72,9 +72,13 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/contact").permitAll()
-                        // Photos produit : publiques (catalogue visible sans connexion).
-                        // Documents KYC (shop-kyc, account-recovery, security-selfies) restent authentifies.
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/files/products/**")
+                        // Photos produit et logo/couverture boutique : publiques (catalogue et fiches
+                        // boutique visibles sans connexion). Documents KYC (shop-kyc, account-recovery,
+                        // security-selfies) restent authentifies.
+                        .requestMatchers(
+                                org.springframework.http.HttpMethod.GET,
+                                "/api/files/products/**",
+                                "/api/files/shop-public/**")
                         .permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET,
                                 "/api/products/**", "/api/categories/**")
