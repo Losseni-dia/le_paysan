@@ -1,0 +1,29 @@
+<div class="stepper">
+  <ol class="stepper-header">
+    @for (step of steps; track step; let i = $index) {
+      <li
+        class="stepper-step"
+        [class.active]="i === currentIndex"
+        [class.done]="i < currentIndex"
+        [class.clickable]="i < currentIndex"
+        (click)="goTo(i)"
+      >
+        <span class="stepper-step-number">{{ i + 1 }}</span>
+        <span class="stepper-step-label">{{ step }}</span>
+      </li>
+    }
+  </ol>
+
+  <div class="stepper-body">
+    <ng-content></ng-content>
+  </div>
+
+  <div class="stepper-actions">
+    <button type="button" class="btn btn-secondary" (click)="previous()" [disabled]="isFirst">
+      Précédent
+    </button>
+    <button type="button" class="btn btn-primary" (click)="next()" [disabled]="!canGoNext">
+      {{ isLast ? 'Soumettre' : 'Suivant' }}
+    </button>
+  </div>
+</div>

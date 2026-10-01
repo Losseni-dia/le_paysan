@@ -1,0 +1,50 @@
+{
+  "app": {
+    "title": "Le Paysan"
+  },
+  "nav": {
+    "catalog": "Catalog",
+    "cart": "Cart",
+    "login": "Log in",
+    "register": "Sign up",
+    "myShop": "My shop",
+    "admin": "Admin",
+    "logout": "Log out"
+  },
+  "footer": {
+    "legalNotice": "Legal notice",
+    "terms": "Terms of use",
+    "sales": "Terms of sale",
+    "privacy": "Privacy policy",
+    "cookies": "Cookie policy",
+    "contact": "Contact"
+  },
+  "sidebar": {
+    "admin": {
+      "dashboard": "Dashboard",
+      "shopRequests": "Shop requests",
+      "products": "Products to review",
+      "users": "Users",
+      "orders": "Orders",
+      "categories": "Categories",
+      "commission": "Commission rates",
+      "stats": "Statistics",
+      "settings": "Settings"
+    },
+    "vendor": {
+      "dashboard": "Dashboard",
+      "myShop": "My shop",
+      "myProducts": "My products",
+      "orders": "Received orders",
+      "stats": "Sales statistics",
+      "settings": "Account settings"
+    }
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit"
+  }
+}

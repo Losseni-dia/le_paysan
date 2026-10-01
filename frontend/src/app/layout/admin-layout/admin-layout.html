@@ -1,0 +1,56 @@
+<div class="backoffice-layout" [class.collapsed]="collapsed()">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="/logo_paysan.jpg" alt="Le Paysan" class="sidebar-logo-img" />
+      <span>{{ 'app.title' | translate }}</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/tableau-de-bord" routerLinkActive="active">
+        {{ 'sidebar.admin.dashboard' | translate }}
+      </a>
+      <a routerLink="/admin/demandes-boutiques" routerLinkActive="active">
+        {{ 'sidebar.admin.shopRequests' | translate }}
+      </a>
+      <a routerLink="/admin/produits" routerLinkActive="active">
+        {{ 'sidebar.admin.products' | translate }}
+      </a>
+      <a routerLink="/admin/utilisateurs" routerLinkActive="active">
+        {{ 'sidebar.admin.users' | translate }}
+      </a>
+      <a routerLink="/admin/commandes" routerLinkActive="active">
+        {{ 'sidebar.admin.orders' | translate }}
+      </a>
+      <a routerLink="/admin/categories" routerLinkActive="active">
+        {{ 'sidebar.admin.categories' | translate }}
+      </a>
+      <a routerLink="/admin/commission" routerLinkActive="active">
+        {{ 'sidebar.admin.commission' | translate }}
+      </a>
+      <a routerLink="/admin/statistiques" routerLinkActive="active">
+        {{ 'sidebar.admin.stats' | translate }}
+      </a>
+      <a routerLink="/admin/parametres" routerLinkActive="active">
+        {{ 'sidebar.admin.settings' | translate }}
+      </a>
+    </nav>
+
+    <button type="button" class="collapse-btn" (click)="toggleSidebar()">
+      {{ collapsed() ? '➡' : '⬅' }}
+    </button>
+  </aside>
+
+  <div class="backoffice-main">
+    <header class="topbar">
+      <span class="breadcrumb-placeholder"></span>
+      <div class="topbar-actions">
+        <app-notification-bell />
+        <app-language-switcher />
+      </div>
+    </header>
+
+    <main class="backoffice-content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

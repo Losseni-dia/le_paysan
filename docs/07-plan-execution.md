@@ -7,15 +7,16 @@ Statut : v1.0 — 2026-10-01. À tenir à jour au fil de l'avancement (cocher le
 Découpage en phases livrables, chacune apportant une valeur testable de bout en bout. Le MVP correspond aux phases 0 à 7.
 
 ## 2. Phase 0 — Socle technique
-- [ ] Backend : structure des packages (`auth`, `user`, `shop`, `product`, `category`, `cart`, `order`, `payment`, `commission`, `admin`, `common`, `config`).
-- [ ] Configuration Postgres (`application.yml`, profils `dev`/`prod`), exécution de [sql/schema.sql](./sql/schema.sql).
-- [ ] Frontend : `ng new` dans `frontend/`, structure de dossiers (§6 de [04-architecture-technique.md](./04-architecture-technique.md)), intégration des tokens CSS de la charte graphique.
-- [ ] Mise en place i18n Angular (FR par défaut + EN), fichiers de traduction `fr.json`/`en.json`, sélecteur de langue partagé.
-- [ ] Composant Stepper/wizard générique (shared UI kit) réutilisé par les formulaires multi-étapes.
-- [ ] Layouts back-office (`vendor-layout`, `admin-layout`) avec sidebar de navigation à gauche.
-- [ ] Choix et intégration d'une librairie de carte (Leaflet + OpenStreetMap recommandé, gratuit, sans clé API — alternative Google Maps à évaluer si besoin de plus de précision) pour le sélecteur de localisation boutique et l'affichage carte.
-- [ ] Centre de notifications in-app (icône cloche, badge non-lues, liste) — composant partagé, consommé dans les deux back-offices et le site public.
-- [ ] Mise en place CI basique (build backend + build frontend) dans `.github/workflows`.
+- [x] Backend : structure des packages (`auth`, `user`, `shop`, `product`, `category`, `cart`, `order`, `payment`, `commission`, `admin`, `common`, `config`). *(2026-10-01)*
+- [x] Configuration Postgres (`application.yml`, profils `dev`/`prod`). *(2026-10-01 — reste à exécuter [sql/schema.sql](./sql/schema.sql) sur la base.)*
+- [x] Frontend : `ng new` dans `frontend/` (SCSS, routing, standalone, sans SSR), structure de dossiers (`core`, `shared/ui`, `layout`), intégration des tokens CSS de la charte graphique dans `styles.scss`. *(2026-10-01 — nécessite `npm install --legacy-peer-deps`, cf. [04-architecture-technique.md §11](./04-architecture-technique.md).)*
+- [x] Mise en place i18n Angular (`@ngx-translate/core`, FR par défaut + EN), fichiers de traduction `public/i18n/fr.json`/`en.json`, composant `language-switcher` partagé. *(2026-10-01)*
+- [x] Composant Stepper/wizard générique (`shared/ui/stepper`) — header d'étapes + navigation précédent/suivant + projection de contenu ; intégration dans les formulaires concrets prévue en Phase 2/3. *(2026-10-01)*
+- [x] Layouts back-office (`vendor-layout`, `admin-layout`) avec sidebar de navigation à gauche, repliable, topbar (notifications + langue). *(2026-10-01)*
+- [x] Intégration Leaflet + OpenStreetMap (`shared/ui/map-picker`) pour le sélecteur de localisation boutique ; icônes de marqueur chargées depuis un CDN (à auto-héberger avant prod). *(2026-10-01)*
+- [x] Centre de notifications in-app (`shared/ui/notification-bell` + `core/notifications/notification.service.ts`) — composant partagé, consommé dans les trois layouts ; branchement aux vrais endpoints API en Phase 1+. *(2026-10-01)*
+- [x] Logo intégré (favicon + header public + sidebars back-office) — fichier à optimiser avant prod, cf. [06-charte-graphique.md](./06-charte-graphique.md). *(2026-10-01)*
+- [x] Mise en place CI basique (build backend + build frontend) dans `.github/workflows/ci.yml`. *(2026-10-01)*
 
 ## 3. Phase 1 — Authentification & utilisateurs
 - [ ] Inscription / connexion par login + mot de passe (email optionnel), hashage BCrypt.
@@ -94,7 +95,7 @@ Découpage en phases livrables, chacune apportant une valeur testable de bout en
 
 | Phase | Statut | Date de début | Date de fin |
 |---|---|---|---|
-| Phase 0 | À faire | - | - |
+| Phase 0 | Terminé | 2026-10-01 | 2026-10-01 |
 | Phase 1 | À faire | - | - |
 | Phase 2 | À faire | - | - |
 | Phase 3 | À faire | - | - |

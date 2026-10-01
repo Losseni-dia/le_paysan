@@ -1,0 +1,47 @@
+<div class="backoffice-layout" [class.collapsed]="collapsed()">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="/logo_paysan.jpg" alt="Le Paysan" class="sidebar-logo-img" />
+      <span>{{ 'app.title' | translate }}</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/vendeur/tableau-de-bord" routerLinkActive="active">
+        {{ 'sidebar.vendor.dashboard' | translate }}
+      </a>
+      <a routerLink="/vendeur/ma-boutique" routerLinkActive="active">
+        {{ 'sidebar.vendor.myShop' | translate }}
+      </a>
+      <a routerLink="/vendeur/produits" routerLinkActive="active">
+        {{ 'sidebar.vendor.myProducts' | translate }}
+      </a>
+      <a routerLink="/vendeur/commandes" routerLinkActive="active">
+        {{ 'sidebar.vendor.orders' | translate }}
+      </a>
+      <a routerLink="/vendeur/statistiques" routerLinkActive="active">
+        {{ 'sidebar.vendor.stats' | translate }}
+      </a>
+      <a routerLink="/vendeur/parametres" routerLinkActive="active">
+        {{ 'sidebar.vendor.settings' | translate }}
+      </a>
+    </nav>
+
+    <button type="button" class="collapse-btn" (click)="toggleSidebar()">
+      {{ collapsed() ? '➡' : '⬅' }}
+    </button>
+  </aside>
+
+  <div class="backoffice-main">
+    <header class="topbar">
+      <span class="breadcrumb-placeholder"></span>
+      <div class="topbar-actions">
+        <app-notification-bell />
+        <app-language-switcher />
+      </div>
+    </header>
+
+    <main class="backoffice-content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

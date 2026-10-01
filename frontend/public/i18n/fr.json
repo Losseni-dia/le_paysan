@@ -1,0 +1,50 @@
+{
+  "app": {
+    "title": "Le Paysan"
+  },
+  "nav": {
+    "catalog": "Catalogue",
+    "cart": "Panier",
+    "login": "Connexion",
+    "register": "Inscription",
+    "myShop": "Ma boutique",
+    "admin": "Administration",
+    "logout": "Déconnexion"
+  },
+  "footer": {
+    "legalNotice": "Mentions légales",
+    "terms": "CGU",
+    "sales": "CGV",
+    "privacy": "Politique de confidentialité",
+    "cookies": "Politique de cookies",
+    "contact": "Contact"
+  },
+  "sidebar": {
+    "admin": {
+      "dashboard": "Tableau de bord",
+      "shopRequests": "Demandes de boutiques",
+      "products": "Produits à valider",
+      "users": "Utilisateurs",
+      "orders": "Commandes",
+      "categories": "Catégories",
+      "commission": "Taux de commission",
+      "stats": "Statistiques",
+      "settings": "Paramètres"
+    },
+    "vendor": {
+      "dashboard": "Tableau de bord",
+      "myShop": "Ma boutique",
+      "myProducts": "Mes produits",
+      "orders": "Commandes reçues",
+      "stats": "Statistiques de vente",
+      "settings": "Paramètres du compte"
+    }
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "submit": "Soumettre"
+  }
+}

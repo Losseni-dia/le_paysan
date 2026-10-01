@@ -1,0 +1,35 @@
+<div class="public-layout">
+  <header class="public-header">
+    <a class="brand" routerLink="/">
+      <img src="/logo_paysan.jpg" alt="Le Paysan" class="brand-logo" />
+    </a>
+
+    <nav class="main-nav">
+      <a routerLink="/catalogue">{{ 'nav.catalog' | translate }}</a>
+      <a routerLink="/panier">{{ 'nav.cart' | translate }}</a>
+    </nav>
+
+    <div class="header-actions">
+      <app-notification-bell />
+      <app-language-switcher />
+      <a class="btn-link" routerLink="/connexion">{{ 'nav.login' | translate }}</a>
+      <a class="btn-primary-link" routerLink="/inscription">{{ 'nav.register' | translate }}</a>
+    </div>
+  </header>
+
+  <main class="public-content">
+    <router-outlet />
+  </main>
+
+  <footer class="public-footer">
+    <div class="footer-links">
+      <a routerLink="/legal/mentions-legales">{{ 'footer.legalNotice' | translate }}</a>
+      <a routerLink="/legal/cgu">{{ 'footer.terms' | translate }}</a>
+      <a routerLink="/legal/cgv">{{ 'footer.sales' | translate }}</a>
+      <a routerLink="/legal/confidentialite">{{ 'footer.privacy' | translate }}</a>
+      <a routerLink="/legal/cookies">{{ 'footer.cookies' | translate }}</a>
+      <a routerLink="/contact">{{ 'footer.contact' | translate }}</a>
+    </div>
+    <p class="copyright">&copy; {{ 'app.title' | translate }}</p>
+  </footer>
+</div>

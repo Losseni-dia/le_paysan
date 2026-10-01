@@ -4,20 +4,7 @@ Statut : v1.0 — 2026-10-01 (nuances proposées, couleur finale à valider par 
 
 ## 1. Principe
 
-Identité "vert forêt et blanc" : évoque le végétal, l'agriculture, le naturel et la confiance. Le blanc apporte la clarté et la lisibilité du catalogue produits. Plusieurs nuances de vert sont proposées ci-dessous ; une fois le choix fait, remplacer `--color-primary` dans le token CSS (§4).
 
-## 2. Nuances de vert proposées
-
-| Nom | Hex | Usage suggéré |
-|---|---|---|
-| Vert forêt très foncé | `#0B3D1E` | Texte sur fond clair, header sombre |
-| Vert forêt (référence) | `#1B5E3A` | Couleur primaire (boutons, liens, accents) |
-| Vert forêt moyen | `#2E7D4F` | Hover, éléments secondaires |
-| Vert sauge | `#4C9A6A` | Badges, états positifs (ex: "Validé") |
-| Vert tendre | `#7FB896` | Fonds de section, highlights légers |
-| Vert pâle | `#D7ECDF` | Fonds de carte, zones discrètes |
-| Blanc | `#FFFFFF` | Fond principal |
-| Blanc cassé | `#F7FAF8` | Fond alternatif (sections, cartes) |
 
 Couleurs fonctionnelles (indépendantes du choix de vert) :
 
@@ -49,8 +36,8 @@ Couleurs fonctionnelles (indépendantes du choix de vert) :
   --color-accent: #4C9A6A;
   --color-tint: #7FB896;
   --color-surface-tint: #D7ECDF;
-  --color-bg: #FFFFFF;
-  --color-bg-alt: #F7FAF8;
+  --color-bg: #FAFCFA;
+  --color-bg-alt: #F3F8F4;
   --color-text: #1A1F1C;
   --color-text-muted: #5B6560;
   --color-border: #E1E8E3;
@@ -111,9 +98,11 @@ Layout en **sidebar fixe à gauche** + zone de contenu à droite (pattern "tiroi
 
 ## 7. Logo
 
-Pas de logo fourni à ce stade — point ouvert, à définir avec l'utilisateur (texte "Le Paysan" en typographie + pictogramme feuille/épi possible).
+Logo fourni par l'utilisateur : panier de produits frais (carotte, légumes verts, pain, fromage, lait) sur fond papier kraft, texte "Le paysan" + signature "Des produits frais et locaux" en vert. Fichier source : `frontend/public/logo_paysan.jpg`, utilisé comme favicon et dans le header public / les sidebars back-office (rond recadré via `border-radius`).
+
+> Point d'attention technique : fichier ~950 Ko, à optimiser (compression / recadrage en carré serré / conversion PNG-WebP avec fond transparent) avant mise en production pour éviter d'alourdir le chargement initial.
 
 ## 8. Points ouverts
 
 - Validation finale de la nuance de vert primaire par l'utilisateur.
-- Création du logo.
+- Optimisation du fichier logo (poids, format) avant production.

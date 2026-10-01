@@ -127,7 +127,7 @@ src/app/
 - Interceptor HTTP pour injecter le JWT et gérer le refresh automatique.
 - Formulaires réactifs (Reactive Forms), **découpés en étapes (stepper/wizard)** pour tout formulaire à plusieurs sections (demande de boutique, création de produit) — jamais un unique long formulaire (cf. [02-specifications-fonctionnelles.md](./02-specifications-fonctionnelles.md)).
 - **Back-office (espace vendeur et back-office admin)** : layout avec **menu de navigation latéral à gauche (sidebar)**, repliable/collapsible, listant les sections (ex. admin : Tableau de bord, Demandes de boutiques, Produits à valider, Utilisateurs, Commandes, Statistiques, Paramètres) ; zone de contenu principale à droite avec un en-tête contextuel. Détail visuel dans [06-charte-graphique.md](./06-charte-graphique.md).
-- **Internationalisation (i18n)** : `@angular/localize` ou `ngx-translate` (à trancher, cf. point ouvert §11) pour gérer **français (par défaut) et anglais** ; sélecteur de langue dans le header (site public) et dans la sidebar (back-office) ; toutes les chaînes d'UI passent par des fichiers de traduction (`fr.json` / `en.json`), aucun texte en dur dans les composants.
+- **Internationalisation (i18n)** : **`@ngx-translate/core`** (tranché) — choisi plutôt que `@angular/localize` car il permet un **changement de langue au runtime** sans rebuild/redéploiement séparé par locale, ce qui convient mieux à un sélecteur de langue dynamique dans le header/la sidebar ; gère **français (par défaut) et anglais** via fichiers de traduction (`fr.json` / `en.json`), aucun texte en dur dans les composants.
 
 Côté backend, les messages renvoyés à l'utilisateur (erreurs de validation, notifications) sont également bilingues : `MessageSource` Spring avec `messages_fr.properties` / `messages_en.properties`, langue déterminée par l'en-tête HTTP `Accept-Language` envoyé par le frontend selon la langue active.
 
@@ -147,6 +147,6 @@ Côté backend, les messages renvoyés à l'utilisateur (erreurs de validation, 
 
 - Hébergement cible (VPS, cloud managé) non encore défini.
 - Mise en place CI/CD (GitHub Actions présent dans `.github/`, à configurer).
-- Choix de la librairie i18n Angular (`@angular/localize` vs `ngx-translate`) à trancher en phase 0.
+- **Note d'installation frontend** : `npm install` seul échoue sur cette config Angular (bug connu de l'arborist npm 10.9.x sur la résolution des peer dependencies de `vitest`/`@vitejs/devtools*`) → utiliser `npm install --legacy-peer-deps`. À surveiller : une future mise à jour npm pourra lever ce contournement.
 - Confirmer auprès de la documentation Fedapay si un **paiement scindé (split payment)** ou un **transfert/payout programmatique** vers un compte Mobile Money tiers est disponible (nécessaire pour le reversement automatique aux vendeurs, cf. §5).
 - Migrer vers un fournisseur SMTP dédié en production quand le volume d'envoi dépasse les limites de Gmail (tranché pour le démarrage : Gmail SMTP sur `losdiakite@gmail.com`, cf. §6).
