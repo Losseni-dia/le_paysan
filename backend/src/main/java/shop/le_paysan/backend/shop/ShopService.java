@@ -1,6 +1,7 @@
 package shop.le_paysan.backend.shop;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import shop.le_paysan.backend.common.FileStorageService;
 import shop.le_paysan.backend.common.notification.NotificationService;
+import shop.le_paysan.backend.product.Product;
+import shop.le_paysan.backend.product.ProductRepository;
 import shop.le_paysan.backend.shop.dto.PayoutAccountRequest;
 import shop.le_paysan.backend.shop.dto.PayoutAccountResponse;
 import shop.le_paysan.backend.shop.dto.ShopAdminDetailResponse;
@@ -34,6 +37,7 @@ public class ShopService {
     private final ShopRepository shopRepository;
     private final ShopValidationRepository shopValidationRepository;
     private final ShopPayoutAccountRepository payoutAccountRepository;
+    private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final FileStorageService fileStorageService;
@@ -43,6 +47,7 @@ public class ShopService {
             ShopRepository shopRepository,
             ShopValidationRepository shopValidationRepository,
             ShopPayoutAccountRepository payoutAccountRepository,
+            ProductRepository productRepository,
             UserRepository userRepository,
             RoleRepository roleRepository,
             FileStorageService fileStorageService,
@@ -50,6 +55,7 @@ public class ShopService {
         this.shopRepository = shopRepository;
         this.shopValidationRepository = shopValidationRepository;
         this.payoutAccountRepository = payoutAccountRepository;
+        this.productRepository = productRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.fileStorageService = fileStorageService;
@@ -316,11 +322,21 @@ public class ShopService {
         shop.setUpdatedAt(LocalDateTime.now());
         shopRepository.save(shop);
 
+        // La suspension de la boutique dépublie explicitement ses produits visibles : le
+        // catalogue public les exclut déjà via le statut boutique, mais sans ça le vendeur
+        // et l'admin continueraient de les voir "Publié" dans leurs listes respectives.
+        List<Product> visibleProducts = productRepository.findByShopIdAndStatus(shop.getId(), Product.STATUS_VALIDE);
+        for (Product product : visibleProducts) {
+            product.setStatus(Product.STATUS_DEPUBLIE);
+            product.setUpdatedAt(LocalDateTime.now());
+        }
+        productRepository.saveAll(visibleProducts);
+
         notificationService.notify(
                 shop.getOwner(),
                 "SHOP_SUSPENDED",
                 "Boutique suspendue",
-                "Votre boutique \"" + shop.getName() + "\" a été suspendue par l'administration.",
+                "Votre boutique \"" + shop.getName() + "\" a été suspendue par l'administration. Ses produits ont été retirés du catalogue.",
                 "/vendeur/ma-boutique");
 
         return ShopResponse.from(shop);

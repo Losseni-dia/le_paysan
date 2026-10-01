@@ -130,6 +130,29 @@ public class ProductService {
     @Transactional
     public ProductResponse togglePublishState(User vendor, Long productId) {
         Product product = findOwnedOrThrow(vendor, productId);
+        applyPublishToggle(product);
+        return ProductResponse.from(productRepository.save(product));
+    }
+
+    @Transactional
+    public ProductResponse adminTogglePublishState(Long productId, User admin) {
+        Product product = findOrThrow(productId);
+        applyPublishToggle(product);
+        productRepository.save(product);
+
+        notificationService.notify(
+                product.getShop().getOwner(),
+                Product.STATUS_DEPUBLIE.equals(product.getStatus()) ? "PRODUCT_HIDDEN_BY_ADMIN" : "PRODUCT_RESTORED_BY_ADMIN",
+                Product.STATUS_DEPUBLIE.equals(product.getStatus()) ? "Produit masqué par l'administration" : "Produit republié par l'administration",
+                Product.STATUS_DEPUBLIE.equals(product.getStatus())
+                        ? "Votre produit \"" + product.getName() + "\" a été retiré du catalogue par l'administration."
+                        : "Votre produit \"" + product.getName() + "\" est de nouveau visible dans le catalogue.",
+                "/vendeur/produits");
+
+        return ProductResponse.from(product);
+    }
+
+    private void applyPublishToggle(Product product) {
         if (Product.STATUS_VALIDE.equals(product.getStatus())) {
             product.setStatus(Product.STATUS_DEPUBLIE);
         } else if (Product.STATUS_DEPUBLIE.equals(product.getStatus())) {
@@ -139,7 +162,6 @@ public class ProductService {
                     HttpStatus.BAD_REQUEST, "Seul un produit validé ou dépublié peut changer d'état de publication");
         }
         product.setUpdatedAt(LocalDateTime.now());
-        return ProductResponse.from(productRepository.save(product));
     }
 
     @Transactional(readOnly = true)

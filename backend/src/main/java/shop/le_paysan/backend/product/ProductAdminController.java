@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -47,5 +48,10 @@ public class ProductAdminController {
     public ProductResponse reject(
             @PathVariable Long id, @AuthenticationPrincipal SecurityUser admin, @Valid @RequestBody RejectProductRequest request) {
         return service.reject(id, admin.getUser(), request.reason());
+    }
+
+    @PatchMapping("/{id}/publish-state")
+    public ProductResponse togglePublishState(@PathVariable Long id, @AuthenticationPrincipal SecurityUser admin) {
+        return service.adminTogglePublishState(id, admin.getUser());
     }
 }
