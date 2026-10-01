@@ -35,4 +35,10 @@ public class CategoryController {
     public ResponseEntity<CategoryResponse> create(@Valid @RequestBody CreateCategoryRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));
     }
+
+    @PostMapping("/suggestions")
+    @PreAuthorize("hasRole('VENDEUR')")
+    public ResponseEntity<CategoryResponse> suggest(@Valid @RequestBody CreateCategoryRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.suggest(request));
+    }
 }

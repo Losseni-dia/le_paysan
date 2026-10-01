@@ -22,18 +22,48 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public List<CategoryResponse> list() {
+        return repository.findByStatus(Category.STATUS_VALIDE).stream().map(CategoryResponse::from).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<CategoryResponse> listForAdmin() {
         return repository.findAll().stream().map(CategoryResponse::from).toList();
     }
 
     @Transactional
     public CategoryResponse create(CreateCategoryRequest request) {
-        if (repository.existsByNameIgnoreCase(request.name())) {
+        Category category = createEntity(request.name());
+        category.setStatus(Category.STATUS_VALIDE);
+        return CategoryResponse.from(repository.save(category));
+    }
+
+    /** Suggestion par un vendeur depuis le formulaire produit : utilisable immédiatement par
+     * lui (son produit référence déjà l'id), mais invisible des autres tant qu'un admin ne
+     * l'a pas validée (cf. docs/07-plan-execution.md). */
+    @Transactional
+    public CategoryResponse suggest(CreateCategoryRequest request) {
+        Category category = createEntity(request.name());
+        category.setStatus(Category.STATUS_EN_ATTENTE);
+        return CategoryResponse.from(repository.save(category));
+    }
+
+    @Transactional
+    public CategoryResponse validate(Long id) {
+        Category category = repository
+                .findById(id)
+                .orElseThrow(() -> new ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND));
+        category.setStatus(Category.STATUS_VALIDE);
+        return CategoryResponse.from(repository.save(category));
+    }
+
+    private Category createEntity(String name) {
+        if (repository.existsByNameIgnoreCase(name)) {
             throw new ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "Cette catégorie existe déjà");
         }
         Category category = new Category();
-        category.setName(request.name());
-        category.setSlug(slugify(request.name()));
-        return CategoryResponse.from(repository.save(category));
+        category.setName(name);
+        category.setSlug(slugify(name));
+        return category;
     }
 
     private static String slugify(String input) {
