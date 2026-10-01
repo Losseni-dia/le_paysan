@@ -6,13 +6,18 @@
 
     <nav class="main-nav">
       <a routerLink="/catalogue">{{ 'nav.catalog' | translate }}</a>
-      <a routerLink="/panier">{{ 'nav.cart' | translate }}</a>
     </nav>
 
     <div class="header-actions">
       @if (authService.isAuthenticated()) {
         <app-notification-bell />
       }
+      <a class="cart-link" routerLink="/panier" aria-label="Panier">
+        🛒
+        @if (cartService.itemCount() > 0) {
+          <span class="badge">{{ cartService.itemCount() }}</span>
+        }
+      </a>
       <app-language-switcher />
       @if (authService.isAuthenticated()) {
         @if (authService.hasRole('ROLE_VENDEUR')) {

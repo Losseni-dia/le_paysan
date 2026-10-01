@@ -1,0 +1,92 @@
+<div class="cart-page">
+  <h1>Mon panier</h1>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (shopGroups().length === 0) {
+    <p class="form-hint">Votre panier est vide. <a routerLink="/catalogue">Parcourir le catalogue</a></p>
+  } @else {
+    @if (error()) {
+      <p class="form-error-banner">{{ error() }}</p>
+    }
+    @if (hasUnavailableItems()) {
+      <p class="form-error-banner">
+        Certains produits ne sont plus disponibles. Retirez-les du panier pour pouvoir commander.
+      </p>
+    }
+
+    @for (group of shopGroups(); track group.shopId) {
+      <section class="shop-group">
+        <h2>{{ group.shopName }}</h2>
+
+        @for (item of group.items; track item.productId) {
+          <div class="cart-item" [class.unavailable]="!item.available">
+            @if (item.imageUrl) {
+              <img [src]="apiFilesBase + item.imageUrl" alt="{{ item.productName }}" class="item-thumb" />
+            } @else {
+              <div class="item-thumb placeholder"></div>
+            }
+
+            <div class="item-info">
+              <h3>{{ item.productName }}</h3>
+              @if (!item.available) {
+                <p class="unavailable-tag">Indisponible</p>
+              }
+              <p class="item-price">{{ item.unitPrice }} FCFA / unité</p>
+
+              <div class="item-controls">
+                <label>
+                  Quantité
+                  <input
+                    type="number"
+                    min="1"
+                    [max]="item.stockAvailable"
+                    [value]="item.quantity"
+                    (change)="updateQuantity(item, $event)"
+                  />
+                </label>
+
+                <label>
+                  Livraison
+                  <select (change)="updateDeliveryMode(item, $event)">
+                    @for (mode of item.availableDeliveryModes; track mode) {
+                      <option [value]="mode" [selected]="mode === item.deliveryMode">
+                        {{ mode === 'RETRAIT_BOUTIQUE' ? 'Retrait en boutique' : 'Livraison à domicile' }}
+                      </option>
+                    }
+                  </select>
+                </label>
+              </div>
+
+              @if (item.deliveryMode === 'LIVRAISON_DOMICILE') {
+                <label class="address-label">
+                  Adresse de livraison
+                  <input type="text" [value]="item.deliveryAddress" (change)="updateAddress(item, $event)" />
+                </label>
+              }
+
+              <button type="button" class="remove-link" (click)="removeItem(item)">Retirer</button>
+            </div>
+
+            <div class="item-subtotal">{{ item.lineSubtotal }} FCFA</div>
+          </div>
+        }
+      </section>
+    }
+
+    <section class="cart-summary">
+      <p>Sous-total produits : <strong>{{ cart()!.subtotalAmount }} FCFA</strong></p>
+      <p>Frais de livraison : <strong>{{ cart()!.deliveryAmount }} FCFA</strong></p>
+      <p class="total">Total : <strong>{{ cart()!.totalAmount }} FCFA</strong></p>
+
+      <button
+        type="button"
+        class="btn-checkout"
+        [disabled]="checkingOut() || hasUnavailableItems()"
+        (click)="checkout()"
+      >
+        {{ checkingOut() ? 'Validation...' : 'Passer la commande' }}
+      </button>
+    </section>
+  }
+</div>

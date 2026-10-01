@@ -1,0 +1,34 @@
+<div class="order-confirmation-page">
+  @if (orders().length === 0) {
+    <p class="form-hint">
+      Aucune commande récente à afficher. <a routerLink="/catalogue">Retour au catalogue</a>
+    </p>
+  } @else {
+    <h1>Commande(s) enregistrée(s)</h1>
+    <p class="form-hint">
+      Le paiement Mobile Money sera bientôt disponible. Vos commandes sont en attente de paiement.
+    </p>
+
+    @for (order of orders(); track order.id) {
+      <section class="order-card">
+        <div class="order-header">
+          <h2>{{ order.shopName }}</h2>
+          <span class="order-number">N° {{ order.orderNumber }}</span>
+        </div>
+        <span class="status-badge">{{ order.status }}</span>
+
+        <ul class="order-items">
+          @for (item of order.items; track item.productId) {
+            <li>{{ item.quantity }} × {{ item.productName }} — {{ item.lineSubtotal }} FCFA</li>
+          }
+        </ul>
+
+        <p>Sous-total : {{ order.subtotalAmount }} FCFA</p>
+        <p>Livraison : {{ order.deliveryAmount }} FCFA</p>
+        <p class="order-total">Total : {{ order.totalAmount }} FCFA</p>
+      </section>
+    }
+
+    <a routerLink="/catalogue" class="btn-primary-link">Continuer mes achats</a>
+  }
+</div>

@@ -24,7 +24,17 @@ export const routes: Routes = [
         path: 'boutiques/:id',
         loadComponent: () => import('./features/catalogue/shop-detail/shop-detail').then((m) => m.ShopDetail),
       },
-      { path: 'panier', component: Placeholder, data: { title: 'Panier' } },
+      {
+        path: 'panier',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/cart/cart-page/cart-page').then((m) => m.CartPage),
+      },
+      {
+        path: 'commandes/confirmation',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/cart/order-confirmation/order-confirmation').then((m) => m.OrderConfirmation),
+      },
       {
         path: 'connexion',
         loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),

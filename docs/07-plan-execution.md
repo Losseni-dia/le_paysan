@@ -54,10 +54,15 @@ Découpage en phases livrables, chacune apportant une valeur testable de bout en
 **Faille de sécurité corrigée en cours de route** : les photos produit n'étaient accessibles que via l'endpoint `/api/files/**` authentifié, ce qui aurait empêché leur affichage dans le catalogue public (balises `<img>` sans en-tête `Authorization`). Ajout d'une règle `permitAll` dédiée à `GET /api/files/products/**`. En creusant, constat qu'une règle `permitAll` trop large sur `/api/shops/**` exposait aussi par erreur `/api/shops/me` et `/api/shops/me/payout-account` sans authentification (resserrée aux seules routes publiques `/api/shops` et `/api/shops/{id}`), et que le logo/couverture boutique étaient stockés sous la catégorie `shop-kyc` (authentifiée) : séparés dans une nouvelle catégorie `shop-public` rendue publique en lecture, pour que la fiche boutique publique puisse les afficher (cf. `backend/.../config/SecurityConfig.java`, `backend/.../shop/ShopService.java`).
 
 ## 6. Phase 4 — Panier & tunnel de commande
-- [ ] Panier multi-produits (multi-boutiques).
-- [ ] Choix du mode de livraison par produit + saisie adresse si besoin.
-- [ ] Récapitulatif de commande (sous-totaux, livraison, total).
-- [ ] Création des commandes (une par boutique) en statut `EN_ATTENTE_PAIEMENT`.
+- [x] Panier multi-produits (multi-boutiques) : `GET/POST/PUT/DELETE /api/cart`, un panier par utilisateur, prix lu en direct sur le produit (non snapshotté en panier). *(2026-10-01)*
+- [x] Choix du mode de livraison par produit + saisie adresse si besoin (validée côté backend : mode proposé par le produit, adresse obligatoire si `LIVRAISON_DOMICILE`). *(2026-10-01)*
+- [x] Récapitulatif de commande (sous-totaux, livraison, total) — page panier avec regroupement par boutique + page de confirmation après commande. *(2026-10-01)*
+- [x] Création des commandes (une par boutique) en statut `EN_ATTENTE_PAIEMENT` : `POST /api/orders` (checkout), snapshot nom/prix produit, numéro de commande généré, panier vidé après commande. *(2026-10-01 — testé de bout en bout dans le navigateur.)*
+- [x] Icône panier avec compteur d'articles dans le header public (à droite, à côté du sélecteur de langue). *(2026-10-01)*
+
+**Décision de scope** : `orders.commission_rate`/`commission_amount` sont NOT NULL en base et doivent donc être figés dès la création de la commande (Phase 4), pas seulement à la confirmation du paiement (Phase 5) comme décrit informellement dans UC-08. Un seul taux de commission global est utilisé par commande (table `commission_settings`, taux par défaut à 10% seedé au démarrage) : le modèle ne porte qu'un taux unique par commande, donc pas de proratisation par catégorie si une commande mélange plusieurs catégories de produits — amélioration possible post-MVP si besoin.
+
+**Bug corrigé en cours de route** : juste après l'ajout d'un article, la réponse de `POST /api/cart/items` renvoyait un panier vide alors que l'article était bien persisté en base. Cause : la collection `Cart.items` (chargement paresseux Hibernate) restait "déjà initialisée à vide" dans le contexte de persistance de la transaction en cours, car l'article avait été inséré via `CartItemRepository` directement (sans passer par `cart.getItems().add(...)`), donc Hibernate ne la rechargeait pas. Corrigé en lisant toujours les lignes du panier via une requête directe (`CartItemRepository.findByCartIdOrderByIdAsc`) plutôt qu'en naviguant `cart.getItems()`, y compris dans `OrderService.checkout()`.
 
 ## 7. Phase 5 — Paiement Fedapay & reversement automatique
 - [ ] Vérifier auprès de Fedapay la disponibilité d'un paiement scindé (split payment) ou d'une API de transfert/payout — trancher Option A vs Option B (cf. [04-architecture-technique.md §5](./04-architecture-technique.md)).
@@ -104,7 +109,7 @@ Découpage en phases livrables, chacune apportant une valeur testable de bout en
 | Phase 1 | Quasi terminé (OAuth Google en attente) | 2026-10-01 | - |
 | Phase 2 | Terminé | 2026-10-01 | 2026-10-01 |
 | Phase 3 | Terminé | 2026-10-01 | 2026-10-01 |
-| Phase 4 | À faire | - | - |
+| Phase 4 | Terminé | 2026-10-01 | 2026-10-01 |
 | Phase 5 | À faire | - | - |
 | Phase 6 | À faire | - | - |
 | Phase 7 | À faire | - | - |

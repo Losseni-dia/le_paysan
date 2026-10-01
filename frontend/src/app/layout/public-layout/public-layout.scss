@@ -65,6 +65,24 @@
   }
 }
 
+.cart-link {
+  position: relative;
+  font-size: 18px;
+  text-decoration: none;
+
+  .badge {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    background: var(--color-danger);
+    color: #fff;
+    font-size: 10px;
+    line-height: 1;
+    padding: 3px 5px;
+    border-radius: 999px;
+  }
+}
+
 .current-user {
   font-size: 14px;
   font-weight: 500;
