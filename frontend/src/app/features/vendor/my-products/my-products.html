@@ -1,0 +1,37 @@
+<div class="my-products-page">
+  <div class="page-header">
+    <h1>Mes produits</h1>
+    <a routerLink="/vendeur/produits/nouveau" class="btn-primary-link">+ Nouveau produit</a>
+  </div>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (products().length === 0) {
+    <p class="form-hint">Vous n'avez pas encore ajouté de produit.</p>
+  } @else {
+    <div class="products-grid">
+      @for (p of products(); track p.id) {
+        <div class="product-card">
+          @if (p.imageUrls.length > 0) {
+            <img [src]="apiFilesBase + p.imageUrls[0]" alt="{{ p.name }}" class="product-thumb" />
+          } @else {
+            <div class="product-thumb placeholder"></div>
+          }
+          <div class="product-card-body">
+            <h3>{{ p.name }}</h3>
+            <p class="product-price">{{ p.unitPrice }} FCFA / {{ p.unit }}</p>
+            <span class="status-badge" [class]="'status-' + p.status">{{ statusLabels[p.status] }}</span>
+            <div class="product-actions">
+              <a [routerLink]="['/vendeur/produits', p.id, 'modifier']">Modifier</a>
+              @if (p.status === 'VALIDE' || p.status === 'DEPUBLIE') {
+                <button type="button" (click)="togglePublish(p)" [disabled]="togglingId() === p.id">
+                  {{ p.status === 'VALIDE' ? 'Dépublier' : 'Republier' }}
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

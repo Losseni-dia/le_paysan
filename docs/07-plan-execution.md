@@ -45,10 +45,13 @@ Découpage en phases livrables, chacune apportant une valeur testable de bout en
 **Bug corrigé en cours de route** : au rechargement complet d'une page protégée, le guard de route s'exécutait avant la fin de la restauration de session (refresh token asynchrone), provoquant une redirection intempestive vers `/connexion`. Corrigé via un `provideAppInitializer` qui attend la restauration avant que le routeur n'évalue les guards (cf. `frontend/src/app/app.config.ts`).
 
 ## 5. Phase 3 — Produits & catalogue
-- [ ] CRUD produit vendeur en étapes (stepper) : Infos générales → Photos → Livraison → Récapitulatif.
-- [ ] Back-office admin : validation/rejet produit avec motif.
-- [ ] Catalogue public : liste, recherche, filtres, fiche produit, fiche boutique (avec carte de localisation + lien itinéraire).
-- [ ] Gestion des catégories (seed + admin CRUD).
+- [x] CRUD produit vendeur en étapes (stepper) : Infos générales → Photos → Livraison → Récapitulatif ; la modification repasse le produit en `EN_ATTENTE` de re-validation. *(2026-10-01 — testé de bout en bout dans le navigateur, y compris upload de photos.)*
+- [x] Back-office admin : liste filtrable par statut, détail, validation/rejet produit avec motif. *(2026-10-01)*
+- [x] Espace vendeur : page "Mes produits" (liste, statut, dépublier/republier un produit validé). *(2026-10-01)*
+- [x] Catalogue public : liste, recherche, filtres (catégorie, prix min/max, mode de livraison), pagination, fiche produit, fiche boutique (avec carte de localisation + lien itinéraire OpenStreetMap). *(2026-10-01 — testé de bout en bout, accès anonyme confirmé.)*
+- [x] Gestion des catégories (seed + admin : liste + création, pas de modification/suppression côté API). *(2026-10-01)*
+
+**Faille de sécurité corrigée en cours de route** : les photos produit n'étaient accessibles que via l'endpoint `/api/files/**` authentifié, ce qui aurait empêché leur affichage dans le catalogue public (balises `<img>` sans en-tête `Authorization`). Ajout d'une règle `permitAll` dédiée à `GET /api/files/products/**`. En creusant, constat qu'une règle `permitAll` trop large sur `/api/shops/**` exposait aussi par erreur `/api/shops/me` et `/api/shops/me/payout-account` sans authentification (resserrée aux seules routes publiques `/api/shops` et `/api/shops/{id}`), et que le logo/couverture boutique étaient stockés sous la catégorie `shop-kyc` (authentifiée) : séparés dans une nouvelle catégorie `shop-public` rendue publique en lecture, pour que la fiche boutique publique puisse les afficher (cf. `backend/.../config/SecurityConfig.java`, `backend/.../shop/ShopService.java`).
 
 ## 6. Phase 4 — Panier & tunnel de commande
 - [ ] Panier multi-produits (multi-boutiques).
@@ -100,7 +103,7 @@ Découpage en phases livrables, chacune apportant une valeur testable de bout en
 | Phase 0 | Terminé | 2026-10-01 | 2026-10-01 |
 | Phase 1 | Quasi terminé (OAuth Google en attente) | 2026-10-01 | - |
 | Phase 2 | Terminé | 2026-10-01 | 2026-10-01 |
-| Phase 3 | À faire | - | - |
+| Phase 3 | Terminé | 2026-10-01 | 2026-10-01 |
 | Phase 4 | À faire | - | - |
 | Phase 5 | À faire | - | - |
 | Phase 6 | À faire | - | - |

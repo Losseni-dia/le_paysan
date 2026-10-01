@@ -1,0 +1,54 @@
+<div class="product-detail">
+  <a routerLink="/admin/produits" class="back-link">&larr; Retour à la liste</a>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (!product()) {
+    <p class="form-error-banner">Produit introuvable.</p>
+  } @else {
+    <h1>{{ product()!.name }}</h1>
+    <span class="status-badge" [class]="'status-' + product()!.status">{{ product()!.status }}</span>
+
+    @if (product()!.imageUrls.length > 0) {
+      <div class="image-previews">
+        @for (url of product()!.imageUrls; track url) {
+          <img [src]="apiFilesBase + url" alt="Photo produit" />
+        }
+      </div>
+    }
+
+    <section class="info-section">
+      <p><strong>Boutique :</strong> {{ product()!.shopName }}</p>
+      <p><strong>Catégorie :</strong> {{ product()!.categoryName }}</p>
+      <p><strong>Description :</strong> {{ product()!.description || '—' }}</p>
+      <p><strong>Prix :</strong> {{ product()!.unitPrice }} FCFA / {{ product()!.unit }}</p>
+      <p><strong>Stock :</strong> {{ product()!.stockQuantity }}</p>
+      <p>
+        <strong>Livraison :</strong>
+        @for (opt of product()!.deliveryOptions; track opt.mode) {
+          <span>
+            {{ opt.mode === 'RETRAIT_BOUTIQUE' ? 'Retrait en boutique (' + opt.pickupLocation + ')' : 'Livraison à domicile (' + opt.deliveryPrice + ' FCFA)' }}
+          </span>
+        }
+      </p>
+    </section>
+
+    @if (product()!.status === 'EN_ATTENTE') {
+      <section class="actions-section">
+        <button type="button" class="btn-validate" (click)="validate()" [disabled]="saving()">Valider le produit</button>
+        <button type="button" class="btn-reject" (click)="showRejectForm.set(true)" [disabled]="saving()">Rejeter</button>
+
+        @if (showRejectForm()) {
+          <form [formGroup]="rejectForm" (ngSubmit)="reject()" novalidate class="reject-form">
+            <div class="form-field">
+              <label class="form-label" for="reason">Motif du rejet</label>
+              <textarea id="reason" class="form-input" rows="3" formControlName="reason"></textarea>
+              <app-field-error [control]="rejectForm.controls.reason" />
+            </div>
+            <button type="submit" class="btn-reject" [disabled]="saving()">Confirmer le rejet</button>
+          </form>
+        }
+      </section>
+    }
+  }
+</div>

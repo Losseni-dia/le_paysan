@@ -1,0 +1,35 @@
+.product-form-page h1 {
+  color: var(--color-primary-dark);
+  margin-bottom: 20px;
+}
+
+.step-panel {
+  max-width: 520px;
+}
+
+.checkbox-field label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.image-previews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+
+  img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+  }
+}
+
+.recap p {
+  margin: 6px 0;
+}

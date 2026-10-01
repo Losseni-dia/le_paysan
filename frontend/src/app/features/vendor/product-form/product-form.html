@@ -1,0 +1,152 @@
+<div class="product-form-page">
+  <h1>{{ isEdit ? 'Modifier le produit' : 'Nouveau produit' }}</h1>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else {
+    @if (serverError()) {
+      <p class="form-error-banner">{{ serverError() }}</p>
+    }
+
+    <form [formGroup]="form" novalidate>
+      <app-stepper
+        [steps]="stepLabels"
+        [(currentIndex)]="currentStepIndex"
+        [canGoNext]="canGoNext()"
+        (completed)="submit()"
+      >
+        @switch (currentStepIndex()) {
+          @case (0) {
+            <div class="step-panel">
+              <div class="form-field">
+                <label class="form-label" for="categoryId">Catégorie</label>
+                <select id="categoryId" class="form-select" formControlName="categoryId">
+                  <option [ngValue]="null">-- Choisir --</option>
+                  @for (c of categories(); track c.id) {
+                    <option [ngValue]="c.id">{{ c.name }}</option>
+                  }
+                </select>
+                <app-field-error [control]="form.controls.categoryId" />
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="name">Nom du produit</label>
+                <input id="name" class="form-input" type="text" formControlName="name" />
+                <app-field-error [control]="form.controls.name" />
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="description">Description</label>
+                <textarea id="description" class="form-input" rows="4" formControlName="description"></textarea>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="unit">Unité (ex. kg, sac, botte)</label>
+                <input id="unit" class="form-input" type="text" formControlName="unit" />
+                <app-field-error [control]="form.controls.unit" />
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="unitPrice">Prix unitaire (FCFA)</label>
+                <input id="unitPrice" class="form-input" type="number" min="1" formControlName="unitPrice" />
+                <app-field-error [control]="form.controls.unitPrice" [messages]="{ min: 'Le prix doit être supérieur à 0.' }" />
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="stockQuantity">Quantité en stock</label>
+                <input id="stockQuantity" class="form-input" type="number" min="0" formControlName="stockQuantity" />
+                <app-field-error [control]="form.controls.stockQuantity" [messages]="{ min: 'La quantité ne peut pas être négative.' }" />
+              </div>
+            </div>
+          }
+          @case (1) {
+            <div class="step-panel">
+              @if (existingImageUrls().length > 0) {
+                <p class="form-hint">Photos actuelles :</p>
+                <div class="image-previews">
+                  @for (url of existingImageUrls(); track url) {
+                    <img [src]="apiFilesBase + url" alt="Photo produit" />
+                  }
+                </div>
+              }
+
+              <div class="form-field">
+                <label class="form-label" for="images">
+                  {{ existingImageUrls().length > 0 ? 'Ajouter des photos' : 'Photos du produit' }}
+                </label>
+                <input id="images" type="file" accept="image/*" multiple (change)="onImagesSelected($event)" />
+              </div>
+
+              @if (newImagePreviews().length > 0) {
+                <p class="form-hint">Nouvelles photos :</p>
+                <div class="image-previews">
+                  @for (url of newImagePreviews(); track url) {
+                    <img [src]="url" alt="Nouvelle photo" />
+                  }
+                </div>
+              }
+            </div>
+          }
+          @case (2) {
+            <div class="step-panel">
+              <div class="form-field checkbox-field">
+                <label>
+                  <input type="checkbox" formControlName="retraitBoutique" />
+                  Retrait en boutique
+                </label>
+              </div>
+              @if (form.controls.retraitBoutique.value) {
+                <div class="form-field">
+                  <label class="form-label" for="pickupLocation">Lieu de retrait (optionnel, adresse boutique par défaut)</label>
+                  <input id="pickupLocation" class="form-input" type="text" formControlName="pickupLocation" />
+                </div>
+              }
+
+              <div class="form-field checkbox-field">
+                <label>
+                  <input type="checkbox" formControlName="livraisonDomicile" />
+                  Livraison à domicile
+                </label>
+              </div>
+              @if (form.controls.livraisonDomicile.value) {
+                <div class="form-field">
+                  <label class="form-label" for="deliveryPrice">Prix de la livraison (FCFA)</label>
+                  <input id="deliveryPrice" class="form-input" type="number" min="0" formControlName="deliveryPrice" />
+                  <app-field-error [control]="form.controls.deliveryPrice" />
+                </div>
+              }
+
+              @if (!form.controls.retraitBoutique.value && !form.controls.livraisonDomicile.value) {
+                <p class="form-error-banner">Au moins un mode de livraison doit être actif.</p>
+              }
+            </div>
+          }
+          @case (3) {
+            <div class="step-panel recap">
+              <h2>{{ form.controls.name.value }}</h2>
+              <p><strong>Catégorie :</strong> {{ selectedCategoryName() }}</p>
+              <p><strong>Prix :</strong> {{ form.controls.unitPrice.value }} FCFA / {{ form.controls.unit.value }}</p>
+              <p><strong>Stock :</strong> {{ form.controls.stockQuantity.value }}</p>
+              <p><strong>Description :</strong> {{ form.controls.description.value || '—' }}</p>
+              <p>
+                <strong>Livraison :</strong>
+                @if (form.controls.retraitBoutique.value) {
+                  Retrait en boutique
+                }
+                @if (form.controls.retraitBoutique.value && form.controls.livraisonDomicile.value) {
+                  ,
+                }
+                @if (form.controls.livraisonDomicile.value) {
+                  Livraison à domicile ({{ form.controls.deliveryPrice.value }} FCFA)
+                }
+              </p>
+              <p class="form-hint">
+                {{ isEdit ? 'La modification repassera le produit en attente de validation par l\'administration.' : 'Votre produit sera visible dans le catalogue après validation par l\'administration.' }}
+              </p>
+            </div>
+          }
+        }
+      </app-stepper>
+    </form>
+  }
+</div>

@@ -1,0 +1,52 @@
+<div class="shop-detail-page">
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (notFound() || !shop()) {
+    <p class="form-error-banner">Cette boutique n'est pas disponible.</p>
+  } @else {
+    <div class="shop-header">
+      @if (shop()!.coverUrl) {
+        <img class="shop-cover" [src]="apiFilesBase + shop()!.coverUrl" alt="Couverture {{ shop()!.name }}" />
+      }
+      <div class="shop-identity">
+        @if (shop()!.logoUrl) {
+          <img class="shop-logo" [src]="apiFilesBase + shop()!.logoUrl" alt="Logo {{ shop()!.name }}" />
+        }
+        <div>
+          <h1>{{ shop()!.name }}</h1>
+          <p class="shop-category">{{ shop()!.category || 'Ferme & boutique' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="shop-description">{{ shop()!.description || 'Aucune description.' }}</p>
+
+    <section class="location-section">
+      <h2>Localisation</h2>
+      <p>{{ shop()!.addressDetail }}, {{ shop()!.addressCity }}</p>
+      <app-map-picker [latitude]="shop()!.latitude" [longitude]="shop()!.longitude" [readonly]="true" />
+      <a [href]="itineraryUrl()" target="_blank" rel="noopener" class="itinerary-link">Itinéraire &rarr;</a>
+    </section>
+
+    <section class="products-section">
+      <h2>Produits de cette boutique</h2>
+      @if (products().length === 0) {
+        <p class="form-hint">Aucun produit disponible pour le moment.</p>
+      } @else {
+        <div class="products-grid">
+          @for (p of products(); track p.id) {
+            <a [routerLink]="['/produits', p.id]" class="product-card">
+              @if (p.imageUrls.length > 0) {
+                <img [src]="apiFilesBase + p.imageUrls[0]" alt="{{ p.name }}" class="product-thumb" />
+              }
+              <div class="product-card-body">
+                <h3>{{ p.name }}</h3>
+                <p class="product-price">{{ p.unitPrice }} FCFA / {{ p.unit }}</p>
+              </div>
+            </a>
+          }
+        </div>
+      }
+    </section>
+  }
+</div>

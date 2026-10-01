@@ -1,0 +1,47 @@
+.categories-page h1 {
+  color: var(--color-primary-dark);
+}
+
+.create-form {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 420px;
+  margin: 20px 0;
+
+  .form-field {
+    flex: 1;
+  }
+}
+
+.btn-primary {
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.categories-list {
+  list-style: none;
+  padding: 0;
+  max-width: 420px;
+
+  li {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 14px;
+  }
+
+  .slug {
+    color: var(--color-text-muted);
+    font-size: 12px;
+  }
+}

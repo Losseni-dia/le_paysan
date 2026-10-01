@@ -8,8 +8,22 @@ export const routes: Routes = [
     path: '',
     loadComponent: () => import('./layout/public-layout/public-layout').then((m) => m.PublicLayout),
     children: [
-      { path: '', component: Placeholder, data: { title: 'Catalogue' } },
-      { path: 'catalogue', component: Placeholder, data: { title: 'Catalogue' } },
+      {
+        path: '',
+        loadComponent: () => import('./features/catalogue/catalogue-list/catalogue-list').then((m) => m.CatalogueList),
+      },
+      {
+        path: 'catalogue',
+        loadComponent: () => import('./features/catalogue/catalogue-list/catalogue-list').then((m) => m.CatalogueList),
+      },
+      {
+        path: 'produits/:id',
+        loadComponent: () => import('./features/catalogue/product-detail/product-detail').then((m) => m.ProductDetail),
+      },
+      {
+        path: 'boutiques/:id',
+        loadComponent: () => import('./features/catalogue/shop-detail/shop-detail').then((m) => m.ShopDetail),
+      },
       { path: 'panier', component: Placeholder, data: { title: 'Panier' } },
       {
         path: 'connexion',
@@ -59,7 +73,18 @@ export const routes: Routes = [
         path: 'ma-boutique',
         loadComponent: () => import('./features/vendor/my-shop/my-shop').then((m) => m.MyShop),
       },
-      { path: 'produits', component: Placeholder, data: { title: 'Mes produits' } },
+      {
+        path: 'produits',
+        loadComponent: () => import('./features/vendor/my-products/my-products').then((m) => m.MyProducts),
+      },
+      {
+        path: 'produits/nouveau',
+        loadComponent: () => import('./features/vendor/product-form/product-form').then((m) => m.ProductForm),
+      },
+      {
+        path: 'produits/:id/modifier',
+        loadComponent: () => import('./features/vendor/product-form/product-form').then((m) => m.ProductForm),
+      },
       { path: 'commandes', component: Placeholder, data: { title: 'Commandes reçues' } },
       { path: 'statistiques', component: Placeholder, data: { title: 'Statistiques de vente' } },
       { path: 'parametres', component: Placeholder, data: { title: 'Paramètres du compte' } },
@@ -82,10 +107,20 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/shop-request-detail/shop-request-detail').then((m) => m.ShopRequestDetail),
       },
-      { path: 'produits', component: Placeholder, data: { title: 'Produits à valider' } },
+      {
+        path: 'produits',
+        loadComponent: () => import('./features/admin/products-list/products-list').then((m) => m.ProductsList),
+      },
+      {
+        path: 'produits/:id',
+        loadComponent: () => import('./features/admin/product-detail/product-detail').then((m) => m.ProductDetail),
+      },
       { path: 'utilisateurs', component: Placeholder, data: { title: 'Utilisateurs' } },
       { path: 'commandes', component: Placeholder, data: { title: 'Commandes' } },
-      { path: 'categories', component: Placeholder, data: { title: 'Catégories' } },
+      {
+        path: 'categories',
+        loadComponent: () => import('./features/admin/categories/categories').then((m) => m.Categories),
+      },
       { path: 'commission', component: Placeholder, data: { title: 'Taux de commission' } },
       { path: 'statistiques', component: Placeholder, data: { title: 'Statistiques' } },
       { path: 'parametres', component: Placeholder, data: { title: 'Paramètres' } },

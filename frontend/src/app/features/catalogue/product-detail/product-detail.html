@@ -1,0 +1,46 @@
+<div class="product-detail-page">
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (notFound() || !product()) {
+    <p class="form-error-banner">Ce produit n'est plus disponible.</p>
+  } @else {
+    <div class="product-layout">
+      <div class="gallery">
+        @if (product()!.imageUrls.length > 0) {
+          <img class="main-image" [src]="apiFilesBase + product()!.imageUrls[activeImage()]" alt="{{ product()!.name }}" />
+          @if (product()!.imageUrls.length > 1) {
+            <div class="thumbnails">
+              @for (url of product()!.imageUrls; track url; let i = $index) {
+                <img
+                  [src]="apiFilesBase + url"
+                  alt="Miniature"
+                  [class.active]="i === activeImage()"
+                  (click)="selectImage(i)"
+                />
+              }
+            </div>
+          }
+        }
+      </div>
+
+      <div class="info">
+        <h1>{{ product()!.name }}</h1>
+        <a [routerLink]="['/boutiques', product()!.shopId]" class="shop-link">{{ product()!.shopName }}</a>
+        <p class="price">{{ product()!.unitPrice }} FCFA / {{ product()!.unit }}</p>
+        <p class="description">{{ product()!.description || 'Aucune description.' }}</p>
+        <p class="stock">Stock disponible : {{ product()!.stockQuantity }} {{ product()!.unit }}</p>
+
+        <section class="delivery-section">
+          <h2>Livraison</h2>
+          @for (opt of product()!.deliveryOptions; track opt.mode) {
+            @if (opt.mode === 'RETRAIT_BOUTIQUE') {
+              <p>Retrait en boutique : {{ opt.pickupLocation }}</p>
+            } @else {
+              <p>Livraison à domicile : {{ opt.deliveryPrice }} FCFA</p>
+            }
+          }
+        </section>
+      </div>
+    </div>
+  }
+</div>

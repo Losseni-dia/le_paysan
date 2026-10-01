@@ -1,0 +1,54 @@
+<div class="catalogue-page">
+  <h1>Catalogue</h1>
+
+  <form [formGroup]="filterForm" class="filters-bar" novalidate>
+    <input class="form-input" type="search" placeholder="Rechercher un produit..." formControlName="search" />
+
+    <select class="form-select" formControlName="categoryId">
+      <option [ngValue]="null">Toutes les catégories</option>
+      @for (c of categories(); track c.id) {
+        <option [ngValue]="c.id">{{ c.name }}</option>
+      }
+    </select>
+
+    <input class="form-input" type="number" min="0" placeholder="Prix min" formControlName="minPrice" />
+    <input class="form-input" type="number" min="0" placeholder="Prix max" formControlName="maxPrice" />
+
+    <select class="form-select" formControlName="deliveryMode">
+      <option value="">Tous les modes</option>
+      <option value="RETRAIT_BOUTIQUE">Retrait en boutique</option>
+      <option value="LIVRAISON_DOMICILE">Livraison à domicile</option>
+    </select>
+  </form>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (products().length === 0) {
+    <p class="form-hint">Aucun produit ne correspond à votre recherche.</p>
+  } @else {
+    <div class="products-grid">
+      @for (p of products(); track p.id) {
+        <a [routerLink]="['/produits', p.id]" class="product-card">
+          @if (p.imageUrls.length > 0) {
+            <img [src]="apiFilesBase + p.imageUrls[0]" alt="{{ p.name }}" class="product-thumb" />
+          } @else {
+            <div class="product-thumb placeholder"></div>
+          }
+          <div class="product-card-body">
+            <h3>{{ p.name }}</h3>
+            <p class="product-shop">{{ p.shopName }}</p>
+            <p class="product-price">{{ p.unitPrice }} FCFA / {{ p.unit }}</p>
+          </div>
+        </a>
+      }
+    </div>
+
+    @if (totalPages() > 1) {
+      <div class="pagination">
+        <button type="button" (click)="goToPage(page() - 1)" [disabled]="page() === 0">Précédent</button>
+        <span>Page {{ page() + 1 }} / {{ totalPages() }}</span>
+        <button type="button" (click)="goToPage(page() + 1)" [disabled]="page() + 1 >= totalPages()">Suivant</button>
+      </div>
+    }
+  }
+</div>

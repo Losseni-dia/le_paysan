@@ -1,0 +1,50 @@
+<div class="products-list">
+  <h1>Produits</h1>
+  <p class="form-hint">Produits soumis par les vendeurs, en attente de validation ou déjà traités.</p>
+
+  <div class="filters">
+    @for (status of statusFilters; track status.value) {
+      <button
+        type="button"
+        class="filter-btn"
+        [class.active]="selectedStatus() === status.value"
+        (click)="selectStatus(status.value)"
+      >
+        {{ status.label }}
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (products().length === 0) {
+    <p class="form-hint">Aucun produit avec ce statut.</p>
+  } @else {
+    <table class="requests-table">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Boutique</th>
+          <th>Catégorie</th>
+          <th>Prix</th>
+          <th>Statut</th>
+          <th>Date</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of products(); track p.id) {
+          <tr>
+            <td>{{ p.name }}</td>
+            <td>{{ p.shopName }}</td>
+            <td>{{ p.categoryName }}</td>
+            <td>{{ p.unitPrice }} FCFA</td>
+            <td><span class="status-badge" [class]="'status-' + p.status">{{ p.status }}</span></td>
+            <td>{{ p.createdAt | date: 'dd/MM/yyyy' }}</td>
+            <td><a [routerLink]="['/admin/produits', p.id]">Voir</a></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

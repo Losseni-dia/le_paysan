@@ -1,0 +1,29 @@
+<div class="categories-page">
+  <h1>Catégories</h1>
+  <p class="form-hint">Catégories utilisées pour classer les produits dans le catalogue public.</p>
+
+  @if (serverError()) {
+    <p class="form-error-banner">{{ serverError() }}</p>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="create()" novalidate class="create-form">
+    <div class="form-field">
+      <label class="form-label" for="name">Nouvelle catégorie</label>
+      <input id="name" class="form-input" type="text" formControlName="name" placeholder="Ex. Légumes" />
+      <app-field-error [control]="form.controls.name" />
+    </div>
+    <button type="submit" class="btn-primary" [disabled]="saving()">
+      {{ saving() ? 'Ajout...' : 'Ajouter' }}
+    </button>
+  </form>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else {
+    <ul class="categories-list">
+      @for (c of categories(); track c.id) {
+        <li>{{ c.name }} <span class="slug">({{ c.slug }})</span></li>
+      }
+    </ul>
+  }
+</div>
