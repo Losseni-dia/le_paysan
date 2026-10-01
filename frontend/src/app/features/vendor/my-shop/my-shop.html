@@ -1,0 +1,81 @@
+<div class="my-shop-page">
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (!hasShop()) {
+    <div class="empty-state">
+      <h1>Vous n'avez pas encore de boutique</h1>
+      <p>Créez votre boutique pour commencer à vendre vos produits sur Le Paysan.</p>
+      <a routerLink="/devenir-vendeur" class="btn-primary-link">Créer ma boutique</a>
+    </div>
+  } @else {
+    <h1>{{ shop()!.name }}</h1>
+    <span class="status-badge" [class]="'status-' + shop()!.status">{{ statusLabels[shop()!.status] }}</span>
+
+    @if (shop()!.status === 'EN_ATTENTE') {
+      <p class="form-hint">
+        Votre demande est en cours d'examen par notre équipe. Vous recevrez une notification dès qu'une décision
+        sera prise.
+      </p>
+    }
+    @if (shop()!.status === 'REJETEE') {
+      <p class="form-error-banner">
+        Votre demande a été rejetée. Consultez vos notifications pour le motif, puis contactez le support si besoin.
+      </p>
+    }
+    @if (shop()!.status === 'SUSPENDUE') {
+      <p class="form-error-banner">Votre boutique a été suspendue par l'administration.</p>
+    }
+
+    <section class="shop-info">
+      <p><strong>Description :</strong> {{ shop()!.description || '—' }}</p>
+      <p><strong>Catégorie :</strong> {{ shop()!.category || '—' }}</p>
+      <p><strong>Adresse :</strong> {{ shop()!.addressDetail }}, {{ shop()!.addressCity }}</p>
+      <p><strong>Téléphone :</strong> {{ shop()!.phone }}</p>
+    </section>
+
+    <app-map-picker [latitude]="shop()!.latitude" [longitude]="shop()!.longitude" [readonly]="true" />
+
+    @if (shop()!.status === 'VALIDEE') {
+      <section class="payout-section">
+        <h2>Compte Mobile Money de reversement</h2>
+        <p class="form-hint">
+          Requis pour recevoir le paiement de vos ventes (commission déduite automatiquement).
+        </p>
+
+        @if (payoutSaved()) {
+          <p class="form-success-banner">Compte de reversement enregistré.</p>
+        }
+
+        <form [formGroup]="payoutForm" (ngSubmit)="savePayoutAccount()" novalidate>
+          <div class="form-field">
+            <label class="form-label" for="operator">Opérateur</label>
+            <select id="operator" class="form-select" formControlName="operator">
+              <option value="">-- Choisir --</option>
+              <option value="ORANGE">Orange Money</option>
+              <option value="MTN">MTN Money</option>
+              <option value="MOOV">Moov Money</option>
+              <option value="WAVE">Wave</option>
+            </select>
+            <app-field-error [control]="payoutForm.controls.operator" />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="phoneNumber">Numéro</label>
+            <input id="phoneNumber" class="form-input" type="tel" formControlName="phoneNumber" />
+            <app-field-error [control]="payoutForm.controls.phoneNumber" />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="accountHolderName">Titulaire du compte</label>
+            <input id="accountHolderName" class="form-input" type="text" formControlName="accountHolderName" />
+            <app-field-error [control]="payoutForm.controls.accountHolderName" />
+          </div>
+
+          <button type="submit" class="btn-primary" [disabled]="payoutSaving()">
+            {{ payoutSaving() ? 'Enregistrement...' : 'Enregistrer' }}
+          </button>
+        </form>
+      </section>
+    }
+  }
+</div>

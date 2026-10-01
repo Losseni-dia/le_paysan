@@ -1,0 +1,10 @@
+@if (loading()) {
+  <p class="doc-loading">Chargement {{ label }}...</p>
+} @else if (url()) {
+  <a [href]="url()" target="_blank" class="doc-link">
+    <img [src]="url()" [alt]="label" class="doc-thumb" />
+    <span>{{ label }}</span>
+  </a>
+} @else {
+  <p class="doc-missing">{{ label }} — non fourni</p>
+}

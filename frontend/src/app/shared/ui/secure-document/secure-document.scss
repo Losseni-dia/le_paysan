@@ -1,0 +1,24 @@
+.doc-link {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 0 12px 12px 0;
+  text-decoration: none;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.doc-thumb {
+  width: 120px;
+  height: 90px;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.doc-loading,
+.doc-missing {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}

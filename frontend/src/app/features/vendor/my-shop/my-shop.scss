@@ -1,0 +1,83 @@
+.my-shop-page {
+  max-width: 640px;
+
+  h1 {
+    color: var(--color-primary-dark);
+    margin-bottom: 8px;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px 16px;
+}
+
+.btn-primary-link {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 10px 20px;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.status-EN_ATTENTE {
+  background: #fdf3e0;
+  color: var(--color-warning);
+}
+
+.status-VALIDEE {
+  background: var(--color-surface-tint);
+  color: var(--color-primary-dark);
+}
+
+.status-REJETEE,
+.status-SUSPENDUE {
+  background: #fdecea;
+  color: var(--color-danger);
+}
+
+.shop-info {
+  margin: 16px 0;
+
+  p {
+    margin: 4px 0;
+    font-size: 14px;
+  }
+}
+
+.payout-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border);
+
+  h2 {
+    font-size: 16px;
+    color: var(--color-primary);
+  }
+}
+
+.btn-primary {
+  padding: 10px 20px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}

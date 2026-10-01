@@ -33,14 +33,16 @@ Découpage en phases livrables, chacune apportant une valeur testable de bout en
 - [x] Récupération de compte : mot de passe oublié par email (JWT à usage unique, 30 min) + demande de récupération par selfie pour les comptes sans email (création + liste/détail/validation/rejet admin, mot de passe temporaire généré). *(2026-10-01 — back-office admin encore sans interface graphique, testé via API ; UI de modération prévue en Phase 2/6 avec le reste du back-office admin.)*
 
 ## 4. Phase 2 — Boutiques
-- [ ] Formulaire adaptatif demande de boutique (frontend), en étapes (stepper) : Type (Personne physique / Entreprenant / Personne morale) → Infos boutique (avec sélecteur de localisation carte obligatoire) → Justificatifs → Récapitulatif.
-- [ ] Endpoint `POST /shops/requests` (multipart, upload documents, latitude/longitude).
-- [ ] Case à cocher obligatoire "J'accepte les Conditions vendeur (CGV)" à la soumission, horodatée et versionnée (`shops.cgv_vendeur_accepted_at`).
-- [ ] Back-office admin : liste des demandes, détail, validation/rejet avec motif.
-- [ ] Attribution automatique de `ROLE_VENDEUR` à la validation.
-- [ ] Espace vendeur : page "Ma boutique" avec carte de localisation.
-- [ ] Espace vendeur : gestion du compte Mobile Money de reversement (requis avant publication produit).
-- [ ] Notifications in-app (soumission, validation, rejet) + email en complément si renseigné.
+- [x] Formulaire adaptatif demande de boutique (frontend), en étapes (stepper) : Type (Personne physique / Entreprenant / Personne morale) → Infos boutique (avec sélecteur de localisation carte obligatoire) → Justificatifs → Récapitulatif. *(2026-10-01 — testé dans le navigateur de bout en bout.)*
+- [x] Endpoint `POST /shops/requests` (multipart, upload documents, latitude/longitude). *(2026-10-01)*
+- [x] Case à cocher obligatoire "J'accepte les Conditions vendeur (CGV)" à la soumission, horodatée et versionnée (`shops.cgv_vendeur_accepted_at`). *(2026-10-01)*
+- [x] Back-office admin : liste des demandes (filtrable par statut), détail (infos + documents KYC via endpoint protégé), validation/rejet avec motif. *(2026-10-01)*
+- [x] Attribution automatique de `ROLE_VENDEUR` à la validation. *(2026-10-01)*
+- [x] Espace vendeur : page "Ma boutique" avec statut, infos, carte de localisation. *(2026-10-01)*
+- [x] Espace vendeur : gestion du compte Mobile Money de reversement (requis avant publication produit). *(2026-10-01)*
+- [x] Notifications in-app (soumission, validation, rejet, suspension) ; email en complément reporté (pas encore de template dédié, le canal in-app est le canal obligatoire testé). *(2026-10-01)*
+
+**Bug corrigé en cours de route** : au rechargement complet d'une page protégée, le guard de route s'exécutait avant la fin de la restauration de session (refresh token asynchrone), provoquant une redirection intempestive vers `/connexion`. Corrigé via un `provideAppInitializer` qui attend la restauration avant que le routeur n'évalue les guards (cf. `frontend/src/app/app.config.ts`).
 
 ## 5. Phase 3 — Produits & catalogue
 - [ ] CRUD produit vendeur en étapes (stepper) : Infos générales → Photos → Livraison → Récapitulatif.
@@ -97,7 +99,7 @@ Découpage en phases livrables, chacune apportant une valeur testable de bout en
 |---|---|---|---|
 | Phase 0 | Terminé | 2026-10-01 | 2026-10-01 |
 | Phase 1 | Quasi terminé (OAuth Google en attente) | 2026-10-01 | - |
-| Phase 2 | À faire | - | - |
+| Phase 2 | Terminé | 2026-10-01 | 2026-10-01 |
 | Phase 3 | À faire | - | - |
 | Phase 4 | À faire | - | - |
 | Phase 5 | À faire | - | - |

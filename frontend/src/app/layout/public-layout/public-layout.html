@@ -17,6 +17,8 @@
       @if (authService.isAuthenticated()) {
         @if (authService.hasRole('ROLE_VENDEUR')) {
           <a class="btn-link" routerLink="/vendeur">Ma boutique</a>
+        } @else {
+          <a class="btn-link" routerLink="/devenir-vendeur">Devenir vendeur</a>
         }
         @if (authService.hasRole('ROLE_ADMIN')) {
           <a class="btn-link" routerLink="/admin">Administration</a>

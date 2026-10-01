@@ -1,0 +1,87 @@
+<div class="shop-request-detail">
+  <a routerLink="/admin/demandes-boutiques" class="back-link">&larr; Retour à la liste</a>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (detail()) {
+    <h1>{{ detail()!.shop.name }}</h1>
+    <p class="form-hint">
+      Type : {{ detail()!.shop.ownerType }} — Vendeur : {{ detail()!.ownerUsername }}
+      @if (detail()!.ownerEmail) { ({{ detail()!.ownerEmail }}) }
+    </p>
+
+    <section class="info-block">
+      <h2>Informations boutique</h2>
+      <p><strong>Description :</strong> {{ detail()!.shop.description || '—' }}</p>
+      <p><strong>Catégorie :</strong> {{ detail()!.shop.category || '—' }}</p>
+      <p><strong>Adresse :</strong> {{ detail()!.shop.addressDetail }}, {{ detail()!.shop.addressCity }}</p>
+      <p><strong>Téléphone :</strong> {{ detail()!.shop.phone }}</p>
+      <app-map-picker [latitude]="detail()!.shop.latitude" [longitude]="detail()!.shop.longitude" [readonly]="true" />
+      <app-secure-document [path]="detail()!.shop.logoUrl" label="Logo" />
+    </section>
+
+    @if (detail()!.individualProfile; as p) {
+      <section class="info-block">
+        <h2>Identité (personne physique)</h2>
+        <p><strong>Nom :</strong> {{ p['firstName'] }} {{ p['lastName'] }}</p>
+        <p><strong>Date de naissance :</strong> {{ p['birthDate'] }}</p>
+        <p><strong>Pièce :</strong> {{ p['idDocumentType'] }} n° {{ p['idDocumentNumber'] }}</p>
+        <div class="docs-row">
+          <app-secure-document [path]="p['idDocumentFrontUrl']" label="Pièce (recto)" />
+          <app-secure-document [path]="p['idDocumentBackUrl']" label="Pièce (verso)" />
+          <app-secure-document [path]="p['selfieWithIdUrl']" label="Selfie avec pièce" />
+        </div>
+      </section>
+    }
+
+    @if (detail()!.entreprenantProfile; as p) {
+      <section class="info-block">
+        <h2>Identité (Entreprenant)</h2>
+        <p><strong>Nom :</strong> {{ p['firstName'] }} {{ p['lastName'] }}</p>
+        <p><strong>Date de naissance :</strong> {{ p['birthDate'] }}</p>
+        <p><strong>Pièce :</strong> {{ p['idDocumentType'] }} n° {{ p['idDocumentNumber'] }}</p>
+        <p><strong>Récépissé n° :</strong> {{ p['recepisseNumber'] }} du {{ p['recepisseDate'] }}</p>
+        <div class="docs-row">
+          <app-secure-document [path]="p['idDocumentFrontUrl']" label="Pièce (recto)" />
+          <app-secure-document [path]="p['idDocumentBackUrl']" label="Pièce (verso)" />
+          <app-secure-document [path]="p['selfieWithIdUrl']" label="Selfie avec pièce" />
+          <app-secure-document [path]="p['recepisseDocumentUrl']" label="Récépissé" />
+        </div>
+      </section>
+    }
+
+    @if (detail()!.companyProfile; as p) {
+      <section class="info-block">
+        <h2>Société (Personne morale)</h2>
+        <p><strong>Raison sociale :</strong> {{ p['companyName'] }} ({{ p['legalForm'] }})</p>
+        <p><strong>RCCM :</strong> {{ p['rccmNumber'] }} — <strong>NCC :</strong> {{ p['nccNumber'] }}</p>
+        <p><strong>Représentant légal :</strong> {{ p['legalRepName'] }} ({{ p['legalRepRole'] }})</p>
+        <p><strong>Pièce représentant :</strong> {{ p['legalRepIdDocumentType'] }} n° {{ p['legalRepIdDocumentNumber'] }}</p>
+        <div class="docs-row">
+          <app-secure-document [path]="p['legalDocumentUrl']" label="RCCM / statuts" />
+          <app-secure-document [path]="p['legalRepIdDocumentFrontUrl']" label="Pièce représentant (recto)" />
+          <app-secure-document [path]="p['legalRepIdDocumentBackUrl']" label="Pièce représentant (verso)" />
+          <app-secure-document [path]="p['legalRepSelfieWithIdUrl']" label="Selfie représentant" />
+        </div>
+      </section>
+    }
+
+    @if (detail()!.shop.status === 'EN_ATTENTE') {
+      <section class="actions">
+        <button type="button" class="btn-validate" [disabled]="saving()" (click)="validate()">Valider la boutique</button>
+        <button type="button" class="btn-reject" (click)="showRejectForm.set(!showRejectForm())">Rejeter</button>
+
+        @if (showRejectForm()) {
+          <form [formGroup]="rejectForm" (ngSubmit)="reject()" class="reject-form">
+            <div class="form-field">
+              <label class="form-label" for="reason">Motif du rejet</label>
+              <textarea id="reason" class="form-textarea" formControlName="reason" rows="3"></textarea>
+              <app-field-error [control]="rejectForm.controls.reason" />
+            </div>
+            <button type="submit" class="btn-reject" [disabled]="saving()">Confirmer le rejet</button>
+          </form>
+        }
+      </section>
+    }
+  }
+</div>

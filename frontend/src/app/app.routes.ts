@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { Placeholder } from './shared/ui/placeholder/placeholder';
-import { roleGuard } from './core/auth/auth.guard';
+import { authGuard, roleGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
   {
@@ -34,6 +34,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/auth/account-recovery/account-recovery').then((m) => m.AccountRecovery),
       },
+      {
+        path: 'devenir-vendeur',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/shop/shop-request/shop-request').then((m) => m.ShopRequest),
+      },
       { path: 'contact', component: Placeholder, data: { title: 'Contact' } },
       {
         path: 'legal/:slug',
@@ -44,11 +49,16 @@ export const routes: Routes = [
   {
     path: 'vendeur',
     loadComponent: () => import('./layout/vendor-layout/vendor-layout').then((m) => m.VendorLayout),
-    canActivate: [roleGuard('ROLE_VENDEUR')],
+    // Garde l'acces a tout user connecte (pas seulement ROLE_VENDEUR) : un user
+    // sans boutique encore validee doit pouvoir suivre le statut de sa demande.
+    canActivate: [authGuard],
     children: [
       { path: '', redirectTo: 'tableau-de-bord', pathMatch: 'full' },
       { path: 'tableau-de-bord', component: Placeholder, data: { title: 'Tableau de bord vendeur' } },
-      { path: 'ma-boutique', component: Placeholder, data: { title: 'Ma boutique' } },
+      {
+        path: 'ma-boutique',
+        loadComponent: () => import('./features/vendor/my-shop/my-shop').then((m) => m.MyShop),
+      },
       { path: 'produits', component: Placeholder, data: { title: 'Mes produits' } },
       { path: 'commandes', component: Placeholder, data: { title: 'Commandes reçues' } },
       { path: 'statistiques', component: Placeholder, data: { title: 'Statistiques de vente' } },
@@ -62,7 +72,16 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'tableau-de-bord', pathMatch: 'full' },
       { path: 'tableau-de-bord', component: Placeholder, data: { title: 'Tableau de bord admin' } },
-      { path: 'demandes-boutiques', component: Placeholder, data: { title: 'Demandes de boutiques' } },
+      {
+        path: 'demandes-boutiques',
+        loadComponent: () =>
+          import('./features/admin/shop-requests-list/shop-requests-list').then((m) => m.ShopRequestsList),
+      },
+      {
+        path: 'demandes-boutiques/:id',
+        loadComponent: () =>
+          import('./features/admin/shop-request-detail/shop-request-detail').then((m) => m.ShopRequestDetail),
+      },
       { path: 'produits', component: Placeholder, data: { title: 'Produits à valider' } },
       { path: 'utilisateurs', component: Placeholder, data: { title: 'Utilisateurs' } },
       { path: 'commandes', component: Placeholder, data: { title: 'Commandes' } },

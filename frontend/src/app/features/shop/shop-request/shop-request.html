@@ -1,0 +1,257 @@
+<div class="shop-request-page">
+  <h1>Créer ma boutique</h1>
+
+  @if (serverError()) {
+    <p class="form-error-banner">{{ serverError() }}</p>
+  }
+
+  <app-stepper
+    [steps]="stepLabels"
+    [currentIndex]="currentStepIndex()"
+    (currentIndexChange)="currentStepIndex.set($event)"
+    [canGoNext]="canGoNext()"
+    (completed)="submit()"
+  >
+    <form [formGroup]="form">
+      @switch (currentStepIndex()) {
+        @case (0) {
+          <div class="owner-type-choice">
+            <p class="form-hint">
+              Choisissez le statut qui correspond à votre situation, conformément aux statuts juridiques en vigueur
+              en Côte d'Ivoire.
+            </p>
+            <button
+              type="button"
+              class="owner-type-card"
+              [class.selected]="ownerType === 'PHYSIQUE'"
+              (click)="selectOwnerType('PHYSIQUE')"
+            >
+              <strong>Personne physique</strong>
+              <span>Producteur individuel sans statut formel (pièce d'identité).</span>
+            </button>
+            <button
+              type="button"
+              class="owner-type-card"
+              [class.selected]="ownerType === 'ENTREPRENANT'"
+              (click)="selectOwnerType('ENTREPRENANT')"
+            >
+              <strong>Entreprenant</strong>
+              <span>Statut OHADA simplifié (récépissé CEPICI).</span>
+            </button>
+            <button
+              type="button"
+              class="owner-type-card"
+              [class.selected]="ownerType === 'MORALE'"
+              (click)="selectOwnerType('MORALE')"
+            >
+              <strong>Personne morale</strong>
+              <span>Société formelle : SARL, SA, SAS... (RCCM, NCC).</span>
+            </button>
+          </div>
+        }
+
+        @case (1) {
+          <div class="form-field">
+            <label class="form-label" for="name">Nom de la boutique *</label>
+            <input id="name" class="form-input" type="text" formControlName="name" />
+            <app-field-error [control]="form.controls.name" />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="description">Description</label>
+            <textarea id="description" class="form-textarea" formControlName="description" rows="3"></textarea>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="category">Catégorie</label>
+            <input id="category" class="form-input" type="text" formControlName="category" placeholder="ex. maraîchage, élevage..." />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="addressCity">Ville *</label>
+            <input id="addressCity" class="form-input" type="text" formControlName="addressCity" />
+            <app-field-error [control]="form.controls.addressCity" />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="addressDetail">Adresse détaillée *</label>
+            <input id="addressDetail" class="form-input" type="text" formControlName="addressDetail" />
+            <app-field-error [control]="form.controls.addressDetail" />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="phone">Téléphone *</label>
+            <input id="phone" class="form-input" type="tel" formControlName="phone" />
+            <app-field-error [control]="form.controls.phone" />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Localisation sur carte *</label>
+            <app-map-picker (positionChange)="onPositionChange($event)" />
+            @if (!position()) {
+              <p class="form-hint">Cliquez sur la carte pour positionner votre boutique.</p>
+            }
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="logo">Logo *</label>
+            <input id="logo" class="form-input" type="file" accept="image/*" (change)="onFileSelected($event, logoFile)" />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="cover">Photo de couverture <span class="optional">(optionnel)</span></label>
+            <input id="cover" class="form-input" type="file" accept="image/*" (change)="onFileSelected($event, coverFile)" />
+          </div>
+        }
+
+        @case (2) {
+          @if (ownerType === 'PHYSIQUE' || ownerType === 'ENTREPRENANT') {
+            <div class="form-field">
+              <label class="form-label" for="firstName">Prénom *</label>
+              <input id="firstName" class="form-input" type="text" formControlName="firstName" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="lastName">Nom *</label>
+              <input id="lastName" class="form-input" type="text" formControlName="lastName" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="birthDate">Date de naissance *</label>
+              <input id="birthDate" class="form-input" type="date" formControlName="birthDate" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="idDocumentType">Type de pièce d'identité *</label>
+              <select id="idDocumentType" class="form-select" formControlName="idDocumentType">
+                <option value="">-- Choisir --</option>
+                <option value="CNI">CNI</option>
+                <option value="ATTESTATION_IDENTITE">Attestation d'identité</option>
+                <option value="PASSEPORT">Passeport</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="idDocumentNumber">Numéro de pièce *</label>
+              <input id="idDocumentNumber" class="form-input" type="text" formControlName="idDocumentNumber" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="idDocumentFront">Photo recto de la pièce *</label>
+              <input id="idDocumentFront" class="form-input" type="file" accept="image/*" (change)="onFileSelected($event, idDocumentFrontFile)" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="idDocumentBack">Photo verso <span class="optional">(optionnel)</span></label>
+              <input id="idDocumentBack" class="form-input" type="file" accept="image/*" (change)="onFileSelected($event, idDocumentBackFile)" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="selfieWithId">Selfie avec la pièce d'identité *</label>
+              <input id="selfieWithId" class="form-input" type="file" accept="image/*" capture="user" (change)="onFileSelected($event, selfieWithIdFile)" />
+              <p class="form-hint">Vous tenant à côté de votre pièce d'identité, visage et document bien visibles.</p>
+            </div>
+          }
+
+          @if (ownerType === 'ENTREPRENANT') {
+            <div class="form-field">
+              <label class="form-label" for="recepisseNumber">Numéro de récépissé d'entreprenant *</label>
+              <input id="recepisseNumber" class="form-input" type="text" formControlName="recepisseNumber" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="recepisseDate">Date du récépissé *</label>
+              <input id="recepisseDate" class="form-input" type="date" formControlName="recepisseDate" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="recepisseDocument">Document de récépissé (CEPICI) *</label>
+              <input id="recepisseDocument" class="form-input" type="file" accept="image/*,.pdf" (change)="onFileSelected($event, recepisseDocumentFile)" />
+            </div>
+          }
+
+          @if (ownerType === 'MORALE') {
+            <div class="form-field">
+              <label class="form-label" for="companyName">Raison sociale *</label>
+              <input id="companyName" class="form-input" type="text" formControlName="companyName" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="legalForm">Forme juridique *</label>
+              <select id="legalForm" class="form-select" formControlName="legalForm">
+                <option value="">-- Choisir --</option>
+                <option value="SARL">SARL</option>
+                <option value="SA">SA</option>
+                <option value="SAS">SAS</option>
+                <option value="SUARL">SUARL</option>
+                <option value="AUTRE">Autre</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="rccmNumber">Numéro RCCM *</label>
+              <input id="rccmNumber" class="form-input" type="text" formControlName="rccmNumber" placeholder="ex. CI-ABJ-2024-A-1234" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="nccNumber">NCC (Numéro de Compte Contribuable) *</label>
+              <input id="nccNumber" class="form-input" type="text" formControlName="nccNumber" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="legalDocument">Document RCCM / statuts *</label>
+              <input id="legalDocument" class="form-input" type="file" accept="image/*,.pdf" (change)="onFileSelected($event, legalDocumentFile)" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="legalRepName">Nom du représentant légal *</label>
+              <input id="legalRepName" class="form-input" type="text" formControlName="legalRepName" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="legalRepRole">Fonction du représentant légal *</label>
+              <input id="legalRepRole" class="form-input" type="text" formControlName="legalRepRole" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="legalRepIdDocumentType">Type de pièce du représentant légal *</label>
+              <select id="legalRepIdDocumentType" class="form-select" formControlName="legalRepIdDocumentType">
+                <option value="">-- Choisir --</option>
+                <option value="CNI">CNI</option>
+                <option value="ATTESTATION_IDENTITE">Attestation d'identité</option>
+                <option value="PASSEPORT">Passeport</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="legalRepIdDocumentNumber">Numéro de pièce du représentant légal *</label>
+              <input id="legalRepIdDocumentNumber" class="form-input" type="text" formControlName="legalRepIdDocumentNumber" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="legalRepIdDocumentFront">Photo recto de la pièce du représentant légal *</label>
+              <input id="legalRepIdDocumentFront" class="form-input" type="file" accept="image/*" (change)="onFileSelected($event, legalRepIdDocumentFrontFile)" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="legalRepIdDocumentBack">Photo verso <span class="optional">(optionnel)</span></label>
+              <input id="legalRepIdDocumentBack" class="form-input" type="file" accept="image/*" (change)="onFileSelected($event, legalRepIdDocumentBackFile)" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="legalRepSelfieWithId">Selfie du représentant légal avec sa pièce *</label>
+              <input id="legalRepSelfieWithId" class="form-input" type="file" accept="image/*" capture="user" (change)="onFileSelected($event, legalRepSelfieWithIdFile)" />
+            </div>
+          }
+        }
+
+        @case (3) {
+          <div class="recap">
+            <p><strong>Type :</strong> {{ ownerType }}</p>
+            <p><strong>Boutique :</strong> {{ form.controls.name.value }}</p>
+            <p><strong>Ville :</strong> {{ form.controls.addressCity.value }}</p>
+            <p><strong>Téléphone :</strong> {{ form.controls.phone.value }}</p>
+          </div>
+
+          <label class="form-check">
+            <input type="checkbox" formControlName="acceptCgv" />
+            <span>J'accepte les Conditions vendeur *</span>
+          </label>
+          <app-field-error
+            [control]="form.controls.acceptCgv"
+            [messages]="{ required: 'Vous devez accepter les Conditions vendeur.' }"
+          />
+
+          <p class="form-hint">
+            La vérification de votre dossier (pièces, RCCM/NCC/récépissé) est effectuée manuellement par notre
+            équipe. Vous recevrez une notification dès que votre boutique sera validée.
+          </p>
+        }
+      }
+    </form>
+  </app-stepper>
+
+  @if (submitting()) {
+    <p class="form-hint">Envoi en cours...</p>
+  }
+</div>

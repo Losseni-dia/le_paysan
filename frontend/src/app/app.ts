@@ -1,7 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
-import { AuthService } from './core/auth/auth.service';
 import { CookieBanner } from './shared/ui/cookie-banner/cookie-banner';
 
 @Component({
@@ -10,10 +9,4 @@ import { CookieBanner } from './shared/ui/cookie-banner/cookie-banner';
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App {
-  private readonly authService = inject(AuthService);
-
-  constructor() {
-    this.authService.tryRestoreSession()?.subscribe({ error: () => void 0 });
-  }
-}
+export class App {}
