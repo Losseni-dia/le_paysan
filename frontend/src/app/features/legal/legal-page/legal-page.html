@@ -1,0 +1,20 @@
+@if (content) {
+  <div class="legal-page">
+    <h1>{{ content.title }}</h1>
+    <p class="legal-disclaimer">
+      Document de référence simplifié. La version complète et juridiquement validée fera foi.
+    </p>
+    @for (section of content.sections; track section.heading) {
+      <section>
+        <h2>{{ section.heading }}</h2>
+        @for (p of section.paragraphs; track p) {
+          <p>{{ p }}</p>
+        }
+      </section>
+    }
+  </div>
+} @else {
+  <div class="legal-page">
+    <p>Document introuvable.</p>
+  </div>
+}

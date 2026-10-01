@@ -19,18 +19,18 @@ Découpage en phases livrables, chacune apportant une valeur testable de bout en
 - [x] Mise en place CI basique (build backend + build frontend) dans `.github/workflows/ci.yml`. *(2026-10-01)*
 
 ## 3. Phase 1 — Authentification & utilisateurs
-- [ ] Inscription / connexion par login + mot de passe (email optionnel), hashage BCrypt.
-- [ ] Trois cases à cocher obligatoires et distinctes à l'inscription (CGU, CGV, Politique de confidentialité), horodatées et versionnées (`users.cgu_accepted_at`/`cgv_accepted_at`/`privacy_accepted_at`), y compris pour la première connexion via Google, cf. [08-mentions-legales-cgu-rgpd.md](./08-mentions-legales-cgu-rgpd.md).
-- [ ] Bandeau de consentement cookies, affiché dès la première visite (avant inscription).
-- [ ] Pages légales statiques (Mentions légales, CGU, CGV, Conditions vendeur, Politique de confidentialité, Politique de cookies) + liens en footer + bandeau cookies minimal.
-- [ ] JWT (access + refresh), endpoint `/auth/refresh`.
-- [ ] OAuth2 Google (backend + intégration frontend).
-- [ ] Gestion de profil (`/users/me`).
-- [ ] Rôles `ROLE_USER` / `ROLE_VENDEUR` / `ROLE_ADMIN`, guards Angular, `@PreAuthorize` backend.
-- [ ] Compte admin de démarrage (seed) : email `losdiakite@gmail.com`.
-- [ ] Configuration SMTP (Gmail SMTP, `losdiakite@gmail.com`, mot de passe d'application Google — en variable d'environnement, jamais en dur dans le code).
-- [ ] Capture optionnelle du selfie de sécurité à l'inscription (et depuis le profil).
-- [ ] Récupération de compte : mot de passe oublié par email (classique) + demande de récupération par selfie pour les comptes sans email (back-office admin de validation).
+- [x] Inscription / connexion par login + mot de passe (email optionnel), hashage BCrypt. *(2026-10-01 — testé end-to-end backend+frontend.)*
+- [x] Trois cases à cocher obligatoires et distinctes à l'inscription (CGU, CGV, Politique de confidentialité), horodatées et versionnées (`users.cgu_accepted_at`/`cgv_accepted_at`/`privacy_accepted_at`). *(2026-10-01 — pour la première connexion via Google : voir OAuth2 Google ci-dessous, non implémenté.)*
+- [x] Bandeau de consentement cookies, affiché dès la première visite (avant inscription). *(2026-10-01)*
+- [x] Pages légales statiques (CGU, CGV, Mentions légales, Politique de confidentialité, Politique de cookies) + liens en footer. *(2026-10-01 — contenu condensé depuis [08-mentions-legales-cgu-rgpd.md](./08-mentions-legales-cgu-rgpd.md) ; Conditions vendeur à écrire en Phase 2 avec le formulaire boutique.)*
+- [x] JWT (access + refresh), endpoint `/auth/refresh`. *(2026-10-01)*
+- [ ] OAuth2 Google (backend + intégration frontend). **Non démarré** : en attente de la création du projet Google Cloud et des identifiants Client ID/Secret par l'utilisateur.
+- [x] Gestion de profil (`/users/me`), y compris mise à jour (`PUT /users/me`). *(2026-10-01)*
+- [x] Rôles `ROLE_USER` / `ROLE_VENDEUR` / `ROLE_ADMIN`, guards Angular (`authGuard`, `roleGuard`), `@PreAuthorize` backend (ex. endpoints admin recovery). *(2026-10-01)*
+- [x] Compte admin de démarrage (seed) : email `losdiakite@gmail.com`, mot de passe généré affiché au log au premier démarrage. *(2026-10-01)*
+- [x] Configuration SMTP (Gmail SMTP, `losdiakite@gmail.com`) — email de réinitialisation de mot de passe testé (envoi sans erreur). *(2026-10-01)*
+- [x] Capture optionnelle du selfie de sécurité à l'inscription, upload via `PUT /users/me/security-selfie` (stockage local `FileStorageService`). *(2026-10-01)*
+- [x] Récupération de compte : mot de passe oublié par email (JWT à usage unique, 30 min) + demande de récupération par selfie pour les comptes sans email (création + liste/détail/validation/rejet admin, mot de passe temporaire généré). *(2026-10-01 — back-office admin encore sans interface graphique, testé via API ; UI de modération prévue en Phase 2/6 avec le reste du back-office admin.)*
 
 ## 4. Phase 2 — Boutiques
 - [ ] Formulaire adaptatif demande de boutique (frontend), en étapes (stepper) : Type (Personne physique / Entreprenant / Personne morale) → Infos boutique (avec sélecteur de localisation carte obligatoire) → Justificatifs → Récapitulatif.
@@ -96,7 +96,7 @@ Découpage en phases livrables, chacune apportant une valeur testable de bout en
 | Phase | Statut | Date de début | Date de fin |
 |---|---|---|---|
 | Phase 0 | Terminé | 2026-10-01 | 2026-10-01 |
-| Phase 1 | À faire | - | - |
+| Phase 1 | Quasi terminé (OAuth Google en attente) | 2026-10-01 | - |
 | Phase 2 | À faire | - | - |
 | Phase 3 | À faire | - | - |
 | Phase 4 | À faire | - | - |

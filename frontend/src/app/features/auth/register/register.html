@@ -1,0 +1,95 @@
+<div class="auth-page">
+  <form class="auth-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <h1>Créer un compte</h1>
+
+    @if (serverError()) {
+      <p class="form-error-banner">{{ serverError() }}</p>
+    }
+
+    <div class="form-field">
+      <label class="form-label" for="email">Email <span class="optional">(optionnel)</span></label>
+      <input id="email" class="form-input" type="email" formControlName="email" autocomplete="email" />
+      <app-field-error [control]="form.controls.email" />
+      <p class="form-hint">Sert aux notifications et à la récupération de mot de passe. Pas d'email ? Pas de problème.</p>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label" for="firstName">Prénom *</label>
+      <input id="firstName" class="form-input" type="text" formControlName="firstName" />
+      <app-field-error [control]="form.controls.firstName" />
+    </div>
+
+    <div class="form-field">
+      <label class="form-label" for="lastName">Nom *</label>
+      <input id="lastName" class="form-input" type="text" formControlName="lastName" />
+      <app-field-error [control]="form.controls.lastName" />
+    </div>
+
+    <div class="form-field">
+      <label class="form-label" for="phone">Téléphone <span class="optional">(optionnel)</span></label>
+      <input id="phone" class="form-input" type="tel" formControlName="phone" />
+    </div>
+
+    <div class="form-field">
+      <label class="form-label" for="selfie">Selfie de sécurité <span class="optional">(optionnel, recommandé)</span></label>
+      <input id="selfie" class="form-input" type="file" accept="image/*" (change)="onSelfieSelected($event)" />
+      @if (selfieFileName()) {
+        <p class="form-hint">Fichier sélectionné : {{ selfieFileName() }}</p>
+      }
+      <p class="form-hint">
+        Sert uniquement à récupérer votre compte si vous n'avez pas d'email. Vous pourrez aussi l'ajouter plus tard
+        depuis votre profil.
+      </p>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label" for="username">Identifiant *</label>
+      <input id="username" class="form-input" type="text" formControlName="username" autocomplete="username" />
+      <app-field-error [control]="form.controls.username" [messages]="usernameMessages" />
+    </div>
+
+    <div class="form-field">
+      <label class="form-label" for="password">Mot de passe *</label>
+      <input
+        id="password"
+        class="form-input"
+        type="password"
+        formControlName="password"
+        autocomplete="new-password"
+      />
+      <app-field-error [control]="form.controls.password" [messages]="passwordMessages" />
+    </div>
+
+    <label class="form-check">
+      <input type="checkbox" formControlName="acceptCgu" />
+      <span>J'accepte les <a routerLink="/legal/cgu" target="_blank">CGU</a> *</span>
+    </label>
+    <app-field-error [control]="form.controls.acceptCgu" [messages]="{ required: 'Vous devez accepter les CGU.' }" />
+
+    <label class="form-check">
+      <input type="checkbox" formControlName="acceptCgv" />
+      <span>J'accepte les <a routerLink="/legal/cgv" target="_blank">CGV</a> *</span>
+    </label>
+    <app-field-error [control]="form.controls.acceptCgv" [messages]="{ required: 'Vous devez accepter les CGV.' }" />
+
+    <label class="form-check">
+      <input type="checkbox" formControlName="acceptPrivacy" />
+      <span>
+        J'ai pris connaissance de la
+        <a routerLink="/legal/confidentialite" target="_blank">Politique de confidentialité</a> *
+      </span>
+    </label>
+    <app-field-error
+      [control]="form.controls.acceptPrivacy"
+      [messages]="{ required: 'Vous devez prendre connaissance de la politique de confidentialité.' }"
+    />
+
+    <button type="submit" class="btn-primary" [disabled]="submitting()">
+      {{ submitting() ? 'Création...' : 'Créer mon compte' }}
+    </button>
+
+    <div class="auth-links">
+      <a routerLink="/connexion">Déjà un compte ? Se connecter</a>
+    </div>
+  </form>
+</div>

@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { Placeholder } from './shared/ui/placeholder/placeholder';
+import { roleGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
   {
@@ -10,20 +11,40 @@ export const routes: Routes = [
       { path: '', component: Placeholder, data: { title: 'Catalogue' } },
       { path: 'catalogue', component: Placeholder, data: { title: 'Catalogue' } },
       { path: 'panier', component: Placeholder, data: { title: 'Panier' } },
-      { path: 'connexion', component: Placeholder, data: { title: 'Connexion' } },
-      { path: 'inscription', component: Placeholder, data: { title: 'Inscription' } },
+      {
+        path: 'connexion',
+        loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),
+      },
+      {
+        path: 'inscription',
+        loadComponent: () => import('./features/auth/register/register').then((m) => m.Register),
+      },
+      {
+        path: 'mot-de-passe-oublie',
+        loadComponent: () =>
+          import('./features/auth/forgot-password/forgot-password').then((m) => m.ForgotPassword),
+      },
+      {
+        path: 'reinitialiser-mot-de-passe',
+        loadComponent: () =>
+          import('./features/auth/reset-password/reset-password').then((m) => m.ResetPassword),
+      },
+      {
+        path: 'recuperation-compte',
+        loadComponent: () =>
+          import('./features/auth/account-recovery/account-recovery').then((m) => m.AccountRecovery),
+      },
       { path: 'contact', component: Placeholder, data: { title: 'Contact' } },
-      { path: 'legal/mentions-legales', component: Placeholder, data: { title: 'Mentions légales' } },
-      { path: 'legal/cgu', component: Placeholder, data: { title: 'CGU' } },
-      { path: 'legal/cgv', component: Placeholder, data: { title: 'CGV' } },
-      { path: 'legal/confidentialite', component: Placeholder, data: { title: 'Politique de confidentialité' } },
-      { path: 'legal/cookies', component: Placeholder, data: { title: 'Politique de cookies' } },
+      {
+        path: 'legal/:slug',
+        loadComponent: () => import('./features/legal/legal-page/legal-page').then((m) => m.LegalPage),
+      },
     ],
   },
   {
     path: 'vendeur',
     loadComponent: () => import('./layout/vendor-layout/vendor-layout').then((m) => m.VendorLayout),
-    // TODO phase 1/2 : protéger avec un roleGuard (ROLE_VENDEUR).
+    canActivate: [roleGuard('ROLE_VENDEUR')],
     children: [
       { path: '', redirectTo: 'tableau-de-bord', pathMatch: 'full' },
       { path: 'tableau-de-bord', component: Placeholder, data: { title: 'Tableau de bord vendeur' } },
@@ -37,7 +58,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     loadComponent: () => import('./layout/admin-layout/admin-layout').then((m) => m.AdminLayout),
-    // TODO phase 1/2 : protéger avec un roleGuard (ROLE_ADMIN).
+    canActivate: [roleGuard('ROLE_ADMIN')],
     children: [
       { path: '', redirectTo: 'tableau-de-bord', pathMatch: 'full' },
       { path: 'tableau-de-bord', component: Placeholder, data: { title: 'Tableau de bord admin' } },

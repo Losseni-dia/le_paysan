@@ -1,0 +1,12 @@
+@if (visible()) {
+  <div class="cookie-banner">
+    <p>
+      Nous utilisons des cookies techniques nécessaires au fonctionnement du site (connexion).
+      <a routerLink="/legal/cookies">En savoir plus</a>
+    </p>
+    <div class="cookie-actions">
+      <button type="button" class="btn-decline" (click)="decline()">Refuser</button>
+      <button type="button" class="btn-accept" (click)="accept()">Accepter</button>
+    </div>
+  </div>
+}

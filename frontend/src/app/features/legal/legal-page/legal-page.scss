@@ -1,0 +1,27 @@
+.legal-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+
+  h1 {
+    color: var(--color-primary-dark);
+  }
+
+  h2 {
+    font-size: 16px;
+    color: var(--color-primary);
+    margin-top: 24px;
+  }
+
+  p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--color-text);
+  }
+}
+
+.legal-disclaimer {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--color-text-muted);
+}

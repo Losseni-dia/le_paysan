@@ -1,0 +1,48 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h1>Récupérer mon compte (sans email)</h1>
+
+    @if (done()) {
+      <p class="form-success-banner">
+        Votre demande a été envoyée au support. Un admin va comparer votre selfie à votre photo de référence et vous
+        recontactera (par téléphone si renseigné) pour vous communiquer un mot de passe temporaire.
+      </p>
+      <div class="auth-links">
+        <a routerLink="/connexion">Retour à la connexion</a>
+      </div>
+    } @else {
+      @if (serverError()) {
+        <p class="form-error-banner">{{ serverError() }}</p>
+      }
+
+      <p class="form-hint" style="margin-bottom: 16px;">
+        Cette procédure est réservée aux comptes sans email renseigné, ou en complément du mot de passe oublié par
+        email.
+      </p>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div class="form-field">
+          <label class="form-label" for="username">Identifiant</label>
+          <input id="username" class="form-input" type="text" formControlName="username" />
+          <app-field-error [control]="form.controls.username" />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="selfie">Selfie en direct</label>
+          <input id="selfie" class="form-input" type="file" accept="image/*" capture="user" (change)="onSelfieSelected($event)" />
+          @if (selfieFileName()) {
+            <p class="form-hint">Fichier sélectionné : {{ selfieFileName() }}</p>
+          }
+        </div>
+
+        <button type="submit" class="btn-primary" [disabled]="submitting()">
+          {{ submitting() ? 'Envoi...' : 'Envoyer ma demande' }}
+        </button>
+
+        <div class="auth-links">
+          <a routerLink="/connexion">Retour à la connexion</a>
+        </div>
+      </form>
+    }
+  </div>
+</div>
