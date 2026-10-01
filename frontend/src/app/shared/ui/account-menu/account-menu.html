@@ -1,0 +1,24 @@
+<div class="account-menu">
+  <button type="button" class="avatar-btn" (click)="toggle()" aria-label="Mon espace">
+    {{ userInitial }}
+  </button>
+
+  @if (open()) {
+    <div class="account-dropdown">
+      @if (authService.hasRole('ROLE_VENDEUR')) {
+        <a routerLink="/vendeur" (click)="close()">Ma boutique</a>
+      } @else {
+        <a routerLink="/devenir-vendeur" (click)="close()">Devenir vendeur</a>
+      }
+      @if (authService.hasRole('ROLE_ADMIN')) {
+        <a routerLink="/admin" (click)="close()">Administration</a>
+      }
+
+      <div class="dropdown-lang">
+        <app-language-switcher />
+      </div>
+
+      <button type="button" (click)="logout()">{{ 'nav.logout' | translate }}</button>
+    </div>
+  }
+</div>

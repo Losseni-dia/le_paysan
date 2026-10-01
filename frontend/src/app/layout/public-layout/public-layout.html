@@ -20,28 +20,7 @@
       </a>
 
       @if (authService.isAuthenticated()) {
-        <div class="account-menu">
-          <button type="button" class="avatar-btn" (click)="toggleAccountMenu()" aria-label="Mon espace">
-            {{ userInitial }}
-          </button>
-
-          @if (accountMenuOpen()) {
-            <div class="account-dropdown">
-              @if (authService.hasRole('ROLE_VENDEUR')) {
-                <a routerLink="/vendeur" (click)="closeAccountMenu()">Ma boutique</a>
-              } @else {
-                <a routerLink="/devenir-vendeur" (click)="closeAccountMenu()">Devenir vendeur</a>
-              }
-              @if (authService.hasRole('ROLE_ADMIN')) {
-                <a routerLink="/admin" (click)="closeAccountMenu()">Administration</a>
-              }
-              <div class="dropdown-lang">
-                <app-language-switcher />
-              </div>
-              <button type="button" (click)="logout()">{{ 'nav.logout' | translate }}</button>
-            </div>
-          }
-        </div>
+        <app-account-menu />
       } @else {
         <app-language-switcher />
         <a class="btn-link" routerLink="/connexion">{{ 'nav.login' | translate }}</a>

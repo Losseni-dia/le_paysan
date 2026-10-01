@@ -98,6 +98,17 @@
   gap: 16px;
 }
 
+.catalogue-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .backoffice-content {
   flex: 1;
   padding: 24px;
