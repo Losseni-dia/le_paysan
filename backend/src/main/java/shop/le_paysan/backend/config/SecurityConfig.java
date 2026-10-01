@@ -72,8 +72,16 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/contact").permitAll()
+                        // Photos produit : publiques (catalogue visible sans connexion).
+                        // Documents KYC (shop-kyc, account-recovery, security-selfies) restent authentifies.
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/files/products/**")
+                        .permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET,
-                                "/api/products/**", "/api/shops/**", "/api/categories/**")
+                                "/api/products/**", "/api/categories/**")
+                        .permitAll()
+                        // Uniquement les routes de lecture publique de /api/shops (liste + fiche par id) :
+                        // /api/shops/me* reste authentifie (ne doit pas matcher ici).
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/shops", "/api/shops/{id:[0-9]+}")
                         .permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
