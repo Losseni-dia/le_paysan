@@ -1,6 +1,7 @@
 package shop.le_paysan.backend.user;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import jakarta.validation.Valid;
 import shop.le_paysan.backend.auth.SecurityUser;
 import shop.le_paysan.backend.common.FileStorageService;
+import shop.le_paysan.backend.user.dto.ChangePasswordRequest;
 import shop.le_paysan.backend.user.dto.UpdateProfileRequest;
 import shop.le_paysan.backend.user.dto.UserResponse;
 
@@ -22,10 +24,12 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserController(UserRepository userRepository, FileStorageService fileStorageService) {
+    public UserController(UserRepository userRepository, FileStorageService fileStorageService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.fileStorageService = fileStorageService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping("/me")
@@ -52,6 +56,21 @@ public class UserController {
         user.setUpdatedAt(java.time.LocalDateTime.now());
 
         return UserResponse.from(userRepository.save(user));
+    }
+
+    @PutMapping("/me/password")
+    public void changePassword(@AuthenticationPrincipal SecurityUser principal, @Valid @RequestBody ChangePasswordRequest request) {
+        User user = userRepository
+                .findById(principal.getUser().getId())
+                .orElseThrow(() -> new ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND));
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw new ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Mot de passe actuel incorrect");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        user.setUpdatedAt(java.time.LocalDateTime.now());
+        userRepository.save(user);
     }
 
     @PutMapping(value = "/me/security-selfie", consumes = "multipart/form-data")
