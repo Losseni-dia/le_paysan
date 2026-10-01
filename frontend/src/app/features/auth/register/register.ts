@@ -1,10 +1,20 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { FieldError } from '../../../shared/ui/field-error/field-error';
+
+function passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
+  const password = control.get('password')?.value;
+  const confirmPassword = control.get('confirmPassword')?.value;
+  if (!password || !confirmPassword || password === confirmPassword) {
+    return null;
+  }
+  control.get('confirmPassword')?.setErrors({ ...control.get('confirmPassword')?.errors, passwordMismatch: true });
+  return null;
+}
 
 @Component({
   selector: 'app-register',
@@ -21,18 +31,24 @@ export class Register {
   readonly serverError = signal<string | null>(null);
   readonly selfieFile = signal<File | null>(null);
   readonly selfieFileName = signal<string | null>(null);
+  readonly showPassword = signal(false);
+  readonly showConfirmPassword = signal(false);
 
-  readonly form = this.fb.nonNullable.group({
-    username: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._-]{3,30}$/)]],
-    password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(/^(?=.*[0-9])(?=.*[A-Za-z]).+$/)]],
-    email: ['', [Validators.email]],
-    firstName: ['', [Validators.required]],
-    lastName: ['', [Validators.required]],
-    phone: [''],
-    acceptCgu: [false, [Validators.requiredTrue]],
-    acceptCgv: [false, [Validators.requiredTrue]],
-    acceptPrivacy: [false, [Validators.requiredTrue]],
-  });
+  readonly form = this.fb.nonNullable.group(
+    {
+      username: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._-]{3,30}$/)]],
+      password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(/^(?=.*[0-9])(?=.*[A-Za-z]).+$/)]],
+      confirmPassword: ['', [Validators.required]],
+      email: ['', [Validators.email]],
+      firstName: ['', [Validators.required]],
+      lastName: ['', [Validators.required]],
+      phone: [''],
+      acceptCgu: [false, [Validators.requiredTrue]],
+      acceptCgv: [false, [Validators.requiredTrue]],
+      acceptPrivacy: [false, [Validators.requiredTrue]],
+    },
+    { validators: passwordsMatchValidator },
+  );
 
   readonly usernameMessages = {
     pattern: 'Login invalide (3 à 30 caractères : lettres, chiffres, points, tirets).',
@@ -41,6 +57,17 @@ export class Register {
     minlength: 'Le mot de passe doit contenir au moins 8 caractères.',
     pattern: 'Le mot de passe doit contenir au moins une lettre et un chiffre.',
   };
+  readonly confirmPasswordMessages = {
+    passwordMismatch: 'Les mots de passe ne correspondent pas.',
+  };
+
+  toggleShowPassword(): void {
+    this.showPassword.update((v) => !v);
+  }
+
+  toggleShowConfirmPassword(): void {
+    this.showConfirmPassword.update((v) => !v);
+  }
 
   onSelfieSelected(event: Event): void {
     const input = event.target as HTMLInputElement;

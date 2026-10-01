@@ -53,6 +53,21 @@ export class AuthService {
     return this.http.post<void>(`${this.baseUrl}/reset-password`, { token, newPassword });
   }
 
+  updateProfile(request: {
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phone?: string;
+  }): Observable<UserResponse> {
+    return this.http
+      .put<UserResponse>(`${environment.apiBaseUrl}/users/me`, request)
+      .pipe(tap((user) => this.currentUser.set(user)));
+  }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<void> {
+    return this.http.put<void>(`${environment.apiBaseUrl}/users/me/password`, { currentPassword, newPassword });
+  }
+
   uploadSecuritySelfie(selfie: File): Observable<UserResponse> {
     const formData = new FormData();
     formData.append('selfie', selfie);

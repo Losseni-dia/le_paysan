@@ -97,7 +97,10 @@ export const routes: Routes = [
       },
       { path: 'commandes', component: Placeholder, data: { title: 'Commandes reçues' } },
       { path: 'statistiques', component: Placeholder, data: { title: 'Statistiques de vente' } },
-      { path: 'parametres', component: Placeholder, data: { title: 'Paramètres du compte' } },
+      {
+        path: 'parametres',
+        loadComponent: () => import('./features/account/account-settings/account-settings').then((m) => m.AccountSettings),
+      },
     ],
   },
   {
@@ -133,7 +136,10 @@ export const routes: Routes = [
       },
       { path: 'commission', component: Placeholder, data: { title: 'Taux de commission' } },
       { path: 'statistiques', component: Placeholder, data: { title: 'Statistiques' } },
-      { path: 'parametres', component: Placeholder, data: { title: 'Paramètres' } },
+      {
+        path: 'parametres',
+        loadComponent: () => import('./features/account/account-settings/account-settings').then((m) => m.AccountSettings),
+      },
     ],
   },
 ];

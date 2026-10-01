@@ -1,0 +1,126 @@
+<div class="account-settings-page">
+  <h1>Paramètres du compte</h1>
+
+  <section class="settings-section">
+    <h2>Mon profil</h2>
+
+    @if (profileError()) {
+      <p class="form-error-banner">{{ profileError() }}</p>
+    }
+    @if (profileSaved()) {
+      <p class="form-success-banner">Profil mis à jour.</p>
+    }
+
+    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" novalidate>
+      <div class="form-field">
+        <label class="form-label" for="firstName">Prénom</label>
+        <input id="firstName" class="form-input" type="text" formControlName="firstName" />
+        <app-field-error [control]="profileForm.controls.firstName" />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="lastName">Nom</label>
+        <input id="lastName" class="form-input" type="text" formControlName="lastName" />
+        <app-field-error [control]="profileForm.controls.lastName" />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="email">Email</label>
+        <input id="email" class="form-input" type="email" formControlName="email" />
+        <app-field-error [control]="profileForm.controls.email" />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="phone">Téléphone</label>
+        <input id="phone" class="form-input" type="tel" formControlName="phone" />
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="savingProfile()">
+        {{ savingProfile() ? 'Enregistrement...' : 'Enregistrer' }}
+      </button>
+    </form>
+  </section>
+
+  <section class="settings-section">
+    <h2>Changer mon mot de passe</h2>
+
+    @if (passwordError()) {
+      <p class="form-error-banner">{{ passwordError() }}</p>
+    }
+    @if (passwordChanged()) {
+      <p class="form-success-banner">Mot de passe modifié.</p>
+    }
+
+    <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" novalidate>
+      <div class="form-field">
+        <label class="form-label" for="currentPassword">Ancien mot de passe</label>
+        <div class="password-input-wrapper">
+          <input
+            id="currentPassword"
+            class="form-input"
+            [type]="showCurrentPassword() ? 'text' : 'password'"
+            formControlName="currentPassword"
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="toggleShowCurrentPassword()"
+            [attr.aria-label]="showCurrentPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+          >
+            {{ showCurrentPassword() ? '🙈' : '👁️' }}
+          </button>
+        </div>
+        <app-field-error [control]="passwordForm.controls.currentPassword" />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="newPassword">Nouveau mot de passe</label>
+        <div class="password-input-wrapper">
+          <input
+            id="newPassword"
+            class="form-input"
+            [type]="showNewPassword() ? 'text' : 'password'"
+            formControlName="newPassword"
+            autocomplete="new-password"
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="toggleShowNewPassword()"
+            [attr.aria-label]="showNewPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+          >
+            {{ showNewPassword() ? '🙈' : '👁️' }}
+          </button>
+        </div>
+        <app-field-error [control]="passwordForm.controls.newPassword" [messages]="newPasswordMessages" />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="confirmNewPassword">Confirmer le nouveau mot de passe</label>
+        <div class="password-input-wrapper">
+          <input
+            id="confirmNewPassword"
+            class="form-input"
+            [type]="showConfirmNewPassword() ? 'text' : 'password'"
+            formControlName="confirmNewPassword"
+            autocomplete="new-password"
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="toggleShowConfirmNewPassword()"
+            [attr.aria-label]="showConfirmNewPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+          >
+            {{ showConfirmNewPassword() ? '🙈' : '👁️' }}
+          </button>
+        </div>
+        <app-field-error [control]="passwordForm.controls.confirmNewPassword" [messages]="confirmNewPasswordMessages" />
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="changingPassword()">
+        {{ changingPassword() ? 'Modification...' : 'Changer le mot de passe' }}
+      </button>
+    </form>
+  </section>
+</div>
