@@ -71,6 +71,26 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'mon-espace',
+    loadComponent: () => import('./layout/user-layout/user-layout').then((m) => m.UserLayout),
+    canActivate: [authGuard],
+    children: [
+      { path: '', redirectTo: 'tableau-de-bord', pathMatch: 'full' },
+      {
+        path: 'tableau-de-bord',
+        loadComponent: () => import('./features/account/user-dashboard/user-dashboard').then((m) => m.UserDashboard),
+      },
+      {
+        path: 'commandes',
+        loadComponent: () => import('./features/account/my-orders/my-orders').then((m) => m.MyOrders),
+      },
+      {
+        path: 'parametres',
+        loadComponent: () => import('./features/account/account-settings/account-settings').then((m) => m.AccountSettings),
+      },
+    ],
+  },
+  {
     path: 'vendeur',
     loadComponent: () => import('./layout/vendor-layout/vendor-layout').then((m) => m.VendorLayout),
     // Garde l'acces a tout user connecte (pas seulement ROLE_VENDEUR) : un user

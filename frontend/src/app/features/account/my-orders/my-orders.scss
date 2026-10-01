@@ -1,0 +1,71 @@
+.my-orders-page {
+  max-width: 600px;
+
+  h1 {
+    color: var(--color-primary-dark);
+    margin-bottom: 20px;
+  }
+}
+
+.order-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+
+  h2 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--color-primary);
+  }
+}
+
+.order-number {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.status-badge {
+  display: inline-block;
+  margin: 6px 0;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #fdf3e0;
+  color: var(--color-warning);
+}
+
+.status-LIVREE {
+  background: var(--color-surface-tint);
+  color: var(--color-primary-dark);
+}
+
+.status-ANNULEE {
+  background: #fdecea;
+  color: var(--color-danger);
+}
+
+.order-items {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+  font-size: 13px;
+
+  li {
+    padding: 4px 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+}
+
+.order-total {
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}

@@ -1,0 +1,25 @@
+@use '../shared/backoffice-layout';
+
+.vendor-cta {
+  display: block;
+  margin: 0 12px 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-warning);
+  color: #1a1f1c;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+
+  .collapsed & {
+    font-size: 11px;
+    padding: 8px 4px;
+  }
+
+  &:hover {
+    opacity: 0.9;
+  }
+}

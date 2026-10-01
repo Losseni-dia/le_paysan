@@ -1,0 +1,38 @@
+<div class="backoffice-layout" [class.collapsed]="collapsed()">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="/logo_paysan.jpg" alt="Le Paysan" class="sidebar-logo-img" />
+      <span>{{ 'app.title' | translate }}</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/mon-espace/tableau-de-bord" routerLinkActive="active">Tableau de bord</a>
+      <a routerLink="/mon-espace/commandes" routerLinkActive="active">Mes commandes</a>
+      <a routerLink="/mon-espace/parametres" routerLinkActive="active">Paramètres du compte</a>
+    </nav>
+
+    @if (authService.hasRole('ROLE_VENDEUR')) {
+      <a routerLink="/vendeur" class="vendor-cta">Ma boutique</a>
+    } @else {
+      <a routerLink="/devenir-vendeur" class="vendor-cta">Devenir vendeur</a>
+    }
+
+    <button type="button" class="collapse-btn" (click)="toggleSidebar()">
+      {{ collapsed() ? '➡' : '⬅' }}
+    </button>
+  </aside>
+
+  <div class="backoffice-main">
+    <header class="topbar">
+      <a class="catalogue-link" routerLink="/catalogue">&larr; Retour au catalogue</a>
+      <div class="topbar-actions">
+        <app-notification-bell />
+        <app-account-menu />
+      </div>
+    </header>
+
+    <main class="backoffice-content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

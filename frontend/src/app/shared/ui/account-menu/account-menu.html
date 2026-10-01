@@ -5,11 +5,7 @@
 
   @if (open()) {
     <div class="account-dropdown">
-      @if (authService.hasRole('ROLE_VENDEUR')) {
-        <a routerLink="/vendeur" (click)="close()">Ma boutique</a>
-      } @else {
-        <a routerLink="/devenir-vendeur" (click)="close()">Devenir vendeur</a>
-      }
+      <a routerLink="/mon-espace" (click)="close()">Mon espace</a>
       @if (authService.hasRole('ROLE_ADMIN')) {
         <a routerLink="/admin" (click)="close()">Administration</a>
       }

@@ -1,0 +1,29 @@
+<div class="my-orders-page">
+  <h1>Mes commandes</h1>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (orders().length === 0) {
+    <p class="form-hint">Vous n'avez pas encore passé de commande.</p>
+  } @else {
+    @for (order of orders(); track order.id) {
+      <section class="order-card">
+        <div class="order-header">
+          <h2>{{ order.shopName }}</h2>
+          <span class="order-number">N° {{ order.orderNumber }}</span>
+        </div>
+        <span class="status-badge" [class]="'status-' + order.status">{{ statusLabels[order.status] }}</span>
+
+        <ul class="order-items">
+          @for (item of order.items; track item.productId) {
+            <li>{{ item.quantity }} × {{ item.productName }} — {{ item.lineSubtotal }} FCFA</li>
+          }
+        </ul>
+
+        <p>Sous-total : {{ order.subtotalAmount }} FCFA</p>
+        <p>Livraison : {{ order.deliveryAmount }} FCFA</p>
+        <p class="order-total">Total : {{ order.totalAmount }} FCFA</p>
+      </section>
+    }
+  }
+</div>
