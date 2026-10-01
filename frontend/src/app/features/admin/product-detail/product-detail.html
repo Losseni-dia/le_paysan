@@ -50,5 +50,13 @@
         }
       </section>
     }
+
+    @if (product()!.status === 'VALIDE' || product()!.status === 'DEPUBLIE') {
+      <section class="actions-section">
+        <button type="button" class="btn-reject" (click)="togglePublishState()" [disabled]="saving()">
+          {{ product()!.status === 'VALIDE' ? 'Masquer du catalogue' : 'Republier' }}
+        </button>
+      </section>
+    }
   }
 </div>

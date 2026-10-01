@@ -80,4 +80,8 @@ export class ProductService {
   reject(id: number, reason: string): Observable<ProductResponse> {
     return this.http.post<ProductResponse>(`${this.adminUrl}/${id}/reject`, { reason });
   }
+
+  adminTogglePublishState(id: number): Observable<ProductResponse> {
+    return this.http.patch<ProductResponse>(`${this.adminUrl}/${id}/publish-state`, {});
+  }
 }

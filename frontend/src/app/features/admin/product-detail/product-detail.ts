@@ -61,4 +61,15 @@ export class ProductDetail {
       error: (err: HttpErrorResponse) => this.saving.set(false),
     });
   }
+
+  togglePublishState(): void {
+    this.saving.set(true);
+    this.productService.adminTogglePublishState(this.id).subscribe({
+      next: (updated) => {
+        this.product.set(updated);
+        this.saving.set(false);
+      },
+      error: () => this.saving.set(false),
+    });
+  }
 }
