@@ -22,7 +22,13 @@
   } @else {
     <ul class="categories-list">
       @for (c of categories(); track c.id) {
-        <li>{{ c.name }} <span class="slug">({{ c.slug }})</span></li>
+        <li>
+          <span>{{ c.name }} <span class="slug">({{ c.slug }})</span></span>
+          @if (c.status === 'EN_ATTENTE') {
+            <span class="status-badge status-EN_ATTENTE">Suggérée par un vendeur</span>
+            <button type="button" class="validate-btn" (click)="validate(c)">Valider</button>
+          }
+        </li>
       }
     </ul>
   }

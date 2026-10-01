@@ -33,6 +33,11 @@ export class ProductForm {
   readonly categories = signal<CategoryResponse[]>([]);
   readonly loading = signal(true);
 
+  readonly addingCategory = signal(false);
+  readonly newCategoryName = signal('');
+  readonly categorySaving = signal(false);
+  readonly categoryError = signal<string | null>(null);
+
   readonly productId = signal<number | null>(null);
   readonly existingImageUrls = signal<string[]>([]);
   readonly newImages = signal<File[]>([]);
@@ -82,6 +87,34 @@ export class ProductForm {
   selectedCategoryName(): string {
     const id = this.form.controls.categoryId.value;
     return this.categories().find((c) => c.id === id)?.name ?? '—';
+  }
+
+  toggleAddCategory(): void {
+    this.addingCategory.update((v) => !v);
+    this.categoryError.set(null);
+    this.newCategoryName.set('');
+  }
+
+  createCategory(): void {
+    const name = this.newCategoryName().trim();
+    if (!name) {
+      return;
+    }
+    this.categorySaving.set(true);
+    this.categoryError.set(null);
+    this.categoryService.suggest(name).subscribe({
+      next: (category) => {
+        this.categories.update((list) => [...list, category]);
+        this.form.controls.categoryId.setValue(category.id);
+        this.categorySaving.set(false);
+        this.addingCategory.set(false);
+        this.newCategoryName.set('');
+      },
+      error: (err: HttpErrorResponse) => {
+        this.categorySaving.set(false);
+        this.categoryError.set(err.error?.message ?? 'Impossible de créer cette catégorie.');
+      },
+    });
   }
 
   private patchFromProduct(product: ProductResponse): void {

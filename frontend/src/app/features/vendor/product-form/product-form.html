@@ -27,6 +27,40 @@
                   }
                 </select>
                 <app-field-error [control]="form.controls.categoryId" />
+
+                @if (!addingCategory()) {
+                  <button type="button" class="link-btn" (click)="toggleAddCategory()">
+                    + Ma catégorie n'est pas dans la liste
+                  </button>
+                } @else {
+                  <div class="new-category-box">
+                    @if (categoryError()) {
+                      <p class="form-error-banner">{{ categoryError() }}</p>
+                    }
+                    <input
+                      class="form-input"
+                      type="text"
+                      placeholder="Nom de la nouvelle catégorie"
+                      [value]="newCategoryName()"
+                      (input)="newCategoryName.set($any($event.target).value)"
+                    />
+                    <p class="form-hint">
+                      Elle sera utilisable pour ce produit immédiatement, mais n'apparaîtra pour les autres
+                      qu'après validation par l'administration.
+                    </p>
+                    <div class="new-category-actions">
+                      <button type="button" class="btn-secondary" (click)="toggleAddCategory()">Annuler</button>
+                      <button
+                        type="button"
+                        class="btn-primary"
+                        [disabled]="categorySaving() || !newCategoryName().trim()"
+                        (click)="createCategory()"
+                      >
+                        {{ categorySaving() ? 'Création...' : 'Créer et utiliser' }}
+                      </button>
+                    </div>
+                  </div>
+                }
               </div>
 
               <div class="form-field">

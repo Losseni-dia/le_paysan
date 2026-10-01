@@ -31,12 +31,20 @@ export class Categories {
 
   private load(): void {
     this.loading.set(true);
-    this.categoryService.list().subscribe({
+    this.categoryService.listForAdmin().subscribe({
       next: (categories) => {
         this.categories.set(categories);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
+    });
+  }
+
+  validate(category: CategoryResponse): void {
+    this.categoryService.validate(category.id).subscribe({
+      next: (updated) => {
+        this.categories.update((list) => list.map((c) => (c.id === updated.id ? updated : c)));
+      },
     });
   }
 
