@@ -30,11 +30,13 @@
 }
 
 .sidebar-logo-img {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
+  height: 40px;
+  width: auto;
+  object-fit: contain;
   flex-shrink: 0;
+  background: #fff;
+  border-radius: var(--radius-sm);
+  padding: 2px 4px;
 }
 
 .sidebar-nav {

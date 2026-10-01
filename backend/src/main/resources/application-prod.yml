@@ -11,14 +11,19 @@ spring:
   mail:
     host: ${SMTP_HOST:smtp.gmail.com}
     port: ${SMTP_PORT:587}
-    username: ${SMTP_USERNAME}
-    password: ${SMTP_PASSWORD}
+    username: ${EMAIL_USERNAME}
+    password: ${EMAIL_PASSWORD}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
+
+server:
+  error:
+    include-stacktrace: never
+    include-message: never
 
 app:
   jwt:
@@ -30,6 +35,9 @@ app:
     environment: live
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS}
+  uploads:
+    base-dir: ${UPLOADS_BASE_DIR}
+  frontend-url: ${FRONTEND_URL}
 
 logging:
   level:

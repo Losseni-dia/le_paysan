@@ -10,6 +10,7 @@ Thumbs.db
 # Backend (Spring Boot / Maven)
 backend/target/
 backend/.mvn/wrapper/maven-wrapper.jar
+backend/uploads/
 
 # Frontend (Angular / Node)
 frontend/node_modules/

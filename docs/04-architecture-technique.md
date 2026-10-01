@@ -90,7 +90,7 @@ Dans les deux cas :
 
 ## 6. Notifications (email)
 
-Envoi d'emails transactionnels (confirmation boutique/produit, nouvelle commande, réponse support...) via **SMTP standard** : `spring-boot-starter-mail` + `JavaMailSender`. Pas de dépendance à l'API propriétaire d'un fournisseur tiers (SendGrid, Mailgun...) — configuration par variables d'environnement (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM`).
+Envoi d'emails transactionnels (confirmation boutique/produit, nouvelle commande, réponse support...) via **SMTP standard** : `spring-boot-starter-mail` + `JavaMailSender`. Pas de dépendance à l'API propriétaire d'un fournisseur tiers (SendGrid, Mailgun...) — configuration par variables d'environnement (`SMTP_HOST`, `SMTP_PORT`, `EMAIL_USERNAME`, `EMAIL_PASSWORD`).
 
 - **Dev et prod (pour le moment)** : **Gmail SMTP** (`smtp.gmail.com:587`, mot de passe d'application Google) sur le compte `losdiakite@gmail.com`, utilisé à la fois comme expéditeur SMTP et comme **email admin par défaut** (compte admin de démarrage, cf. [07-plan-execution.md](./07-plan-execution.md)). Convient pour démarrer, mais à surveiller : Gmail impose des **limites de volume d'envoi** (quota quotidien) et une délivrabilité moins robuste qu'un service SMTP transactionnel dédié — à migrer vers un fournisseur SMTP dédié dès que le volume d'emails (confirmations, notifications) augmente en production.
 
