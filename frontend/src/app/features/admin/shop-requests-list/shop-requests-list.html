@@ -1,15 +1,18 @@
 <div class="shop-requests-list">
-  <h1>Demandes de boutiques</h1>
+  <h1>Boutiques &amp; vendeurs</h1>
+  <p class="form-hint">
+    Demandes de boutique et boutiques existantes. L'onglet « Validées » liste les vendeurs actifs de la plateforme.
+  </p>
 
   <div class="filters">
-    @for (status of statusFilters; track status) {
+    @for (status of statusFilters; track status.value) {
       <button
         type="button"
         class="filter-btn"
-        [class.active]="selectedStatus() === status"
-        (click)="selectStatus(status)"
+        [class.active]="selectedStatus() === status.value"
+        (click)="selectStatus(status.value)"
       >
-        {{ status }}
+        {{ status.label }}
       </button>
     }
   </div>
@@ -17,7 +20,7 @@
   @if (loading()) {
     <p>Chargement...</p>
   } @else if (requests().length === 0) {
-    <p class="form-hint">Aucune demande avec ce statut.</p>
+    <p class="form-hint">Aucune boutique avec ce statut.</p>
   } @else {
     <table class="requests-table">
       <thead>
@@ -26,6 +29,7 @@
           <th>Type</th>
           <th>Vendeur</th>
           <th>Ville</th>
+          <th>Statut</th>
           <th>Date</th>
           <th></th>
         </tr>
@@ -37,6 +41,7 @@
             <td>{{ r.shop.ownerType }}</td>
             <td>{{ r.ownerUsername }}</td>
             <td>{{ r.shop.addressCity }}</td>
+            <td><span class="status-badge" [class]="'status-' + r.shop.status">{{ r.shop.status }}</span></td>
             <td>{{ r.shop.createdAt | date: 'dd/MM/yyyy' }}</td>
             <td><a [routerLink]="['/admin/demandes-boutiques', r.shop.id]">Voir</a></td>
           </tr>

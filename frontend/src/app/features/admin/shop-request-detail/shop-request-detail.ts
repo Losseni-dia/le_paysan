@@ -61,4 +61,15 @@ export class ShopRequestDetail {
       error: (err: HttpErrorResponse) => this.saving.set(false),
     });
   }
+
+  suspend(): void {
+    if (!confirm('Suspendre cette boutique ? Ses produits deviendront invisibles du catalogue.')) {
+      return;
+    }
+    this.saving.set(true);
+    this.shopService.suspend(this.id).subscribe({
+      next: () => this.router.navigateByUrl('/admin/demandes-boutiques'),
+      error: () => this.saving.set(false),
+    });
+  }
 }

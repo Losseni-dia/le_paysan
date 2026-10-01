@@ -83,5 +83,11 @@
         }
       </section>
     }
+
+    @if (detail()!.shop.status === 'VALIDEE') {
+      <section class="actions">
+        <button type="button" class="btn-reject" [disabled]="saving()" (click)="suspend()">Suspendre la boutique</button>
+      </section>
+    }
   }
 </div>

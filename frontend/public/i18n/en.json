@@ -22,7 +22,7 @@
   "sidebar": {
     "admin": {
       "dashboard": "Dashboard",
-      "shopRequests": "Shop requests",
+      "shopRequests": "Shops",
       "products": "Products to review",
       "users": "Users",
       "orders": "Orders",

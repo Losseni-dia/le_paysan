@@ -22,7 +22,7 @@
   "sidebar": {
     "admin": {
       "dashboard": "Tableau de bord",
-      "shopRequests": "Demandes de boutiques",
+      "shopRequests": "Boutiques",
       "products": "Produits à valider",
       "users": "Utilisateurs",
       "orders": "Commandes",

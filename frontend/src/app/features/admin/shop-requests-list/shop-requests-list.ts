@@ -5,7 +5,12 @@ import { RouterLink } from '@angular/router';
 import { ShopService } from '../../../core/shop/shop.service';
 import { ShopAdminDetailResponse } from '../../../core/shop/shop.model';
 
-const STATUS_FILTERS = ['EN_ATTENTE', 'VALIDEE', 'REJETEE', 'SUSPENDUE'];
+const STATUS_FILTERS = [
+  { value: 'EN_ATTENTE', label: 'En attente' },
+  { value: 'VALIDEE', label: 'Validées (vendeurs actifs)' },
+  { value: 'REJETEE', label: 'Rejetées' },
+  { value: 'SUSPENDUE', label: 'Suspendues' },
+];
 
 @Component({
   selector: 'app-shop-requests-list',
