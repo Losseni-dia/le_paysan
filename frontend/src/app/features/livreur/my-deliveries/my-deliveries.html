@@ -1,0 +1,27 @@
+<div class="my-deliveries-page">
+  <h1>Mes livraisons</h1>
+  <p class="form-hint">Commandes expédiées qui vous sont assignées, en attente de remise.</p>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (orders().length === 0) {
+    <p class="form-hint">Aucune livraison en attente.</p>
+  } @else {
+    @for (order of orders(); track order.id) {
+      <section class="order-card">
+        <div class="order-header">
+          <h2>N° {{ order.orderNumber }}</h2>
+          <span class="order-total">{{ order.totalAmount }} FCFA</span>
+        </div>
+        <p>Boutique : {{ order.shopName }}</p>
+        <p>Acheteur : {{ order.buyerFullName }}</p>
+        @for (item of order.items; track item.productId) {
+          @if (item.deliveryAddress) {
+            <p class="address">📍 {{ item.deliveryAddress }}</p>
+          }
+        }
+        <a class="btn-primary" [routerLink]="['/livreur/livraisons', order.id]">Confirmer la remise</a>
+      </section>
+    }
+  }
+</div>

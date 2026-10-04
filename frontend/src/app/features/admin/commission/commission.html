@@ -1,0 +1,67 @@
+<div class="commission-page">
+  <h1>Commission plateforme</h1>
+  <p class="form-hint">
+    Le taux appliqué à une commande est figé au moment du paiement : le changer ici n'affecte que les
+    commandes futures.
+  </p>
+
+  @if (current()) {
+    <div class="current-rate">
+      <span class="rate-value">{{ current()!.rate }}%</span>
+      <span class="rate-label">Taux actuel</span>
+    </div>
+  }
+
+  @if (error()) {
+    <p class="form-error-banner">{{ error() }}</p>
+  }
+  @if (success()) {
+    <p class="form-success-banner">{{ success() }}</p>
+  }
+
+  <div class="update-form">
+    <label class="form-label" for="new-rate">Nouveau taux (%)</label>
+    <input
+      id="new-rate"
+      type="number"
+      min="0"
+      max="100"
+      step="0.5"
+      [ngModel]="newRate()"
+      (ngModelChange)="newRate.set($event)"
+    />
+    <button type="button" class="btn-primary" [disabled]="saving()" (click)="save()">
+      {{ saving() ? 'Enregistrement...' : 'Mettre à jour' }}
+    </button>
+  </div>
+
+  <h2>Historique</h2>
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (history().length === 0) {
+    <p class="form-hint">Aucun historique.</p>
+  } @else {
+    <table class="requests-table">
+      <thead>
+        <tr>
+          <th>Taux</th>
+          <th>Statut</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (h of history(); track h.id) {
+          <tr>
+            <td>{{ h.rate }}%</td>
+            <td>
+              <span class="status-badge" [class.status-active]="h.active">
+                {{ h.active ? 'Actif' : 'Archivé' }}
+              </span>
+            </td>
+            <td>{{ h.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

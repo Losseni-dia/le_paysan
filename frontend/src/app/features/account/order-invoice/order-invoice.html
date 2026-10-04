@@ -1,0 +1,72 @@
+<div class="invoice-page">
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (error()) {
+    <p class="form-error-banner">{{ error() }}</p>
+  } @else if (order()) {
+    <div class="invoice-actions no-print">
+      <button type="button" class="btn-print" (click)="print()">Imprimer / Exporter en PDF</button>
+    </div>
+
+    <section class="invoice">
+      <header class="invoice-header">
+        <div class="invoice-brand">
+          <img src="/logo_paysan.jpg" alt="Le Paysan" class="invoice-logo" />
+          <span>Le Paysan</span>
+        </div>
+        <div class="invoice-meta">
+          <h1>Facture</h1>
+          <p>N° {{ order()!.orderNumber }}</p>
+          <p>{{ order()!.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</p>
+        </div>
+      </header>
+
+      <section class="invoice-parties">
+        <div>
+          <h2>Vendeur</h2>
+          <p>{{ order()!.shopName }}</p>
+        </div>
+        <div>
+          <h2>Acheteur</h2>
+          <p>{{ authService.currentUser()?.firstName }} {{ authService.currentUser()?.lastName }}</p>
+          @if (authService.currentUser()?.email) {
+            <p>{{ authService.currentUser()?.email }}</p>
+          }
+        </div>
+      </section>
+
+      <table class="invoice-items">
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Quantité</th>
+            <th>Prix unitaire</th>
+            <th>Livraison</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of order()!.items; track item.productId) {
+            <tr>
+              <td>{{ item.productName }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>{{ item.unitPrice }} FCFA</td>
+              <td>{{ item.deliveryPrice }} FCFA</td>
+              <td>{{ item.lineSubtotal }} FCFA</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <section class="invoice-totals">
+        <p>Sous-total : <span>{{ order()!.subtotalAmount }} FCFA</span></p>
+        <p>Livraison : <span>{{ order()!.deliveryAmount }} FCFA</span></p>
+        <p class="invoice-total-line">Total payé : <span>{{ order()!.totalAmount }} FCFA</span></p>
+      </section>
+
+      <footer class="invoice-footer">
+        <p>Merci pour votre confiance — Le Paysan</p>
+      </footer>
+    </section>
+  }
+</div>

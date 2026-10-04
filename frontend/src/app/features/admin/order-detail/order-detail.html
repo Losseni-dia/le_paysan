@@ -1,0 +1,58 @@
+<div class="order-detail-page">
+  <a routerLink="/admin/commandes" class="back-link">&larr; Retour aux commandes</a>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (order()) {
+    <h1>Commande {{ order()!.orderNumber }}</h1>
+    <span class="status-badge" [class]="'status-' + order()!.status">{{ order()!.status }}</span>
+
+    <app-order-timeline [historique]="order()!.historique" [status]="order()!.status" />
+
+    <section class="info-grid">
+      <div>
+        <h2>Acheteur</h2>
+        <p>{{ order()!.buyerFullName }}</p>
+        <p class="muted">&#64;{{ order()!.buyerUsername }}</p>
+      </div>
+      <div>
+        <h2>Boutique</h2>
+        <p>{{ order()!.shopName }}</p>
+      </div>
+      <div>
+        <h2>Date</h2>
+        <p>{{ order()!.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</p>
+      </div>
+    </section>
+
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Quantité</th>
+          <th>Prix unitaire</th>
+          <th>Livraison</th>
+          <th>Total ligne</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of order()!.items; track item.productId) {
+          <tr>
+            <td>{{ item.productName }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.unitPrice }} FCFA</td>
+            <td>{{ item.deliveryPrice }} FCFA</td>
+            <td>{{ item.lineSubtotal }} FCFA</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <section class="totals">
+      <p>Sous-total : <span>{{ order()!.subtotalAmount }} FCFA</span></p>
+      <p>Livraison : <span>{{ order()!.deliveryAmount }} FCFA</span></p>
+      <p>Commission plateforme : <span>{{ order()!.commissionAmount }} FCFA</span></p>
+      <p class="total-line">Total : <span>{{ order()!.totalAmount }} FCFA</span></p>
+    </section>
+  }
+</div>

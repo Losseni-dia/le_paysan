@@ -40,6 +40,14 @@ body {
 /* Import Leaflet (carte) */
 @import "leaflet/dist/leaflet.css";
 
+/* Impression de facture (cf. order-invoice) : masque le chrome du backoffice (sidebar/topbar). */
+@media print {
+  .backoffice-layout .sidebar,
+  .backoffice-layout .topbar {
+    display: none !important;
+  }
+}
+
 /* Formulaires — pattern reutilise par tous les formulaires (cf. demande :
    un message d'erreur clair sous chaque champ, cf. shared/ui/field-error). */
 .form-field {

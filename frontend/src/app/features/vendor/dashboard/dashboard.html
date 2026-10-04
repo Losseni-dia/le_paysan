@@ -1,0 +1,28 @@
+<div class="dashboard-page">
+  <h1>Tableau de bord</h1>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (data()) {
+    <div class="kpi-grid">
+      <a class="kpi-card" routerLink="/vendeur/produits">
+        <span class="kpi-value">{{ data()!.produitsActifs }}</span>
+        <span class="kpi-label">Produits en ligne</span>
+      </a>
+      @if (data()!.produitsEnAttente > 0) {
+        <a class="kpi-card" routerLink="/vendeur/produits">
+          <span class="kpi-value">{{ data()!.produitsEnAttente }}</span>
+          <span class="kpi-label">Produits en attente de validation</span>
+        </a>
+      }
+      <a class="kpi-card" [class.kpi-alert]="data()!.commandesATraiter > 0" routerLink="/vendeur/commandes">
+        <span class="kpi-value">{{ data()!.commandesATraiter }}</span>
+        <span class="kpi-label">Commandes à traiter</span>
+      </a>
+      <div class="kpi-card">
+        <span class="kpi-value">{{ data()!.chiffreAffairesNet }} FCFA</span>
+        <span class="kpi-label">Chiffre d'affaires net</span>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,68 @@
+<div class="livreurs-page">
+  <h1>Mes livreurs</h1>
+  <p class="form-hint">
+    Créez un compte pour chaque livreur. Il pourra se connecter pour voir ses livraisons assignées
+    et faire signer les commandes à la remise.
+  </p>
+
+  @if (error()) {
+    <p class="form-error-banner">{{ error() }}</p>
+  }
+
+  <button type="button" class="btn-primary" (click)="toggleForm()">
+    {{ showForm() ? 'Annuler' : '+ Ajouter un livreur' }}
+  </button>
+
+  @if (showForm()) {
+    <form class="livreur-form" (ngSubmit)="submit()">
+      <div class="form-field">
+        <label class="form-label">Prénom</label>
+        <input class="form-input" type="text" [(ngModel)]="form.firstName" name="firstName" required />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Nom</label>
+        <input class="form-input" type="text" [(ngModel)]="form.lastName" name="lastName" required />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Téléphone</label>
+        <input class="form-input" type="tel" [(ngModel)]="form.phone" name="phone" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Identifiant de connexion</label>
+        <input class="form-input" type="text" [(ngModel)]="form.username" name="username" required />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Mot de passe temporaire</label>
+        <input class="form-input" type="text" [(ngModel)]="form.password" name="password" required minlength="8" />
+      </div>
+      <button type="submit" class="btn-primary" [disabled]="saving()">
+        {{ saving() ? 'Création...' : 'Créer le compte' }}
+      </button>
+    </form>
+  }
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (livreurs().length === 0) {
+    <p class="form-hint">Aucun livreur pour le moment.</p>
+  } @else {
+    <table class="requests-table">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Identifiant</th>
+          <th>Téléphone</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (l of livreurs(); track l.id) {
+          <tr>
+            <td>{{ l.firstName }} {{ l.lastName }}</td>
+            <td>{{ l.username }}</td>
+            <td>{{ l.phone ?? '—' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

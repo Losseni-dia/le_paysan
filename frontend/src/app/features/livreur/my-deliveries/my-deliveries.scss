@@ -1,0 +1,50 @@
+.my-deliveries-page {
+  max-width: 600px;
+
+  h1 {
+    color: var(--color-primary-dark);
+    margin-bottom: 4px;
+  }
+}
+
+.order-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+
+  h2 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--color-primary);
+  }
+}
+
+.order-total {
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.address {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.btn-primary {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+}

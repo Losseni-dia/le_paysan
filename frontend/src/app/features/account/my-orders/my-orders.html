@@ -6,6 +6,10 @@
   } @else if (orders().length === 0) {
     <p class="form-hint">Vous n'avez pas encore passé de commande.</p>
   } @else {
+    @if (paymentError()) {
+      <p class="form-error-banner">{{ paymentError() }}</p>
+    }
+
     @for (order of orders(); track order.id) {
       <section class="order-card">
         <div class="order-header">
@@ -23,6 +27,29 @@
         <p>Sous-total : {{ order.subtotalAmount }} FCFA</p>
         <p>Livraison : {{ order.deliveryAmount }} FCFA</p>
         <p class="order-total">Total : {{ order.totalAmount }} FCFA</p>
+
+        @if (order.status !== 'EN_ATTENTE_PAIEMENT') {
+          <app-order-timeline [historique]="order.historique" [status]="order.status" />
+        }
+
+        @if (order.status === 'EN_ATTENTE_PAIEMENT') {
+          <button type="button" class="btn-pay" [disabled]="payingId() === order.id" (click)="payNow(order)">
+            {{ payingId() === order.id ? 'Redirection...' : 'Payer maintenant' }}
+          </button>
+        } @else {
+          <a class="btn-invoice" [routerLink]="['/mon-espace/commandes', order.id, 'facture']">Voir la facture</a>
+        }
+
+        @if (order.status === 'PRETE' || order.status === 'EXPEDIEE') {
+          <button
+            type="button"
+            class="btn-confirm"
+            [disabled]="confirmingId() === order.id"
+            (click)="confirmReception(order)"
+          >
+            {{ confirmingId() === order.id ? 'Confirmation...' : "J'ai reçu ma commande" }}
+          </button>
+        }
       </section>
     }
   }

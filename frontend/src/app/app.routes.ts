@@ -36,6 +36,11 @@ export const routes: Routes = [
           import('./features/cart/order-confirmation/order-confirmation').then((m) => m.OrderConfirmation),
       },
       {
+        path: 'commandes/paiement-retour',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/cart/payment-return/payment-return').then((m) => m.PaymentReturn),
+      },
+      {
         path: 'connexion',
         loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),
       },
@@ -85,6 +90,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/account/my-orders/my-orders').then((m) => m.MyOrders),
       },
       {
+        path: 'commandes/:id/facture',
+        loadComponent: () => import('./features/account/order-invoice/order-invoice').then((m) => m.OrderInvoice),
+      },
+      {
         path: 'parametres',
         loadComponent: () => import('./features/account/account-settings/account-settings').then((m) => m.AccountSettings),
       },
@@ -98,7 +107,10 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       { path: '', redirectTo: 'tableau-de-bord', pathMatch: 'full' },
-      { path: 'tableau-de-bord', component: Placeholder, data: { title: 'Tableau de bord vendeur' } },
+      {
+        path: 'tableau-de-bord',
+        loadComponent: () => import('./features/vendor/dashboard/dashboard').then((m) => m.Dashboard),
+      },
       {
         path: 'ma-boutique',
         loadComponent: () => import('./features/vendor/my-shop/my-shop').then((m) => m.MyShop),
@@ -115,11 +127,42 @@ export const routes: Routes = [
         path: 'produits/:id/modifier',
         loadComponent: () => import('./features/vendor/product-form/product-form').then((m) => m.ProductForm),
       },
-      { path: 'commandes', component: Placeholder, data: { title: 'Commandes reçues' } },
-      { path: 'statistiques', component: Placeholder, data: { title: 'Statistiques de vente' } },
+      {
+        path: 'commandes',
+        loadComponent: () => import('./features/vendor/orders-list/orders-list').then((m) => m.OrdersList),
+      },
+      {
+        path: 'commandes/:id',
+        loadComponent: () => import('./features/vendor/order-detail/order-detail').then((m) => m.OrderDetail),
+      },
+      {
+        path: 'statistiques',
+        loadComponent: () => import('./features/vendor/statistiques/statistiques').then((m) => m.Statistiques),
+      },
+      {
+        path: 'livreurs',
+        loadComponent: () => import('./features/vendor/livreurs/livreurs').then((m) => m.Livreurs),
+      },
       {
         path: 'parametres',
         loadComponent: () => import('./features/account/account-settings/account-settings').then((m) => m.AccountSettings),
+      },
+    ],
+  },
+  {
+    path: 'livreur',
+    loadComponent: () => import('./layout/livreur-layout/livreur-layout').then((m) => m.LivreurLayout),
+    canActivate: [roleGuard('ROLE_LIVREUR')],
+    children: [
+      { path: '', redirectTo: 'livraisons', pathMatch: 'full' },
+      {
+        path: 'livraisons',
+        loadComponent: () => import('./features/livreur/my-deliveries/my-deliveries').then((m) => m.MyDeliveries),
+      },
+      {
+        path: 'livraisons/:id',
+        loadComponent: () =>
+          import('./features/livreur/delivery-confirm/delivery-confirm').then((m) => m.DeliveryConfirm),
       },
     ],
   },
@@ -129,7 +172,10 @@ export const routes: Routes = [
     canActivate: [roleGuard('ROLE_ADMIN')],
     children: [
       { path: '', redirectTo: 'tableau-de-bord', pathMatch: 'full' },
-      { path: 'tableau-de-bord', component: Placeholder, data: { title: 'Tableau de bord admin' } },
+      {
+        path: 'tableau-de-bord',
+        loadComponent: () => import('./features/admin/dashboard/dashboard').then((m) => m.Dashboard),
+      },
       {
         path: 'demandes-boutiques',
         loadComponent: () =>
@@ -148,14 +194,34 @@ export const routes: Routes = [
         path: 'produits/:id',
         loadComponent: () => import('./features/admin/product-detail/product-detail').then((m) => m.ProductDetail),
       },
-      { path: 'utilisateurs', component: Placeholder, data: { title: 'Utilisateurs' } },
-      { path: 'commandes', component: Placeholder, data: { title: 'Commandes' } },
+      {
+        path: 'utilisateurs',
+        loadComponent: () => import('./features/admin/users-list/users-list').then((m) => m.UsersList),
+      },
+      {
+        path: 'commandes',
+        loadComponent: () => import('./features/admin/orders-list/orders-list').then((m) => m.OrdersList),
+      },
+      {
+        path: 'commandes/:id',
+        loadComponent: () => import('./features/admin/order-detail/order-detail').then((m) => m.OrderDetail),
+      },
+      {
+        path: 'reversements',
+        loadComponent: () => import('./features/admin/payouts/payouts').then((m) => m.Payouts),
+      },
       {
         path: 'categories',
         loadComponent: () => import('./features/admin/categories/categories').then((m) => m.Categories),
       },
-      { path: 'commission', component: Placeholder, data: { title: 'Taux de commission' } },
-      { path: 'statistiques', component: Placeholder, data: { title: 'Statistiques' } },
+      {
+        path: 'commission',
+        loadComponent: () => import('./features/admin/commission/commission').then((m) => m.Commission),
+      },
+      {
+        path: 'statistiques',
+        loadComponent: () => import('./features/admin/statistiques/statistiques').then((m) => m.Statistiques),
+      },
       {
         path: 'parametres',
         loadComponent: () => import('./features/account/account-settings/account-settings').then((m) => m.AccountSettings),

@@ -1,0 +1,49 @@
+<div class="delivery-confirm-page">
+  <a routerLink="/livreur/livraisons" class="back-link">&larr; Retour à mes livraisons</a>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (order()) {
+    <h1>Commande {{ order()!.orderNumber }}</h1>
+    <p>Acheteur : {{ order()!.buyerFullName }}</p>
+    <p class="order-total">Total : {{ order()!.totalAmount }} FCFA</p>
+
+    @if (error()) {
+      <p class="form-error-banner">{{ error() }}</p>
+    }
+
+    <div class="mode-tabs">
+      <button type="button" [class.active]="mode() === 'SIGNATURE'" (click)="setMode('SIGNATURE')">
+        Signature
+      </button>
+      <button type="button" [class.active]="mode() === 'PHOTO'" (click)="setMode('PHOTO')">
+        Photo à la remise
+      </button>
+    </div>
+
+    @if (mode() === 'SIGNATURE') {
+      <p class="form-hint">Faites signer l'acheteur directement sur cet écran.</p>
+      <app-signature-pad #signaturePad />
+    } @else {
+      <p class="form-hint">Prenez une photo du colis déposé (utile si l'acheteur est absent).</p>
+      <input
+        #photoInput
+        type="file"
+        accept="image/*"
+        capture="environment"
+        class="hidden-input"
+        (change)="onPhotoSelected($event)"
+      />
+      <button type="button" class="btn-secondary" (click)="triggerPhotoInput()">
+        {{ photoPreviewUrl() ? 'Reprendre la photo' : 'Prendre une photo' }}
+      </button>
+      @if (photoPreviewUrl()) {
+        <img [src]="photoPreviewUrl()" alt="Photo du colis" class="photo-preview" />
+      }
+    }
+
+    <button type="button" class="btn-primary" [disabled]="submitting()" (click)="submit()">
+      {{ submitting() ? 'Validation...' : 'Valider la remise' }}
+    </button>
+  }
+</div>

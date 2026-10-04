@@ -1,0 +1,34 @@
+<div class="dashboard-page">
+  <h1>Tableau de bord</h1>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (data()) {
+    <div class="kpi-grid">
+      <a class="kpi-card" routerLink="/admin/demandes-boutiques">
+        <span class="kpi-value">{{ data()!.boutiquesEnAttente }}</span>
+        <span class="kpi-label">Boutiques en attente</span>
+      </a>
+      <div class="kpi-card">
+        <span class="kpi-value">{{ data()!.boutiquesValidees }}</span>
+        <span class="kpi-label">Boutiques actives</span>
+      </div>
+      <a class="kpi-card" routerLink="/admin/produits">
+        <span class="kpi-value">{{ data()!.produitsEnAttente }}</span>
+        <span class="kpi-label">Produits en attente</span>
+      </a>
+      <div class="kpi-card">
+        <span class="kpi-value">{{ data()!.utilisateursTotal }}</span>
+        <span class="kpi-label">Utilisateurs</span>
+      </div>
+      <a class="kpi-card" routerLink="/admin/commandes">
+        <span class="kpi-value">{{ data()!.commandesEnAttentePaiement }}</span>
+        <span class="kpi-label">Commandes en attente de paiement</span>
+      </a>
+      <a class="kpi-card" [class.kpi-alert]="data()!.reversementsEnEchec > 0" routerLink="/admin/reversements">
+        <span class="kpi-value">{{ data()!.reversementsEnEchec }}</span>
+        <span class="kpi-label">Reversements en échec</span>
+      </a>
+    </div>
+  }
+</div>

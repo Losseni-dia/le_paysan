@@ -1,0 +1,76 @@
+.orders-list h1 {
+  color: var(--color-primary-dark);
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  font-size: 13px;
+  cursor: pointer;
+
+  &.active {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
+  }
+}
+
+.requests-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+
+  th,
+  td {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  th {
+    background: var(--color-bg-alt);
+    font-weight: 600;
+  }
+
+  a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+  }
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #fdf3e0;
+  color: var(--color-warning);
+}
+
+.status-PAYEE,
+.status-EN_PREPARATION,
+.status-PRETE,
+.status-EXPEDIEE,
+.status-LIVREE {
+  background: var(--color-surface-tint);
+  color: var(--color-primary-dark);
+}
+
+.status-ANNULEE {
+  background: #fdecea;
+  color: var(--color-danger);
+}

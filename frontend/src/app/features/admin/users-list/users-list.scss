@@ -1,0 +1,138 @@
+.users-list h1 {
+  color: var(--color-primary-dark);
+  margin-bottom: 16px;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+
+  input[type='search'] {
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    font-size: 13px;
+    min-width: 240px;
+  }
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  font-size: 13px;
+  cursor: pointer;
+
+  &.active {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
+  }
+}
+
+.requests-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+
+  th,
+  td {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: top;
+  }
+
+  th {
+    background: var(--color-bg-alt);
+    font-weight: 600;
+  }
+}
+
+.username {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.role-badge {
+  display: inline-block;
+  margin: 0 4px 4px 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--color-surface-tint);
+  color: var(--color-primary-dark);
+}
+
+.role-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.role-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.btn-link {
+  display: block;
+  margin-top: 4px;
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--color-surface-tint);
+  color: var(--color-primary-dark);
+}
+
+.status-disabled {
+  background: #fdecea;
+  color: var(--color-danger);
+}
+
+.btn-small {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btn-ghost {
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.btn-danger {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}

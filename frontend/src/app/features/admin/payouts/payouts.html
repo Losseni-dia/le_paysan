@@ -1,0 +1,59 @@
+<div class="payouts-page">
+  <h1>Reversements vendeurs</h1>
+  <p class="form-hint">Reversements automatiques aux vendeurs après paiement confirmé d'une commande.</p>
+
+  <div class="filters">
+    @for (status of statusFilters; track status.value) {
+      <button
+        type="button"
+        class="filter-btn"
+        [class.active]="selectedStatus() === status.value"
+        (click)="selectStatus(status.value)"
+      >
+        {{ status.label }}
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (payouts().length === 0) {
+    <p class="form-hint">Aucun reversement avec ce statut.</p>
+  } @else {
+    <table class="payouts-table">
+      <thead>
+        <tr>
+          <th>Commande</th>
+          <th>Boutique</th>
+          <th>Montant</th>
+          <th>Statut</th>
+          <th>Date</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of payouts(); track p.id) {
+          <tr>
+            <td>{{ p.orderNumber }}</td>
+            <td>{{ p.shopName }}</td>
+            <td>{{ p.amount }} FCFA</td>
+            <td>
+              <span class="status-badge" [class]="'status-' + p.status">{{ p.status }}</span>
+              @if (p.status === 'ECHEC' && p.failureReason) {
+                <p class="failure-reason">{{ p.failureReason }}</p>
+              }
+            </td>
+            <td>{{ p.createdAt | date: 'dd/MM/yyyy' }}</td>
+            <td>
+              @if (p.status === 'ECHEC') {
+                <button type="button" (click)="retry(p)" [disabled]="retryingId() === p.id">
+                  {{ retryingId() === p.id ? 'Relance...' : 'Relancer' }}
+                </button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

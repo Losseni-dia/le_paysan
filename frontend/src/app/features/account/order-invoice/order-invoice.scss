@@ -1,0 +1,136 @@
+.invoice-page {
+  max-width: 700px;
+}
+
+.invoice-actions {
+  margin-bottom: 16px;
+}
+
+.btn-print {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.invoice {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 32px;
+}
+
+.invoice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid var(--color-primary);
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.invoice-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  font-size: 18px;
+
+  .invoice-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+  }
+}
+
+.invoice-meta {
+  text-align: right;
+
+  h1 {
+    margin: 0 0 4px;
+    font-size: 20px;
+    color: var(--color-primary-dark);
+  }
+
+  p {
+    margin: 2px 0;
+    font-size: 13px;
+    color: var(--color-text-muted);
+  }
+}
+
+.invoice-parties {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+
+  h2 {
+    margin: 0 0 4px;
+    font-size: 13px;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+.invoice-items {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 24px;
+
+  th, td {
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 13px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  th {
+    color: var(--color-text-muted);
+    font-weight: 600;
+  }
+}
+
+.invoice-totals {
+  margin-left: auto;
+  max-width: 260px;
+  text-align: right;
+
+  p {
+    display: flex;
+    justify-content: space-between;
+    margin: 4px 0;
+    font-size: 14px;
+  }
+}
+
+.invoice-total-line {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--color-primary-dark);
+  border-top: 1px solid var(--color-border);
+  padding-top: 8px;
+}
+
+.invoice-footer {
+  margin-top: 32px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

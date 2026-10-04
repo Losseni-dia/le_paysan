@@ -1,0 +1,89 @@
+.payouts-page h1 {
+  color: var(--color-primary-dark);
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.filter-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  font-size: 13px;
+  cursor: pointer;
+
+  &.active {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
+  }
+}
+
+.payouts-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+
+  th,
+  td {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  th {
+    background: var(--color-bg-alt);
+    font-weight: 600;
+  }
+
+  button {
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-danger);
+    background: #fdecea;
+    color: var(--color-danger);
+    font-size: 12px;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status-EN_ATTENTE {
+  background: #fdf3e0;
+  color: var(--color-warning);
+}
+
+.status-ENVOYE {
+  background: var(--color-surface-tint);
+  color: var(--color-primary-dark);
+}
+
+.status-ECHEC {
+  background: #fdecea;
+  color: var(--color-danger);
+}
+
+.failure-reason {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}

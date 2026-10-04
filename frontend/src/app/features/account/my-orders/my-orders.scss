@@ -69,3 +69,55 @@
   font-weight: 700;
   color: var(--color-primary-dark);
 }
+
+.btn-pay {
+  margin-top: 10px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-invoice {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.btn-confirm {
+  display: block;
+  margin-top: 10px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+app-order-timeline {
+  display: block;
+  margin: 12px 0;
+}

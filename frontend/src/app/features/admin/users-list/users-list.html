@@ -1,0 +1,91 @@
+<div class="users-list">
+  <h1>Utilisateurs</h1>
+
+  @if (error()) {
+    <p class="form-error-banner">{{ error() }}</p>
+  }
+
+  <div class="toolbar">
+    <div class="filters">
+      @for (role of roleFilters; track role.value) {
+        <button
+          type="button"
+          class="filter-btn"
+          [class.active]="selectedRole() === role.value"
+          (click)="selectRole(role.value)"
+        >
+          {{ role.label }}
+        </button>
+      }
+    </div>
+    <input
+      type="search"
+      placeholder="Rechercher (nom, email, username)..."
+      [value]="search()"
+      (input)="onSearch($any($event.target).value)"
+    />
+  </div>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (users().length === 0) {
+    <p class="form-hint">Aucun utilisateur trouvé.</p>
+  } @else {
+    <table class="requests-table">
+      <thead>
+        <tr>
+          <th>Utilisateur</th>
+          <th>Contact</th>
+          <th>Rôles</th>
+          <th>Statut</th>
+          <th>Inscrit le</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (u of users(); track u.id) {
+          <tr>
+            <td>{{ u.firstName }} {{ u.lastName }} <span class="username">({{ u.username }})</span></td>
+            <td>{{ u.email ?? u.phone ?? '—' }}</td>
+            <td>
+              @if (editingRolesId() === u.id) {
+                <div class="role-checkboxes">
+                  @for (role of allRoles; track role) {
+                    <label>
+                      <input
+                        type="checkbox"
+                        [checked]="editingRoles().includes(role)"
+                        (change)="toggleRoleCheckbox(role)"
+                      />
+                      {{ role.replace('ROLE_', '') }}
+                    </label>
+                  }
+                </div>
+                <div class="role-actions">
+                  <button type="button" class="btn-small" (click)="saveRoles(u.id)">Enregistrer</button>
+                  <button type="button" class="btn-small btn-ghost" (click)="cancelEditRoles()">Annuler</button>
+                </div>
+              } @else {
+                @for (role of u.roles; track role) {
+                  <span class="role-badge">{{ role.replace('ROLE_', '') }}</span>
+                }
+                <button type="button" class="btn-link" (click)="startEditRoles(u)">Modifier</button>
+              }
+            </td>
+            <td>
+              <span class="status-badge" [class.status-disabled]="!u.enabled">
+                {{ u.enabled ? 'Actif' : 'Désactivé' }}
+              </span>
+            </td>
+            <td>{{ u.createdAt | date: 'dd/MM/yyyy' }}</td>
+            <td>
+              <button type="button" class="btn-small" [class.btn-danger]="u.enabled" (click)="toggleEnabled(u)">
+                {{ u.enabled ? 'Désactiver' : 'Activer' }}
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

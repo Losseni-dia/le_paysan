@@ -1,0 +1,47 @@
+<div class="orders-list">
+  <h1>Commandes reçues</h1>
+
+  <div class="filters">
+    @for (status of statusFilters; track status.value) {
+      <button
+        type="button"
+        class="filter-btn"
+        [class.active]="selectedStatus() === status.value"
+        (click)="selectStatus(status.value)"
+      >
+        {{ status.label }}
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (orders().length === 0) {
+    <p class="form-hint">Aucune commande avec ce statut.</p>
+  } @else {
+    <table class="requests-table">
+      <thead>
+        <tr>
+          <th>N° commande</th>
+          <th>Acheteur</th>
+          <th>Total</th>
+          <th>Statut</th>
+          <th>Date</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (o of orders(); track o.id) {
+          <tr>
+            <td>{{ o.orderNumber }}</td>
+            <td>{{ o.buyerFullName }}</td>
+            <td>{{ o.totalAmount }} FCFA</td>
+            <td><span class="status-badge" [class]="'status-' + o.status">{{ o.status }}</span></td>
+            <td>{{ o.createdAt | date: 'dd/MM/yyyy' }}</td>
+            <td><a [routerLink]="['/vendeur/commandes', o.id]">Voir</a></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

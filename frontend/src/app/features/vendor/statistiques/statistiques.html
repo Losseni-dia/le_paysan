@@ -1,0 +1,48 @@
+<div class="stats-page">
+  <h1>Statistiques de vente</h1>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (data()) {
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <span class="kpi-value">{{ data()!.chiffreAffairesNet }} FCFA</span>
+        <span class="kpi-label">Chiffre d'affaires net (hors commission)</span>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <section>
+        <h2>Commandes par statut</h2>
+        <table class="requests-table">
+          <tbody>
+            @for (entry of statusEntries(); track entry[0]) {
+              <tr>
+                <td>{{ statusLabels[entry[0]] ?? entry[0] }}</td>
+                <td>{{ entry[1] }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Produits les plus vendus</h2>
+        @if (data()!.topProduits.length === 0) {
+          <p class="form-hint">Pas encore de données.</p>
+        } @else {
+          <table class="requests-table">
+            <tbody>
+              @for (p of data()!.topProduits; track p.productName) {
+                <tr>
+                  <td>{{ p.productName }} <span class="muted">(&times;{{ p.quantitySold }})</span></td>
+                  <td>{{ p.revenue }} FCFA</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </section>
+    </div>
+  }
+</div>

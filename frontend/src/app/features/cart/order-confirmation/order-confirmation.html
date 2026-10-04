@@ -5,9 +5,11 @@
     </p>
   } @else {
     <h1>Commande(s) enregistrée(s)</h1>
-    <p class="form-hint">
-      Le paiement Mobile Money sera bientôt disponible. Vos commandes sont en attente de paiement.
-    </p>
+    <p class="form-hint">Réglez par Mobile Money pour confirmer votre commande.</p>
+
+    @if (paymentError()) {
+      <p class="form-error-banner">{{ paymentError() }}</p>
+    }
 
     @for (order of orders(); track order.id) {
       <section class="order-card">
@@ -29,6 +31,9 @@
       </section>
     }
 
+    <button type="button" class="btn-pay" [disabled]="paying()" (click)="payNow()">
+      {{ paying() ? 'Redirection...' : 'Payer maintenant par Mobile Money' }}
+    </button>
     <a routerLink="/catalogue" class="btn-primary-link">Continuer mes achats</a>
   }
 </div>

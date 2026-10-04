@@ -1,0 +1,10 @@
+<div class="signature-pad">
+  <canvas
+    #canvas
+    (pointerdown)="onPointerDown($event)"
+    (pointermove)="onPointerMove($event)"
+    (pointerup)="onPointerUp()"
+    (pointerleave)="onPointerUp()"
+  ></canvas>
+  <button type="button" class="btn-clear" (click)="clear()">Effacer</button>
+</div>

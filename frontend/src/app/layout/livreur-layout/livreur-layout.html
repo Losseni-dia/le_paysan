@@ -1,0 +1,30 @@
+<div class="backoffice-layout" [class.collapsed]="collapsed()">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="/logo_paysan.jpg" alt="Le Paysan" class="sidebar-logo-img" />
+      <span>Le Paysan</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/livreur/livraisons" routerLinkActive="active">Mes livraisons</a>
+    </nav>
+
+    <button type="button" class="collapse-btn" (click)="toggleSidebar()">
+      {{ collapsed() ? '➡' : '⬅' }}
+    </button>
+  </aside>
+
+  <div class="backoffice-main">
+    <header class="topbar">
+      <span class="catalogue-link">Espace livreur</span>
+      <div class="topbar-actions">
+        <app-notification-bell />
+        <app-account-menu />
+      </div>
+    </header>
+
+    <main class="backoffice-content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

@@ -1,0 +1,122 @@
+<div class="order-detail-page">
+  <a routerLink="/vendeur/commandes" class="back-link">&larr; Retour aux commandes</a>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (order()) {
+    <h1>Commande {{ order()!.orderNumber }}</h1>
+    <span class="status-badge" [class]="'status-' + order()!.status">{{ order()!.status }}</span>
+
+    @if (error()) {
+      <p class="form-error-banner">{{ error() }}</p>
+    }
+
+    @if (nextActionLabel()) {
+      @if (willBeExpediee() && livreurs().length > 0) {
+        <div class="status-actions">
+          <select
+            class="form-input livreur-select"
+            [ngModel]="selectedLivreurId()"
+            (ngModelChange)="selectedLivreurId.set($event)"
+          >
+            <option [ngValue]="null">Pas de livreur (je livre moi-même)</option>
+            @for (l of livreurs(); track l.id) {
+              <option [ngValue]="l.id">{{ l.firstName }} {{ l.lastName }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      @if (isDeliveryStep()) {
+        <div class="proof-section">
+          <p class="form-hint">
+            Preuve de remise (optionnelle) : faites signer l'acheteur ou prenez une photo du colis.
+          </p>
+          <div class="mode-tabs">
+            <button type="button" [class.active]="proofMode() === 'NONE'" (click)="setProofMode('NONE')">
+              Aucune
+            </button>
+            <button type="button" [class.active]="proofMode() === 'SIGNATURE'" (click)="setProofMode('SIGNATURE')">
+              Signature
+            </button>
+            <button type="button" [class.active]="proofMode() === 'PHOTO'" (click)="setProofMode('PHOTO')">
+              Photo
+            </button>
+          </div>
+
+          @if (proofMode() === 'SIGNATURE') {
+            <app-signature-pad #signaturePad />
+          } @else if (proofMode() === 'PHOTO') {
+            <input
+              #photoInput
+              type="file"
+              accept="image/*"
+              capture="environment"
+              class="hidden-input"
+              (change)="onPhotoSelected($event)"
+            />
+            <button type="button" class="btn-secondary" (click)="triggerPhotoInput()">
+              {{ photoPreviewUrl() ? 'Reprendre la photo' : 'Prendre une photo' }}
+            </button>
+            @if (photoPreviewUrl()) {
+              <img [src]="photoPreviewUrl()" alt="Photo du colis" class="photo-preview" />
+            }
+          }
+        </div>
+      }
+
+      <div class="status-actions">
+        <button type="button" class="btn-primary" [disabled]="updating()" (click)="markNextStatus()">
+          {{ nextActionLabel() }}
+        </button>
+      </div>
+    }
+
+    @if (order()!.assignedLivreurName) {
+      <p class="form-hint">Livreur assigné : {{ order()!.assignedLivreurName }}</p>
+    }
+
+    <app-order-timeline [historique]="order()!.historique" [status]="order()!.status" />
+
+    <section class="info-grid">
+      <div>
+        <h2>Acheteur</h2>
+        <p>{{ order()!.buyerFullName }}</p>
+      </div>
+      <div>
+        <h2>Date</h2>
+        <p>{{ order()!.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</p>
+      </div>
+    </section>
+
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Quantité</th>
+          <th>Prix unitaire</th>
+          <th>Livraison</th>
+          <th>Total ligne</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of order()!.items; track item.productId) {
+          <tr>
+            <td>{{ item.productName }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.unitPrice }} FCFA</td>
+            <td>{{ item.deliveryPrice }} FCFA</td>
+            <td>{{ item.lineSubtotal }} FCFA</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <section class="totals">
+      <p>Sous-total : <span>{{ order()!.subtotalAmount }} FCFA</span></p>
+      <p>Livraison : <span>{{ order()!.deliveryAmount }} FCFA</span></p>
+      <p>Commission plateforme : <span>-{{ order()!.commissionAmount }} FCFA</span></p>
+      <p class="total-line">Total acheteur : <span>{{ order()!.totalAmount }} FCFA</span></p>
+    </section>
+  }
+</div>
