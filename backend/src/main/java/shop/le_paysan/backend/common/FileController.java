@@ -1,6 +1,8 @@
 package shop.le_paysan.backend.common;
 
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +28,10 @@ public class FileController {
     @GetMapping("/{category}/{filename}")
     public ResponseEntity<InputStreamResource> get(@PathVariable String category, @PathVariable String filename) {
         InputStreamResource resource = new InputStreamResource(fileStorageService.load(category + "/" + filename));
-        return ResponseEntity.ok().body(resource);
+        // Sans Content-Type explicite, un navigateur (Firefox notamment) ouvrant le blob
+        // directement (ex: window.open) ne sait pas que c'est une image et tente de
+        // l'interpreter comme du texte/JSON -> affiche les octets bruts.
+        MediaType mediaType = MediaTypeFactory.getMediaType(filename).orElse(MediaType.APPLICATION_OCTET_STREAM);
+        return ResponseEntity.ok().contentType(mediaType).body(resource);
     }
 }
