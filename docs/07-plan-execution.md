@@ -65,15 +65,17 @@ Découpage en phases livrables, chacune apportant une valeur testable de bout en
 **Bug corrigé en cours de route** : juste après l'ajout d'un article, la réponse de `POST /api/cart/items` renvoyait un panier vide alors que l'article était bien persisté en base. Cause : la collection `Cart.items` (chargement paresseux Hibernate) restait "déjà initialisée à vide" dans le contexte de persistance de la transaction en cours, car l'article avait été inséré via `CartItemRepository` directement (sans passer par `cart.getItems().add(...)`), donc Hibernate ne la rechargeait pas. Corrigé en lisant toujours les lignes du panier via une requête directe (`CartItemRepository.findByCartIdOrderByIdAsc`) plutôt qu'en naviguant `cart.getItems()`, y compris dans `OrderService.checkout()`.
 
 ## 7. Phase 5 — Paiement Fedapay & reversement automatique
-- [ ] Vérifier auprès de Fedapay la disponibilité d'un paiement scindé (split payment) ou d'une API de transfert/payout — trancher Option A vs Option B (cf. [04-architecture-technique.md §5](./04-architecture-technique.md)).
-- [ ] Intégration API Fedapay (création transaction).
-- [ ] Widget/page de paiement côté frontend.
-- [ ] Endpoint webhook + vérification signature + idempotence.
-- [ ] Mise à jour des commandes à la confirmation, décrément de stock.
-- [ ] Calcul et enregistrement de la commission par commande (snapshot taux + montant).
-- [ ] Reversement automatique au vendeur (split payment ou job planifié de payout selon l'option retenue), table `vendor_payouts`.
-- [ ] Back-office admin : vue des reversements, relance en cas d'échec.
-- [ ] Page de confirmation / échec de paiement côté frontend.
+- [x] Vérifié auprès de la documentation Fedapay (`docs.fedapay.com`) : aucun mécanisme de split payment/sous-comptes. **Option B retenue** (reversement différé via job planifié) — détails et endpoints confirmés dans [04-architecture-technique.md §5](./04-architecture-technique.md). *(2026-10-04)*
+- [x] Intégration API Fedapay : `FedapayClient` (création transaction, génération du lien de paiement, création de payout), `POST /api/payments` (checkout vers Fedapay, exige un téléphone renseigné sur le profil acheteur). *(2026-10-04 — testé contre le sandbox réel, lien de paiement généré avec succès.)*
+- [x] Page de paiement côté frontend : bouton "Payer maintenant" sur la confirmation de commande et sur "Mes commandes" (retry si paiement abandonné/échoué), redirection vers le lien Fedapay. *(2026-10-04)*
+- [x] Endpoint webhook (`POST /api/payments/fedapay/webhook`, public) + vérification de signature + idempotence (ignore si la transaction n'est plus `PENDING`). *(2026-10-04 — testé avec un vrai webhook sandbox via ngrok : format de signature confirmé `X-FEDAPAY-SIGNATURE: t=<timestamp>,s=<hmac_sha256_hex>` sur `"<t>.<corps_brut>"`, différent de l'hypothèse initiale.)*
+- [x] Mise à jour des commandes à la confirmation (`PAYEE`), décrément de stock. *(2026-10-04 — vérifié : commande passée à PAYEE, stock décrémenté de la quantité achetée.)*
+- [x] Calcul et enregistrement de la commission par commande (fait dès la Phase 4, cf. note ci-dessus). *(2026-10-01)*
+- [x] Reversement automatique au vendeur : job planifié (`PayoutService`, toutes les 15 min) crée un `vendor_payouts` `EN_ATTENTE` à l'approbation du paiement, puis appelle `POST /v1/payouts` Fedapay. *(2026-10-04 — création du `vendor_payouts` vérifiée avec le bon montant net (sous-total − commission + livraison) ; envoi réel au vendeur non confirmé en sandbox faute de numéro de test reconnu pour le compte Mobile Money vendeur.)*
+- [x] Back-office admin : page "Reversements" (`/admin/reversements`), filtrable par statut, relance manuelle en cas d'échec. *(2026-10-04)*
+- [x] Page de retour de paiement côté frontend (`/commandes/paiement-retour`, URL de callback Fedapay) : affiche le statut de la commande (le webhook, pas ce retour, fait foi). *(2026-10-04)*
+
+**Bug corrigé en cours de route** : `ObjectMapper` (Jackson) n'était pas un bean Spring disponible à l'injection — `spring-boot-starter-webmvc` (Spring Boot 4.1.1) ne déclare la dépendance Jackson qu'en portée `runtime`, invisible au code applicatif qui en a besoin directement (ici pour parser le payload webhook). Corrigé en ajoutant `jackson-databind` en dépendance directe + un bean `ObjectMapper` explicite (`JacksonConfig`).
 
 ## 8. Phase 6 — Suivi de commande & back-office
 - [ ] Espace vendeur : liste des commandes reçues, changement de statut.
@@ -110,7 +112,7 @@ Découpage en phases livrables, chacune apportant une valeur testable de bout en
 | Phase 2 | Terminé | 2026-10-01 | 2026-10-01 |
 | Phase 3 | Terminé | 2026-10-01 | 2026-10-01 |
 | Phase 4 | Terminé | 2026-10-01 | 2026-10-01 |
-| Phase 5 | À faire | - | - |
+| Phase 5 | Quasi terminé (reversement sortant réel non confirmé en sandbox) | 2026-10-04 | 2026-10-04 |
 | Phase 6 | À faire | - | - |
 | Phase 7 | À faire | - | - |
 | Phase 8 | À faire | - | - |

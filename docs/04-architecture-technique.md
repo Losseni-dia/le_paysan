@@ -78,10 +78,17 @@ Variables de configuration (à externaliser, jamais committées) : `FEDAPAY_API_
 
 ## 5. Commission automatique et reversement vendeur
 
-Objectif : prélèvement de la commission et reversement du solde net au vendeur **sans action manuelle de l'admin** (cf. [02-specifications-fonctionnelles.md (UC-10)](./02-specifications-fonctionnelles.md)). Deux implémentations possibles, le choix définitif dépendant des capacités réelles de l'API Fedapay (point ouvert, §11) :
+Objectif : prélèvement de la commission et reversement du solde net au vendeur **sans action manuelle de l'admin** (cf. [02-specifications-fonctionnelles.md (UC-10)](./02-specifications-fonctionnelles.md)).
 
-- **Option A — Paiement scindé (split payment)**, si Fedapay expose un mécanisme de sous-comptes/marketplace : à la création de la transaction (étape 1 du flux Fedapay ci-dessus), le backend indique la répartition (part vendeur / part plateforme) ; Fedapay route les fonds directement aux deux parties dès la validation du paiement par l'acheteur. Le plus simple et le plus robuste si disponible.
-- **Option B — Reversement différé automatique**, sinon : à la confirmation du webhook (`APPROVED`), le backend calcule `montant_net_vendeur` et crée un enregistrement `vendor_payouts` en statut `EN_ATTENTE`. Un **job planifié** (ex. toutes les heures ou quotidien, `@Scheduled` Spring) parcourt les paiements en attente et appelle l'API de transfert sortant (payout) de Fedapay vers le compte Mobile Money enregistré du vendeur (`shop_payout_accounts`). Statut mis à jour (`ENVOYE`/`ECHEC`) selon la réponse.
+**Décision (Phase 5, 2026-10-01)** : Fedapay n'expose **aucun mécanisme de split payment / sous-comptes / marketplace** (vérifié via `docs.fedapay.com`, API Payouts dédiée aux transferts sortants mais pas de répartition automatique à la création d'une transaction). **Option B retenue** :
+
+- **Option B — Reversement différé automatique** : à la confirmation du webhook (`APPROVED`), le backend calcule `montant_net_vendeur` et crée un enregistrement `vendor_payouts` en statut `EN_ATTENTE`. Un **job planifié** (`@Scheduled(fixedDelay = 15 min)` Spring, cf. `PayoutService`) parcourt les paiements en attente et appelle l'API Payouts de Fedapay (`POST /v1/payouts`, `mode: "mobile_money"`) vers le compte Mobile Money enregistré du vendeur (`shop_payout_accounts`). Statut mis à jour (`ENVOYE`/`ECHEC`) selon la réponse ; relance manuelle possible par l'admin en cas d'échec.
+
+Détails d'intégration confirmés en Phase 5 (testés contre le sandbox Fedapay réel) :
+- `POST /v1/transactions` (collecte) : `description`, `amount` (entier, FCFA), `currency.iso: "XOF"`, `callback_url`, `customer: {firstname, lastname, phone_number: {number, country: "CI"}}`. Pas d'email requis.
+- `POST /v1/transactions/{id}/token` renvoie `{token, url}` : `url` est le lien de paiement à ouvrir côté acheteur.
+- Webhook `X-FEDAPAY-SIGNATURE` : format confirmé `t=<timestamp_unix>,s=<hmac_sha256_hex>` — signature calculée sur `"<t>.<corps_brut>"` avec le secret webhook (convention identique à Stripe). Payload : `{"name": "transaction.created|approved|declined...", "entity": {"id", "status", ...}}`.
+- `POST /v1/payouts` : `amount`, `currency.iso: "XOF"`, `mode: "mobile_money"`, `customer: {firstname, lastname, phone_number}`.
 
 Dans les deux cas :
 - Le vendeur doit enregistrer un **compte Mobile Money de reversement** (opérateur + numéro) sur sa boutique avant de pouvoir vendre.
@@ -156,5 +163,4 @@ Côté backend, les messages renvoyés à l'utilisateur (erreurs de validation, 
 - Hébergement cible (VPS, cloud managé) non encore défini.
 - Mise en place CI/CD (GitHub Actions présent dans `.github/`, à configurer).
 - **Note d'installation frontend** : `npm install` seul échoue sur cette config Angular (bug connu de l'arborist npm 10.9.x sur la résolution des peer dependencies de `vitest`/`@vitejs/devtools*`) → utiliser `npm install --legacy-peer-deps`. À surveiller : une future mise à jour npm pourra lever ce contournement.
-- Confirmer auprès de la documentation Fedapay si un **paiement scindé (split payment)** ou un **transfert/payout programmatique** vers un compte Mobile Money tiers est disponible (nécessaire pour le reversement automatique aux vendeurs, cf. §5).
 - Migrer vers un fournisseur SMTP dédié en production quand le volume d'envoi dépasse les limites de Gmail (tranché pour le démarrage : Gmail SMTP sur `losdiakite@gmail.com`, cf. §6).

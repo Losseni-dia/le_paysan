@@ -30,7 +30,7 @@ CREATE TABLE roles (
     name VARCHAR(30) NOT NULL UNIQUE
 );
 
-INSERT INTO roles (name) VALUES ('ROLE_USER'), ('ROLE_VENDEUR'), ('ROLE_ADMIN');
+INSERT INTO roles (name) VALUES ('ROLE_USER'), ('ROLE_VENDEUR'), ('ROLE_ADMIN'), ('ROLE_LIVREUR');
 
 CREATE TABLE user_roles (
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -202,9 +202,29 @@ CREATE TABLE orders (
     commission_rate         NUMERIC(5,2) NOT NULL,
     commission_amount       NUMERIC(12,2) NOT NULL,
     payment_transaction_id  BIGINT REFERENCES payment_transactions(id),
+    assigned_livreur_id     BIGINT REFERENCES users(id),
     created_at              TIMESTAMP NOT NULL DEFAULT now(),
     updated_at              TIMESTAMP NOT NULL DEFAULT now()
 );
+
+CREATE TABLE shop_livreurs (
+    id              BIGSERIAL PRIMARY KEY,
+    shop_id         BIGINT NOT NULL REFERENCES shops(id) ON DELETE CASCADE,
+    livreur_user_id BIGINT NOT NULL UNIQUE REFERENCES users(id),
+    created_at      TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE TABLE order_status_history (
+    id          BIGSERIAL PRIMARY KEY,
+    order_id    BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    status      VARCHAR(25) NOT NULL,
+    changed_by  VARCHAR(10) NOT NULL CHECK (changed_by IN ('SYSTEME','VENDEUR','ACHETEUR','LIVREUR')),
+    note        TEXT,
+    proof_type  VARCHAR(10) NOT NULL DEFAULT 'NONE' CHECK (proof_type IN ('NONE','SIGNATURE','PHOTO')),
+    proof_url   TEXT,
+    changed_at  TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_order_status_history_order_id ON order_status_history(order_id);
 
 CREATE TABLE order_items (
     id                      BIGSERIAL PRIMARY KEY,

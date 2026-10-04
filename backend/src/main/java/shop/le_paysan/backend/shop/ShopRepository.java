@@ -17,4 +17,6 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
     Page<Shop> findByStatus(String status, Pageable pageable);
 
     Page<Shop> findByStatusAndNameContainingIgnoreCase(String status, String name, Pageable pageable);
+
+    long countByStatus(String status);
 }

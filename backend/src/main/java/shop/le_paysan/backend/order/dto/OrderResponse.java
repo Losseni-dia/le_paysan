@@ -16,9 +16,14 @@ public record OrderResponse(
         BigDecimal deliveryAmount,
         BigDecimal totalAmount,
         List<OrderItemResponse> items,
+        List<OrderStatusHistoryResponse> historique,
         LocalDateTime createdAt) {
 
     public static OrderResponse from(Order order) {
+        return from(order, List.of());
+    }
+
+    public static OrderResponse from(Order order, List<OrderStatusHistoryResponse> historique) {
         return new OrderResponse(
                 order.getId(),
                 order.getOrderNumber(),
@@ -29,6 +34,7 @@ public record OrderResponse(
                 order.getDeliveryAmount(),
                 order.getTotalAmount(),
                 order.getItems().stream().map(OrderItemResponse::from).toList(),
+                historique,
                 order.getCreatedAt());
     }
 }

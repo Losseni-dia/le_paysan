@@ -72,6 +72,9 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/contact").permitAll()
+                        // Appele par Fedapay (jamais par le frontend) : authentifie par signature HMAC,
+                        // pas par JWT (cf. PaymentService.verifySignature).
+                        .requestMatchers("/api/payments/fedapay/webhook").permitAll()
                         // Photos produit et logo/couverture boutique : publiques (catalogue et fiches
                         // boutique visibles sans connexion). Documents KYC (shop-kyc, account-recovery,
                         // security-selfies) restent authentifies.

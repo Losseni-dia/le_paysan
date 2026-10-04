@@ -32,6 +32,8 @@ app:
   fedapay:
     api-key: ${FEDAPAY_API_KEY:}
     environment: sandbox
+    base-url: https://sandbox-api.fedapay.com/v1
+    webhook-secret: ${FEDAPAY_WEBHOOK_SECRET:}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
   uploads:

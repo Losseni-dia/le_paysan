@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import shop.le_paysan.backend.payment.PaymentTransaction;
 import shop.le_paysan.backend.shop.Shop;
 import shop.le_paysan.backend.user.User;
 
@@ -72,9 +73,13 @@ public class Order {
     @Column(name = "commission_amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal commissionAmount;
 
-    // Entite PaymentTransaction prevue en Phase 5 ; simple reference numerique en attendant.
-    @Column(name = "payment_transaction_id")
-    private Long paymentTransactionId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_transaction_id")
+    private PaymentTransaction paymentTransaction;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_livreur_id")
+    private User assignedLivreur;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
