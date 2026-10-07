@@ -1,7 +1,5 @@
 package shop.le_paysan.backend.product;
 
-import java.math.BigDecimal;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -34,12 +32,12 @@ public class ProductController {
     public Page<ProductResponse> listPublic(
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Long shopId,
-            @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) String deliveryMode,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) Double refLat,
+            @RequestParam(required = false) Double refLng,
             Pageable pageable) {
-        return service.listPublic(categoryId, shopId, minPrice, maxPrice, deliveryMode, search, pageable);
+        return service.listPublic(categoryId, shopId, deliveryMode, search, refLat, refLng, pageable);
     }
 
     @GetMapping("/api/products/{id}")

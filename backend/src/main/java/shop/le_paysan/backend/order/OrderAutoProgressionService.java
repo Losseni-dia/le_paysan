@@ -19,6 +19,7 @@ public class OrderAutoProgressionService {
     private static final int DELAI_ANNULATION_IMPAYEE_HEURES = 48;
     private static final int DELAI_CONFIRMATION_RETRAIT_JOURS = 5;
     private static final int DELAI_CONFIRMATION_LIVRAISON_JOURS = 7;
+    private static final int DELAI_RAPPEL_AVIS_HEURES = 24;
 
     private final OrderRepository orderRepository;
     private final OrderService orderService;
@@ -37,6 +38,26 @@ public class OrderAutoProgressionService {
         cancelStaleUnpaidOrders();
         autoConfirmDelivery(Order.STATUS_PRETE, DELAI_CONFIRMATION_RETRAIT_JOURS, "retrait");
         autoConfirmDelivery(Order.STATUS_EXPEDIEE, DELAI_CONFIRMATION_LIVRAISON_JOURS, "livraison");
+        sendReviewReminders();
+    }
+
+    /** Cf. demande utilisateur : relance l'acheteur pour noter/donner un avis 24h apres la livraison. */
+    private void sendReviewReminders() {
+        LocalDateTime cutoff = LocalDateTime.now().minusHours(DELAI_RAPPEL_AVIS_HEURES);
+        List<Order> delivered =
+                orderRepository.findByStatusAndReviewReminderSentFalseAndUpdatedAtBefore(Order.STATUS_LIVREE, cutoff);
+        for (Order order : delivered) {
+            order.setReviewReminderSent(true);
+            orderRepository.save(order);
+
+            notificationService.notify(
+                    order.getBuyerUser(),
+                    "REVIEW_REMINDER",
+                    "Donnez votre avis",
+                    "Comment s'est passée votre commande " + order.getOrderNumber()
+                            + " ? Donnez votre avis et notez les produits/la boutique.",
+                    "/mon-espace/commandes");
+        }
     }
 
     private void cancelStaleUnpaidOrders() {

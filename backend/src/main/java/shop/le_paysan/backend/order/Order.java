@@ -81,6 +81,9 @@ public class Order {
     @JoinColumn(name = "assigned_livreur_id")
     private User assignedLivreur;
 
+    @Column(name = "review_reminder_sent", nullable = false)
+    private boolean reviewReminderSent = false;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 

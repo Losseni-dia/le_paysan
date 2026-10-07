@@ -16,6 +16,10 @@ import shop.le_paysan.backend.payment.VendorPayout;
 import shop.le_paysan.backend.payment.VendorPayoutRepository;
 import shop.le_paysan.backend.product.Product;
 import shop.le_paysan.backend.product.ProductRepository;
+import shop.le_paysan.backend.review.ProductReview;
+import shop.le_paysan.backend.review.ProductReviewRepository;
+import shop.le_paysan.backend.review.ShopReview;
+import shop.le_paysan.backend.review.ShopReviewRepository;
 import shop.le_paysan.backend.shop.Shop;
 import shop.le_paysan.backend.shop.ShopRepository;
 import shop.le_paysan.backend.user.UserRepository;
@@ -28,18 +32,24 @@ public class DashboardService {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final VendorPayoutRepository payoutRepository;
+    private final ProductReviewRepository productReviewRepository;
+    private final ShopReviewRepository shopReviewRepository;
 
     public DashboardService(
             UserRepository userRepository,
             ShopRepository shopRepository,
             ProductRepository productRepository,
             OrderRepository orderRepository,
-            VendorPayoutRepository payoutRepository) {
+            VendorPayoutRepository payoutRepository,
+            ProductReviewRepository productReviewRepository,
+            ShopReviewRepository shopReviewRepository) {
         this.userRepository = userRepository;
         this.shopRepository = shopRepository;
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
         this.payoutRepository = payoutRepository;
+        this.productReviewRepository = productReviewRepository;
+        this.shopReviewRepository = shopReviewRepository;
     }
 
     @Transactional(readOnly = true)
@@ -50,7 +60,9 @@ public class DashboardService {
                 shopRepository.countByStatus(Shop.STATUS_EN_ATTENTE),
                 productRepository.countByStatus(Product.STATUS_EN_ATTENTE),
                 orderRepository.countByStatus("EN_ATTENTE_PAIEMENT"),
-                payoutRepository.countByStatus(VendorPayout.STATUS_ECHEC));
+                payoutRepository.countByStatus(VendorPayout.STATUS_ECHEC),
+                productReviewRepository.countByStatus(ProductReview.STATUS_VISIBLE)
+                        + shopReviewRepository.countByStatus(ShopReview.STATUS_VISIBLE));
     }
 
     @Transactional(readOnly = true)

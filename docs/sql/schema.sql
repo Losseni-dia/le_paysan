@@ -203,6 +203,7 @@ CREATE TABLE orders (
     commission_amount       NUMERIC(12,2) NOT NULL,
     payment_transaction_id  BIGINT REFERENCES payment_transactions(id),
     assigned_livreur_id     BIGINT REFERENCES users(id),
+    review_reminder_sent    BOOLEAN NOT NULL DEFAULT FALSE,
     created_at              TIMESTAMP NOT NULL DEFAULT now(),
     updated_at              TIMESTAMP NOT NULL DEFAULT now()
 );

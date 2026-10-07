@@ -12,6 +12,9 @@ public record ProductResponse(
         Long id,
         Long shopId,
         String shopName,
+        String shopCity,
+        Double shopLatitude,
+        Double shopLongitude,
         Long categoryId,
         String categoryName,
         String name,
@@ -22,6 +25,7 @@ public record ProductResponse(
         String status,
         List<String> imageUrls,
         List<DeliveryOption> deliveryOptions,
+        Double distanceKm,
         LocalDateTime createdAt) {
 
     public record DeliveryOption(String mode, String pickupLocation, BigDecimal deliveryPrice) {
@@ -31,10 +35,17 @@ public record ProductResponse(
     }
 
     public static ProductResponse from(Product p) {
+        return from(p, null);
+    }
+
+    public static ProductResponse from(Product p, Double distanceKm) {
         return new ProductResponse(
                 p.getId(),
                 p.getShop().getId(),
                 p.getShop().getName(),
+                p.getShop().getAddressCity(),
+                p.getShop().getLatitude() != null ? p.getShop().getLatitude().doubleValue() : null,
+                p.getShop().getLongitude() != null ? p.getShop().getLongitude().doubleValue() : null,
                 p.getCategory().getId(),
                 p.getCategory().getName(),
                 p.getName(),
@@ -45,6 +56,7 @@ public record ProductResponse(
                 p.getStatus(),
                 p.getImages().stream().map(ProductImage::getUrl).toList(),
                 p.getDeliveryOptions().stream().map(DeliveryOption::from).toList(),
+                distanceKm,
                 p.getCreatedAt());
     }
 }

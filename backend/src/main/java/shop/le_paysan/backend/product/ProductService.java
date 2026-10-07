@@ -1,9 +1,11 @@
 package shop.le_paysan.backend.product;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -181,17 +183,51 @@ public class ProductService {
         return ProductResponse.from(product);
     }
 
+    private static final double CATALOGUE_RADIUS_KM = 50.0;
+
     @Transactional(readOnly = true)
     public Page<ProductResponse> listPublic(
-            Long categoryId, Long shopId, BigDecimal minPrice, BigDecimal maxPrice, String deliveryMode, String search, Pageable pageable) {
+            Long categoryId,
+            Long shopId,
+            String deliveryMode,
+            String search,
+            Double refLat,
+            Double refLng,
+            Pageable pageable) {
         Specification<Product> spec = Specification.allOf(
                 ProductSpecifications.isVisible(),
                 ProductSpecifications.hasCategory(categoryId),
                 ProductSpecifications.hasShop(shopId),
-                ProductSpecifications.priceBetween(minPrice, maxPrice),
                 ProductSpecifications.hasDeliveryMode(deliveryMode),
                 ProductSpecifications.nameContains(search));
-        return productRepository.findAll(spec, pageable).map(ProductResponse::from);
+
+        if (refLat == null || refLng == null) {
+            return productRepository.findAll(spec, pageable).map(ProductResponse::from);
+        }
+
+        // Cf. demande acheteur : "ville ou les environs", trie du plus proche au plus eloigne.
+        // Pas d'index geospatial (PostGIS) en place : calcul Haversine en memoire, acceptable au
+        // volume actuel du catalogue.
+        List<ProductResponse> sorted = productRepository.findAll(spec).stream()
+                .map(p -> ProductResponse.from(
+                        p, haversineKm(refLat, refLng, p.getShop().getLatitude().doubleValue(), p.getShop().getLongitude().doubleValue())))
+                .filter(r -> r.distanceKm() <= CATALOGUE_RADIUS_KM)
+                .sorted(Comparator.comparingDouble(ProductResponse::distanceKm))
+                .toList();
+
+        int start = Math.min((int) pageable.getOffset(), sorted.size());
+        int end = Math.min(start + pageable.getPageSize(), sorted.size());
+        return new PageImpl<>(sorted.subList(start, end), pageable, sorted.size());
+    }
+
+    private static double haversineKm(double lat1, double lon1, double lat2, double lon2) {
+        double earthRadiusKm = 6371.0;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return earthRadiusKm * c;
     }
 
     @Transactional(readOnly = true)

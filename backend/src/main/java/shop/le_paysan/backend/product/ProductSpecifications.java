@@ -1,7 +1,5 @@
 package shop.le_paysan.backend.product;
 
-import java.math.BigDecimal;
-
 import org.springframework.data.jpa.domain.Specification;
 
 import shop.le_paysan.backend.shop.Shop;
@@ -24,18 +22,6 @@ public final class ProductSpecifications {
 
     public static Specification<Product> hasShop(Long shopId) {
         return (root, query, cb) -> shopId == null ? null : cb.equal(root.get("shop").get("id"), shopId);
-    }
-
-    public static Specification<Product> priceBetween(BigDecimal min, BigDecimal max) {
-        return (root, query, cb) -> {
-            if (min == null && max == null) {
-                return null;
-            }
-            if (min != null && max != null) {
-                return cb.between(root.get("unitPrice"), min, max);
-            }
-            return min != null ? cb.greaterThanOrEqualTo(root.get("unitPrice"), min) : cb.lessThanOrEqualTo(root.get("unitPrice"), max);
-        };
     }
 
     public static Specification<Product> nameContains(String search) {

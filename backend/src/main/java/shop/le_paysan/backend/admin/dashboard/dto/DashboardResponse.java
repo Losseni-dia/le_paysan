@@ -6,5 +6,6 @@ public record DashboardResponse(
         long boutiquesEnAttente,
         long produitsEnAttente,
         long commandesEnAttentePaiement,
-        long reversementsEnEchec) {
+        long reversementsEnEchec,
+        long avisTotal) {
 }

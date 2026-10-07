@@ -31,11 +31,17 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Page<Order> findByShopIdOrderByCreatedAtDesc(Long shopId, Pageable pageable);
 
+    /** Cf. docs/02 UC-11 : avis vérifié achat — derniere commande livree de cette boutique pour cet acheteur. */
+    Optional<Order> findFirstByShopIdAndBuyerUserIdAndStatusOrderByCreatedAtDesc(Long shopId, Long buyerUserId, String status);
+
     Page<Order> findByShopIdAndStatusOrderByCreatedAtDesc(Long shopId, String status, Pageable pageable);
 
     List<Order> findByStatusAndCreatedAtBefore(String status, LocalDateTime cutoff);
 
     List<Order> findByStatusAndUpdatedAtBefore(String status, LocalDateTime cutoff);
+
+    /** Cf. rappel avis 24h apres livraison : commandes livrees depuis le cutoff, pas encore relancees. */
+    List<Order> findByStatusAndReviewReminderSentFalseAndUpdatedAtBefore(String status, LocalDateTime cutoff);
 
     Page<Order> findByAssignedLivreurIdAndStatusOrderByCreatedAtDesc(Long livreurId, String status, Pageable pageable);
 

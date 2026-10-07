@@ -90,6 +90,10 @@ public class SecurityConfig {
                         // /api/shops/me* reste authentifie (ne doit pas matcher ici).
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/shops", "/api/shops/{id:[0-9]+}")
                         .permitAll()
+                        // Avis publics (note moyenne + liste) : lecture ouverte, soumission authentifiee
+                        // (verification achat livre faite dans ReviewService).
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/shops/*/avis/**")
+                        .permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
