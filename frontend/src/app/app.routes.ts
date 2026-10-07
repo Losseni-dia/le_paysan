@@ -219,6 +219,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/commission/commission').then((m) => m.Commission),
       },
       {
+        path: 'avis',
+        loadComponent: () => import('./features/admin/reviews/reviews').then((m) => m.Reviews),
+      },
+      {
         path: 'statistiques',
         loadComponent: () => import('./features/admin/statistiques/statistiques').then((m) => m.Statistiques),
       },

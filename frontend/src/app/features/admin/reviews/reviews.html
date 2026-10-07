@@ -1,0 +1,62 @@
+<div class="reviews-page">
+  <h1>Avis</h1>
+
+  <div class="tabs">
+    <button type="button" [class.active]="tab() === 'produits'" (click)="selectTab('produits')">Produits</button>
+    <button type="button" [class.active]="tab() === 'boutiques'" (click)="selectTab('boutiques')">Boutiques</button>
+  </div>
+
+  <div class="filters">
+    <button type="button" class="filter-btn" [class.active]="statusFilter() === ''" (click)="selectStatus('')">Tous</button>
+    <button type="button" class="filter-btn" [class.active]="statusFilter() === 'VISIBLE'" (click)="selectStatus('VISIBLE')">
+      Visibles
+    </button>
+    <button type="button" class="filter-btn" [class.active]="statusFilter() === 'MASQUE'" (click)="selectStatus('MASQUE')">
+      Masqués
+    </button>
+  </div>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (reviews().length === 0) {
+    <p class="form-hint">Aucun avis.</p>
+  } @else {
+    <table class="requests-table">
+      <thead>
+        <tr>
+          <th>{{ tab() === 'produits' ? 'Produit' : 'Boutique' }}</th>
+          <th>Auteur</th>
+          <th>Note</th>
+          <th>Commentaire</th>
+          <th>Statut</th>
+          <th>Date</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of reviews(); track r.id) {
+          <tr>
+            <td>{{ isProductReview(r) ? r.productName : r.shopName }}</td>
+            <td>{{ r.buyerFullName }}</td>
+            <td><app-star-rating [rating]="r.rating" /></td>
+            <td class="comment-cell">{{ r.comment || '—' }}</td>
+            <td>
+              <span class="status-badge" [class.status-masque]="r.status === 'MASQUE'">{{ r.status }}</span>
+              @if (r.moderationReason) {
+                <p class="moderation-reason">{{ r.moderationReason }}</p>
+              }
+            </td>
+            <td>{{ r.createdAt | date: 'dd/MM/yyyy' }}</td>
+            <td>
+              @if (r.status === 'VISIBLE') {
+                <button type="button" class="btn-small btn-danger" (click)="moderate(r, 'MASQUE')">Masquer</button>
+              } @else {
+                <button type="button" class="btn-small" (click)="moderate(r, 'VISIBLE')">Republier</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

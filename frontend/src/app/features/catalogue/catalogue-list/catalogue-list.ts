@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { debounceTime } from 'rxjs';
@@ -8,11 +9,12 @@ import { ProductService } from '../../../core/product/product.service';
 import { ProductResponse } from '../../../core/product/product.model';
 import { CategoryService } from '../../../core/category/category.service';
 import { CategoryResponse } from '../../../core/category/category.model';
+import { CI_CITIES } from '../../../core/catalogue/ci-cities';
 import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-catalogue-list',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, DecimalPipe],
   templateUrl: './catalogue-list.html',
   styleUrl: './catalogue-list.scss',
 })
@@ -27,13 +29,13 @@ export class CatalogueList {
   readonly page = signal(0);
   readonly totalPages = signal(0);
   readonly apiFilesBase = `${environment.apiBaseUrl}/files/`;
+  readonly cities = CI_CITIES;
 
   readonly filterForm = this.fb.nonNullable.group({
     search: [''],
     categoryId: [null as number | null],
-    minPrice: [null as number | null],
-    maxPrice: [null as number | null],
     deliveryMode: [''],
+    city: [''],
   });
 
   constructor() {
@@ -50,13 +52,14 @@ export class CatalogueList {
   private load(): void {
     this.loading.set(true);
     const v = this.filterForm.getRawValue();
+    const selectedCity = this.cities.find((c) => c.name === v.city);
     this.productService
       .listPublic({
         search: v.search || undefined,
         categoryId: v.categoryId ?? undefined,
-        minPrice: v.minPrice ?? undefined,
-        maxPrice: v.maxPrice ?? undefined,
         deliveryMode: v.deliveryMode || undefined,
+        refLat: selectedCity?.lat,
+        refLng: selectedCity?.lng,
         page: this.page(),
       })
       .subscribe({

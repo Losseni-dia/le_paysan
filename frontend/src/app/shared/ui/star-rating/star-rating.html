@@ -1,0 +1,17 @@
+@if (interactive()) {
+  <div class="star-rating interactive" (mouseleave)="onLeave()">
+    @for (star of stars; track star) {
+      <span
+        class="star"
+        [class.filled]="star <= displayRating()"
+        (click)="onClick(star)"
+        (mouseenter)="onHover(star)"
+      >★</span>
+    }
+  </div>
+} @else {
+  <div class="star-rating readonly" [attr.aria-label]="rating() + ' sur 5'">
+    <div class="stars-empty">★★★★★</div>
+    <div class="stars-filled" [style.width.%]="(rating() / 5) * 100">★★★★★</div>
+  </div>
+}

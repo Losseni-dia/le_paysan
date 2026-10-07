@@ -41,6 +41,16 @@
           }
         </section>
 
+        @if (product()!.shopLatitude != null && product()!.shopLongitude != null) {
+          <section class="farm-location-section">
+            <h2>Localisation de la ferme</h2>
+            @if (product()!.shopCity) {
+              <p class="form-hint">{{ product()!.shopCity }}</p>
+            }
+            <app-map-picker [latitude]="product()!.shopLatitude" [longitude]="product()!.shopLongitude" [readonly]="true" />
+          </section>
+        }
+
         <section class="add-to-cart-section">
           @if (!authService.isAuthenticated()) {
             <p class="form-hint">
@@ -99,6 +109,8 @@
             </form>
           }
         </section>
+
+        <app-review-section entityType="product" [entityId]="product()!.id" />
       </div>
     </div>
   }

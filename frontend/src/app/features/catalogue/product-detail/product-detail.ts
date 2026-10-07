@@ -9,11 +9,13 @@ import { CartService } from '../../../core/cart/cart.service';
 import { DeliveryMode } from '../../../core/cart/cart.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FieldError } from '../../../shared/ui/field-error/field-error';
+import { MapPicker } from '../../../shared/ui/map-picker/map-picker';
+import { ReviewSection } from '../../../shared/ui/review-section/review-section';
 import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-product-detail',
-  imports: [RouterLink, ReactiveFormsModule, FieldError],
+  imports: [RouterLink, ReactiveFormsModule, FieldError, MapPicker, ReviewSection],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.scss',
 })

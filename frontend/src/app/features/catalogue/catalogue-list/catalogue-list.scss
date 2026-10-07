@@ -72,6 +72,16 @@
   margin: 0;
 }
 
+.product-city {
+  color: var(--color-text-muted);
+}
+
+.product-distance {
+  color: var(--color-accent);
+  font-size: 12px;
+  margin: 4px 0 0;
+}
+
 .pagination {
   display: flex;
   align-items: center;

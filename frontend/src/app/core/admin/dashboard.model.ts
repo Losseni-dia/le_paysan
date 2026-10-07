@@ -5,6 +5,7 @@ export interface DashboardResponse {
   produitsEnAttente: number;
   commandesEnAttentePaiement: number;
   reversementsEnEchec: number;
+  avisTotal: number;
 }
 
 export interface ShopRevenueResponse {

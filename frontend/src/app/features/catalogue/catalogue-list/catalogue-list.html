@@ -11,13 +11,17 @@
       }
     </select>
 
-    <input class="form-input" type="number" min="0" placeholder="Prix min" formControlName="minPrice" />
-    <input class="form-input" type="number" min="0" placeholder="Prix max" formControlName="maxPrice" />
-
     <select class="form-select" formControlName="deliveryMode">
-      <option value="">Tous les modes</option>
+      <option value="">Mode de livraison</option>
       <option value="RETRAIT_BOUTIQUE">Retrait en boutique</option>
       <option value="LIVRAISON_DOMICILE">Livraison à domicile</option>
+    </select>
+
+    <select class="form-select" formControlName="city">
+      <option value="">Toute la Côte d'Ivoire</option>
+      @for (c of cities; track c.name) {
+        <option [value]="c.name">{{ c.name }} et environs</option>
+      }
     </select>
   </form>
 
@@ -36,8 +40,16 @@
           }
           <div class="product-card-body">
             <h3>{{ p.name }}</h3>
-            <p class="product-shop">{{ p.shopName }}</p>
+            <p class="product-shop">
+              {{ p.shopName }}
+              @if (p.shopCity) {
+                <span class="product-city">— {{ p.shopCity }}</span>
+              }
+            </p>
             <p class="product-price">{{ p.unitPrice }} FCFA / {{ p.unit }}</p>
+            @if (p.distanceKm != null) {
+              <p class="product-distance">📍 {{ p.distanceKm | number: '1.0-1' }} km</p>
+            }
           </div>
         </a>
       }

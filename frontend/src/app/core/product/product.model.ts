@@ -11,6 +11,9 @@ export interface ProductResponse {
   id: number;
   shopId: number;
   shopName: string;
+  shopCity: string | null;
+  shopLatitude: number | null;
+  shopLongitude: number | null;
   categoryId: number;
   categoryName: string;
   name: string;
@@ -21,5 +24,6 @@ export interface ProductResponse {
   status: ProductStatus;
   imageUrls: string[];
   deliveryOptions: ProductDeliveryOptionResponse[];
+  distanceKm: number | null;
   createdAt: string;
 }

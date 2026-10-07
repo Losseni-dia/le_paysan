@@ -6,11 +6,12 @@ import { ShopResponse } from '../../../core/shop/shop.model';
 import { ProductService } from '../../../core/product/product.service';
 import { ProductResponse } from '../../../core/product/product.model';
 import { MapPicker } from '../../../shared/ui/map-picker/map-picker';
+import { ReviewSection } from '../../../shared/ui/review-section/review-section';
 import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-shop-detail',
-  imports: [RouterLink, MapPicker],
+  imports: [RouterLink, MapPicker, ReviewSection],
   templateUrl: './shop-detail.html',
   styleUrl: './shop-detail.scss',
 })

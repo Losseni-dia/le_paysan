@@ -9,10 +9,10 @@ import { ProductResponse } from './product.model';
 export interface PublicProductFilters {
   categoryId?: number;
   shopId?: number;
-  minPrice?: number;
-  maxPrice?: number;
   deliveryMode?: string;
   search?: string;
+  refLat?: number;
+  refLng?: number;
   page?: number;
 }
 
@@ -29,10 +29,10 @@ export class ProductService {
     let params = new HttpParams();
     if (filters.categoryId != null) params = params.set('categoryId', filters.categoryId);
     if (filters.shopId != null) params = params.set('shopId', filters.shopId);
-    if (filters.minPrice != null) params = params.set('minPrice', filters.minPrice);
-    if (filters.maxPrice != null) params = params.set('maxPrice', filters.maxPrice);
     if (filters.deliveryMode) params = params.set('deliveryMode', filters.deliveryMode);
     if (filters.search) params = params.set('search', filters.search);
+    if (filters.refLat != null) params = params.set('refLat', filters.refLat);
+    if (filters.refLng != null) params = params.set('refLng', filters.refLng);
     if (filters.page != null) params = params.set('page', filters.page);
     return this.http.get<PageResponse<ProductResponse>>(this.publicUrl, { params });
   }

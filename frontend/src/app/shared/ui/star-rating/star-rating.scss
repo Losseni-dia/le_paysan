@@ -1,0 +1,37 @@
+.star-rating {
+  display: inline-flex;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.interactive {
+  gap: 2px;
+
+  .star {
+    cursor: pointer;
+    color: var(--color-border);
+
+    &.filled {
+      color: var(--color-warning);
+    }
+  }
+}
+
+.readonly {
+  position: relative;
+  color: var(--color-border);
+  white-space: nowrap;
+
+  .stars-empty {
+    letter-spacing: 2px;
+  }
+
+  .stars-filled {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    color: var(--color-warning);
+    letter-spacing: 2px;
+  }
+}
