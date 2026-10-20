@@ -19,7 +19,7 @@ import shop.le_paysan.backend.shop.dto.ShopAdminDetailResponse;
 import shop.le_paysan.backend.shop.dto.ShopResponse;
 
 @RestController
-@RequestMapping("/api/admin/shops")
+@RequestMapping("/api/v1/admin/shops")
 @PreAuthorize("hasRole('ADMIN')")
 public class ShopAdminController {
 

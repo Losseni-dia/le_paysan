@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
  * precis (notamment pour les futurs documents KYC) -- a affiner en Phase 2.
  */
 @RestController
-@RequestMapping("/api/files")
+@RequestMapping("/api/v1/files")
 public class FileController {
 
     private final FileStorageService fileStorageService;

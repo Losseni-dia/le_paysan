@@ -19,7 +19,7 @@ import shop.le_paysan.backend.user.dto.UpdateProfileRequest;
 import shop.le_paysan.backend.user.dto.UserResponse;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/v1/users")
 public class UserController {
 
     private final UserRepository userRepository;

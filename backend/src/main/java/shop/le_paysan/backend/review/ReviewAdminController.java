@@ -17,7 +17,7 @@ import shop.le_paysan.backend.review.dto.ProductReviewResponse;
 import shop.le_paysan.backend.review.dto.ShopReviewResponse;
 
 @RestController
-@RequestMapping("/api/admin/avis")
+@RequestMapping("/api/v1/admin/avis")
 @PreAuthorize("hasRole('ADMIN')")
 public class ReviewAdminController {
 

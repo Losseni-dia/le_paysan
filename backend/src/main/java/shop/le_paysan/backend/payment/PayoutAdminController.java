@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import shop.le_paysan.backend.payment.dto.VendorPayoutResponse;
 
 @RestController
-@RequestMapping("/api/admin/payouts")
+@RequestMapping("/api/v1/admin/payouts")
 @PreAuthorize("hasRole('ADMIN')")
 public class PayoutAdminController {
 

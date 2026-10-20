@@ -18,7 +18,7 @@ import shop.le_paysan.backend.livreur.dto.LivreurAdminResponse;
 import shop.le_paysan.backend.livreur.dto.RejectLivreurKycRequest;
 
 @RestController
-@RequestMapping("/api/admin/livreurs")
+@RequestMapping("/api/v1/admin/livreurs")
 @PreAuthorize("hasRole('ADMIN')")
 public class LivreurAdminController {
 

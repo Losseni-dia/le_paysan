@@ -9,7 +9,7 @@ import shop.le_paysan.backend.admin.dashboard.dto.DashboardResponse;
 import shop.le_paysan.backend.admin.dashboard.dto.StatsResponse;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api/v1/admin")
 @PreAuthorize("hasRole('ADMIN')")
 public class DashboardAdminController {
 

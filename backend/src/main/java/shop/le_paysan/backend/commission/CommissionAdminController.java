@@ -14,7 +14,7 @@ import shop.le_paysan.backend.commission.dto.CommissionRateResponse;
 import shop.le_paysan.backend.commission.dto.UpdateCommissionRequest;
 
 @RestController
-@RequestMapping("/api/admin/commission")
+@RequestMapping("/api/v1/admin/commission")
 @PreAuthorize("hasRole('ADMIN')")
 public class CommissionAdminController {
 

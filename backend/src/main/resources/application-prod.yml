@@ -25,6 +25,12 @@ server:
     include-stacktrace: never
     include-message: always
 
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
 app:
   jwt:
     secret: ${JWT_SECRET}

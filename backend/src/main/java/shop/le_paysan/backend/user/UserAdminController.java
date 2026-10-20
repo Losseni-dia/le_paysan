@@ -20,7 +20,7 @@ import shop.le_paysan.backend.user.dto.AdminUserResponse;
 import shop.le_paysan.backend.user.dto.UpdateUserRolesRequest;
 
 @RestController
-@RequestMapping("/api/admin/users")
+@RequestMapping("/api/v1/admin/users")
 @PreAuthorize("hasRole('ADMIN')")
 public class UserAdminController {
 

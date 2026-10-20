@@ -19,7 +19,7 @@ import shop.le_paysan.backend.product.dto.ProductResponse;
 import shop.le_paysan.backend.product.dto.RejectProductRequest;
 
 @RestController
-@RequestMapping("/api/admin/products")
+@RequestMapping("/api/v1/admin/products")
 @PreAuthorize("hasRole('ADMIN')")
 public class ProductAdminController {
 

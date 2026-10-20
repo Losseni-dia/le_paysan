@@ -19,7 +19,7 @@ import shop.le_paysan.backend.common.FileStorageService;
 import shop.le_paysan.backend.order.dto.AdminOrderResponse;
 
 @RestController
-@RequestMapping("/api/livreur/orders")
+@RequestMapping("/api/v1/livreur/orders")
 @PreAuthorize("hasRole('LIVREUR')")
 public class OrderLivreurController {
 

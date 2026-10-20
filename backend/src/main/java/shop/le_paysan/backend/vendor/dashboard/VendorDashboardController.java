@@ -15,7 +15,7 @@ import shop.le_paysan.backend.vendor.dashboard.dto.VendorDashboardResponse;
 import shop.le_paysan.backend.vendor.dashboard.dto.VendorStatsResponse;
 
 @RestController
-@RequestMapping("/api/vendor")
+@RequestMapping("/api/v1/vendor")
 @PreAuthorize("hasRole('VENDEUR')")
 public class VendorDashboardController {
 

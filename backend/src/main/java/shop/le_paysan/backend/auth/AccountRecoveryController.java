@@ -22,27 +22,27 @@ public class AccountRecoveryController {
         this.service = service;
     }
 
-    @PostMapping(value = "/api/auth/account-recovery-requests", consumes = "multipart/form-data")
+    @PostMapping(value = "/api/v1/auth/account-recovery-requests", consumes = "multipart/form-data")
     public AccountRecoveryResponse create(
             @RequestParam String username, @RequestParam("selfie") MultipartFile selfie) {
         return service.create(username, selfie);
     }
 
-    @GetMapping("/api/admin/account-recovery-requests")
+    @GetMapping("/api/v1/admin/account-recovery-requests")
     @PreAuthorize("hasRole('ADMIN')")
     public Page<AccountRecoveryResponse> list(
             @RequestParam(required = false) String status, Pageable pageable) {
         return service.list(status, pageable);
     }
 
-    @GetMapping("/api/admin/account-recovery-requests/{id}")
+    @GetMapping("/api/v1/admin/account-recovery-requests/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public AccountRecoveryResponse get(@PathVariable Long id) {
         return service.get(id);
     }
 
     /** @return le mot de passe temporaire a communiquer manuellement au user (hors-ligne). */
-    @PostMapping("/api/admin/account-recovery-requests/{id}/approve")
+    @PostMapping("/api/v1/admin/account-recovery-requests/{id}/approve")
     @PreAuthorize("hasRole('ADMIN')")
     public java.util.Map<String, String> approve(
             @PathVariable Long id, @AuthenticationPrincipal SecurityUser admin) {
@@ -50,7 +50,7 @@ public class AccountRecoveryController {
         return java.util.Map.of("temporaryPassword", temporaryPassword);
     }
 
-    @PostMapping("/api/admin/account-recovery-requests/{id}/reject")
+    @PostMapping("/api/v1/admin/account-recovery-requests/{id}/reject")
     @PreAuthorize("hasRole('ADMIN')")
     public void reject(
             @PathVariable Long id,

@@ -17,7 +17,7 @@ import shop.le_paysan.backend.cart.dto.CartResponse;
 import shop.le_paysan.backend.cart.dto.UpdateCartItemRequest;
 
 @RestController
-@RequestMapping("/api/cart")
+@RequestMapping("/api/v1/cart")
 public class CartController {
 
     private final CartService service;

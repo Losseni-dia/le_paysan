@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import shop.le_paysan.backend.category.dto.CategoryResponse;
 
 @RestController
-@RequestMapping("/api/admin/categories")
+@RequestMapping("/api/v1/admin/categories")
 @PreAuthorize("hasRole('ADMIN')")
 public class CategoryAdminController {
 

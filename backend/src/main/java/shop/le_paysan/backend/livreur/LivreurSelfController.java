@@ -14,7 +14,7 @@ import shop.le_paysan.backend.livreur.dto.SetAvailabilityRequest;
 
 /** Le livreur gere sa propre disponibilite, visible par le vendeur dans sa liste de livreurs. */
 @RestController
-@RequestMapping("/api/livreur")
+@RequestMapping("/api/v1/livreur")
 @PreAuthorize("hasRole('LIVREUR')")
 public class LivreurSelfController {
 

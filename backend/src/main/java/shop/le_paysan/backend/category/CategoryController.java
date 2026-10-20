@@ -16,7 +16,7 @@ import shop.le_paysan.backend.category.dto.CategoryResponse;
 import shop.le_paysan.backend.category.dto.CreateCategoryRequest;
 
 @RestController
-@RequestMapping("/api/categories")
+@RequestMapping("/api/v1/categories")
 public class CategoryController {
 
     private final CategoryService service;

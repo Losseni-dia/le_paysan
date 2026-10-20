@@ -21,6 +21,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import shop.le_paysan.backend.auth.AuthRateLimitFilter;
 import shop.le_paysan.backend.auth.JwtAuthFilter;
 
 @Configuration
@@ -29,12 +30,14 @@ import shop.le_paysan.backend.auth.JwtAuthFilter;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final AuthRateLimitFilter authRateLimitFilter;
 
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, AuthRateLimitFilter authRateLimitFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.authRateLimitFilter = authRateLimitFilter;
     }
 
     @Bean
@@ -70,38 +73,44 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/contact").permitAll()
+                        // Doc API (springdoc) : utile pour le dev mobile, desactivee en prod via
+                        // springdoc.api-docs.enabled=false (cf. application-prod.yml).
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")
+                        .permitAll()
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/v1/contact").permitAll()
                         // Appele par Fedapay (jamais par le frontend) : authentifie par signature HMAC,
-                        // pas par JWT (cf. PaymentService.verifySignature).
+                        // pas par JWT (cf. PaymentService.verifySignature). Volontairement hors /api/v1,
+                        // cf. commentaire sur PaymentController.webhook().
                         .requestMatchers("/api/payments/fedapay/webhook").permitAll()
                         // Photos produit et logo/couverture boutique : publiques (catalogue et fiches
                         // boutique visibles sans connexion). Documents KYC (shop-kyc, account-recovery,
                         // security-selfies) restent authentifies.
                         .requestMatchers(
                                 org.springframework.http.HttpMethod.GET,
-                                "/api/files/products/**",
-                                "/api/files/shop-public/**")
+                                "/api/v1/files/products/**",
+                                "/api/v1/files/shop-public/**")
                         .permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET,
-                                "/api/products/**", "/api/categories/**")
+                                "/api/v1/products/**", "/api/v1/categories/**")
                         .permitAll()
                         // Uniquement les routes de lecture publique de /api/shops (liste + fiche par id) :
                         // /api/shops/me* reste authentifie (ne doit pas matcher ici).
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/shops", "/api/shops/{id:[0-9]+}")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/shops", "/api/v1/shops/{id:[0-9]+}")
                         .permitAll()
                         // Avis publics (note moyenne + liste) : lecture ouverte, soumission authentifiee
                         // (verification achat livre faite dans ReviewService).
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/shops/*/avis/**")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/shops/*/avis/**")
                         .permitAll()
                         // Bareme de livraison public (affiche sur la fiche produit/boutique) : lecture
                         // ouverte, modification reservee au vendeur (cf. ShopDeliveryTierController).
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/shops/*/paliers-livraison")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/shops/*/paliers-livraison")
                         .permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/shops/*/villes-livraison")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/shops/*/villes-livraison")
                         .permitAll()
                         .anyRequest().authenticated())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(authRateLimitFilter, JwtAuthFilter.class);
         return http.build();
     }
 }

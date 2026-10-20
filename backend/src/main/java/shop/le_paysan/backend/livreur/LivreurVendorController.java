@@ -26,7 +26,7 @@ import shop.le_paysan.backend.shop.Shop;
 import shop.le_paysan.backend.shop.ShopRepository;
 
 @RestController
-@RequestMapping("/api/vendor/livreurs")
+@RequestMapping("/api/v1/vendor/livreurs")
 @PreAuthorize("hasRole('VENDEUR')")
 public class LivreurVendorController {
 

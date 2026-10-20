@@ -14,7 +14,7 @@ import shop.le_paysan.backend.auth.SecurityUser;
 import shop.le_paysan.backend.common.notification.dto.NotificationResponse;
 
 @RestController
-@RequestMapping("/api/notifications")
+@RequestMapping("/api/v1/notifications")
 public class NotificationController {
 
     private final NotificationService service;

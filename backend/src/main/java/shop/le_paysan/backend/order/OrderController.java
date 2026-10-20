@@ -24,22 +24,22 @@ public class OrderController {
         this.service = service;
     }
 
-    @PostMapping("/api/orders")
+    @PostMapping("/api/v1/orders")
     public ResponseEntity<List<OrderResponse>> checkout(@AuthenticationPrincipal SecurityUser principal) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.checkout(principal.getUser()));
     }
 
-    @GetMapping("/api/orders")
+    @GetMapping("/api/v1/orders")
     public List<OrderResponse> listMine(@AuthenticationPrincipal SecurityUser principal) {
         return service.listMine(principal.getUser());
     }
 
-    @GetMapping("/api/orders/{id}")
+    @GetMapping("/api/v1/orders/{id}")
     public OrderResponse getMine(@AuthenticationPrincipal SecurityUser principal, @PathVariable Long id) {
         return service.getMine(principal.getUser(), id);
     }
 
-    @PostMapping("/api/orders/{id}/confirmer-reception")
+    @PostMapping("/api/v1/orders/{id}/confirmer-reception")
     public OrderResponse confirmReception(@AuthenticationPrincipal SecurityUser principal, @PathVariable Long id) {
         return service.confirmReceptionByBuyer(principal.getUser(), id);
     }

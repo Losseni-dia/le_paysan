@@ -24,7 +24,7 @@ import shop.le_paysan.backend.shop.dto.ShopResponse;
 import shop.le_paysan.backend.shop.dto.UpdateShopRequest;
 
 @RestController
-@RequestMapping("/api/shops")
+@RequestMapping("/api/v1/shops")
 public class ShopController {
 
     private final ShopService service;

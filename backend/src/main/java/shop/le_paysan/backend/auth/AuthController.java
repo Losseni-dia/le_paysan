@@ -16,7 +16,7 @@ import shop.le_paysan.backend.auth.dto.RegisterRequest;
 import shop.le_paysan.backend.auth.dto.ResetPasswordRequest;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthController {
 
     private final AuthService authService;

@@ -31,18 +31,18 @@ public class ShopDeliveryTierController {
     }
 
     /** Public : affiche le bareme de livraison d'une boutique sur la fiche produit/boutique. */
-    @GetMapping("/api/shops/{id}/paliers-livraison")
+    @GetMapping("/api/v1/shops/{id}/paliers-livraison")
     public List<ShopDeliveryTierResponse> publicTiers(@PathVariable Long id) {
         return tierService.list(id);
     }
 
-    @GetMapping("/api/vendor/shop/paliers-livraison")
+    @GetMapping("/api/v1/vendor/shop/paliers-livraison")
     @PreAuthorize("hasRole('VENDEUR')")
     public List<ShopDeliveryTierResponse> myTiers(@AuthenticationPrincipal SecurityUser principal) {
         return tierService.list(shopOf(principal).getId());
     }
 
-    @PutMapping("/api/vendor/shop/paliers-livraison")
+    @PutMapping("/api/v1/vendor/shop/paliers-livraison")
     @PreAuthorize("hasRole('VENDEUR')")
     public List<ShopDeliveryTierResponse> replaceMyTiers(
             @AuthenticationPrincipal SecurityUser principal, @Valid @RequestBody List<ShopDeliveryTierRequest> tiers) {
@@ -50,18 +50,18 @@ public class ShopDeliveryTierController {
     }
 
     /** Public : villes hors rayon habituel ou la boutique livre explicitement, a prix fixe. */
-    @GetMapping("/api/shops/{id}/villes-livraison")
+    @GetMapping("/api/v1/shops/{id}/villes-livraison")
     public List<ShopDeliveryCityResponse> publicCities(@PathVariable Long id) {
         return tierService.listCities(id);
     }
 
-    @GetMapping("/api/vendor/shop/villes-livraison")
+    @GetMapping("/api/v1/vendor/shop/villes-livraison")
     @PreAuthorize("hasRole('VENDEUR')")
     public List<ShopDeliveryCityResponse> myCities(@AuthenticationPrincipal SecurityUser principal) {
         return tierService.listCities(shopOf(principal).getId());
     }
 
-    @PutMapping("/api/vendor/shop/villes-livraison")
+    @PutMapping("/api/v1/vendor/shop/villes-livraison")
     @PreAuthorize("hasRole('VENDEUR')")
     public List<ShopDeliveryCityResponse> replaceMyCities(
             @AuthenticationPrincipal SecurityUser principal, @Valid @RequestBody List<ShopDeliveryCityRequest> cities) {

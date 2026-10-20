@@ -19,7 +19,7 @@ import shop.le_paysan.backend.review.dto.ReviewEligibilityResponse;
 import shop.le_paysan.backend.review.dto.SubmitReviewRequest;
 
 @RestController
-@RequestMapping("/api/products/{productId}/avis")
+@RequestMapping("/api/v1/products/{productId}/avis")
 public class ProductReviewController {
 
     private final ReviewService service;

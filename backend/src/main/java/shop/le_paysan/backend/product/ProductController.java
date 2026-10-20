@@ -28,7 +28,7 @@ public class ProductController {
         this.service = service;
     }
 
-    @GetMapping("/api/products")
+    @GetMapping("/api/v1/products")
     public Page<ProductResponse> listPublic(
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Long shopId,
@@ -41,32 +41,32 @@ public class ProductController {
         return service.listPublic(categoryId, shopId, deliveryMode, search, refLat, refLng, refCity, pageable);
     }
 
-    @GetMapping("/api/products/{id}")
+    @GetMapping("/api/v1/products/{id}")
     public ProductResponse getPublic(@PathVariable Long id) {
         return service.getPublic(id);
     }
 
-    @PostMapping(value = "/api/vendor/products", consumes = "multipart/form-data")
+    @PostMapping(value = "/api/v1/vendor/products", consumes = "multipart/form-data")
     @PreAuthorize("hasRole('VENDEUR')")
     public ResponseEntity<ProductResponse> create(
             @AuthenticationPrincipal SecurityUser principal, @ModelAttribute ProductCreateForm form) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(principal.getUser(), form));
     }
 
-    @PutMapping(value = "/api/vendor/products/{id}", consumes = "multipart/form-data")
+    @PutMapping(value = "/api/v1/vendor/products/{id}", consumes = "multipart/form-data")
     @PreAuthorize("hasRole('VENDEUR')")
     public ProductResponse update(
             @AuthenticationPrincipal SecurityUser principal, @PathVariable Long id, @ModelAttribute ProductCreateForm form) {
         return service.update(principal.getUser(), id, form);
     }
 
-    @PatchMapping("/api/vendor/products/{id}/publish-state")
+    @PatchMapping("/api/v1/vendor/products/{id}/publish-state")
     @PreAuthorize("hasRole('VENDEUR')")
     public ProductResponse togglePublishState(@AuthenticationPrincipal SecurityUser principal, @PathVariable Long id) {
         return service.togglePublishState(principal.getUser(), id);
     }
 
-    @GetMapping("/api/vendor/products")
+    @GetMapping("/api/v1/vendor/products")
     @PreAuthorize("hasRole('VENDEUR')")
     public Page<ProductResponse> listMine(@AuthenticationPrincipal SecurityUser principal, Pageable pageable) {
         return service.listMine(principal.getUser(), pageable);

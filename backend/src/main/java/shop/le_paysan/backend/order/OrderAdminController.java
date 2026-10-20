@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import shop.le_paysan.backend.order.dto.AdminOrderResponse;
 
 @RestController
-@RequestMapping("/api/admin/orders")
+@RequestMapping("/api/v1/admin/orders")
 @PreAuthorize("hasRole('ADMIN')")
 public class OrderAdminController {
 
