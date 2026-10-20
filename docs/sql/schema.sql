@@ -178,6 +178,22 @@ CREATE TABLE shop_delivery_cities (
 );
 CREATE INDEX idx_shop_delivery_cities_city_name ON shop_delivery_cities(city_name);
 
+-- Formulaire de contact / support (cf. docs/02-specifications-fonctionnelles.md UC-12).
+CREATE TABLE contact_messages (
+    id                   BIGSERIAL PRIMARY KEY,
+    user_id              BIGINT REFERENCES users(id),
+    full_name            VARCHAR(150) NOT NULL,
+    email                VARCHAR(255) NOT NULL,
+    subject              VARCHAR(200) NOT NULL,
+    message              TEXT NOT NULL,
+    status               VARCHAR(15) NOT NULL DEFAULT 'NOUVEAU' CHECK (status IN ('NOUVEAU','EN_COURS','TRAITE')),
+    admin_response       TEXT,
+    handled_by_admin_id  BIGINT REFERENCES users(id),
+    handled_at           TIMESTAMP,
+    created_at           TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_contact_messages_status ON contact_messages(status);
+
 CREATE TABLE product_validations (
     id          BIGSERIAL PRIMARY KEY,
     product_id  BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
