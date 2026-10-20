@@ -23,7 +23,7 @@ spring:
 server:
   error:
     include-stacktrace: never
-    include-message: never
+    include-message: always
 
 app:
   jwt:
