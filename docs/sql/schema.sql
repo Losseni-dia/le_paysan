@@ -166,6 +166,18 @@ CREATE TABLE shop_delivery_tiers (
 );
 CREATE INDEX idx_shop_delivery_tiers_shop_id ON shop_delivery_tiers(shop_id);
 
+-- Ville hors rayon de distance habituel, declaree explicitement par le vendeur avec un prix fixe
+-- (ex : une ferme a Samango qui livre aussi a Bouake). Rend le produit visible dans le catalogue
+-- pour un acheteur de cette ville, prix prioritaire sur les paliers de distance.
+CREATE TABLE shop_delivery_cities (
+    id          BIGSERIAL PRIMARY KEY,
+    shop_id     BIGINT NOT NULL REFERENCES shops(id) ON DELETE CASCADE,
+    city_name   VARCHAR(100) NOT NULL,
+    price       NUMERIC(12,2) NOT NULL CHECK (price >= 0),
+    UNIQUE (shop_id, city_name)
+);
+CREATE INDEX idx_shop_delivery_cities_city_name ON shop_delivery_cities(city_name);
+
 CREATE TABLE product_validations (
     id          BIGSERIAL PRIMARY KEY,
     product_id  BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,

@@ -14,6 +14,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.validation.Valid;
 import shop.le_paysan.backend.auth.SecurityUser;
+import shop.le_paysan.backend.shop.dto.ShopDeliveryCityRequest;
+import shop.le_paysan.backend.shop.dto.ShopDeliveryCityResponse;
 import shop.le_paysan.backend.shop.dto.ShopDeliveryTierRequest;
 import shop.le_paysan.backend.shop.dto.ShopDeliveryTierResponse;
 
@@ -45,6 +47,25 @@ public class ShopDeliveryTierController {
     public List<ShopDeliveryTierResponse> replaceMyTiers(
             @AuthenticationPrincipal SecurityUser principal, @Valid @RequestBody List<ShopDeliveryTierRequest> tiers) {
         return tierService.replace(shopOf(principal), tiers);
+    }
+
+    /** Public : villes hors rayon habituel ou la boutique livre explicitement, a prix fixe. */
+    @GetMapping("/api/shops/{id}/villes-livraison")
+    public List<ShopDeliveryCityResponse> publicCities(@PathVariable Long id) {
+        return tierService.listCities(id);
+    }
+
+    @GetMapping("/api/vendor/shop/villes-livraison")
+    @PreAuthorize("hasRole('VENDEUR')")
+    public List<ShopDeliveryCityResponse> myCities(@AuthenticationPrincipal SecurityUser principal) {
+        return tierService.listCities(shopOf(principal).getId());
+    }
+
+    @PutMapping("/api/vendor/shop/villes-livraison")
+    @PreAuthorize("hasRole('VENDEUR')")
+    public List<ShopDeliveryCityResponse> replaceMyCities(
+            @AuthenticationPrincipal SecurityUser principal, @Valid @RequestBody List<ShopDeliveryCityRequest> cities) {
+        return tierService.replaceCities(shopOf(principal), cities);
     }
 
     private Shop shopOf(SecurityUser principal) {

@@ -36,8 +36,9 @@ public class ProductController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Double refLat,
             @RequestParam(required = false) Double refLng,
+            @RequestParam(required = false) String refCity,
             Pageable pageable) {
-        return service.listPublic(categoryId, shopId, deliveryMode, search, refLat, refLng, pageable);
+        return service.listPublic(categoryId, shopId, deliveryMode, search, refLat, refLng, refCity, pageable);
     }
 
     @GetMapping("/api/products/{id}")

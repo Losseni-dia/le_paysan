@@ -64,7 +64,7 @@ public class CartService {
                 .findFirst()
                 .map(o -> o.getDeliveryPrice())
                 .orElse(null);
-        var price = deliveryTierService.computeDeliveryPrice(shop, supplement, distanceKm);
+        var price = deliveryTierService.computeDeliveryPrice(shop, supplement, item.getDeliveryCityName(), distanceKm);
         return price.map(p -> CartItemResponse.from(item, p)).orElseGet(() -> CartItemResponse.outOfRange(item));
     }
 

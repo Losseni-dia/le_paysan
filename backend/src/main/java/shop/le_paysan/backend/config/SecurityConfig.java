@@ -98,6 +98,8 @@ public class SecurityConfig {
                         // ouverte, modification reservee au vendeur (cf. ShopDeliveryTierController).
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/shops/*/paliers-livraison")
                         .permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/shops/*/villes-livraison")
+                        .permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

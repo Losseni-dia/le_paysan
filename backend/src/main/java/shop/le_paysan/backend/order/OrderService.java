@@ -137,7 +137,7 @@ public class OrderService {
                 orderItem.setQuantity(cartItem.getQuantity());
                 orderItem.setDeliveryMode(cartItem.getDeliveryMode());
                 orderItem.setDeliveryPrice(deliveryPrice);
-                orderItem.setDeliveryAddress(cartItem.getDeliveryAddress());
+                orderItem.setDeliveryAddress(fullDeliveryAddress(cartItem));
                 order.getItems().add(orderItem);
             }
 
@@ -161,6 +161,19 @@ public class OrderService {
         return createdOrders.stream().map(OrderResponse::from).toList();
     }
 
+    /** Cf. demande utilisateur : le livreur doit voir la ville, pas seulement l'adresse en texte libre. */
+    private String fullDeliveryAddress(CartItem cartItem) {
+        String address = cartItem.getDeliveryAddress();
+        String city = cartItem.getDeliveryCityName();
+        if (city == null || city.isBlank()) {
+            return address;
+        }
+        if (address == null || address.isBlank()) {
+            return city;
+        }
+        return address + ", " + city;
+    }
+
     /** Cf. demande utilisateur (paliers de livraison) : prix du palier de distance + supplement produit. */
     private BigDecimal computeDeliveryPrice(Shop shop, Product product, CartItem cartItem) {
         if (!ProductDeliveryOption.MODE_LIVRAISON.equals(cartItem.getDeliveryMode())) {
@@ -181,7 +194,7 @@ public class OrderService {
         double distanceKm = deliveryTierService.distanceKm(
                 shop, cartItem.getDeliveryCityLat().doubleValue(), cartItem.getDeliveryCityLng().doubleValue());
         return deliveryTierService
-                .computeDeliveryPrice(shop, supplement, distanceKm)
+                .computeDeliveryPrice(shop, supplement, cartItem.getDeliveryCityName(), distanceKm)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.CONFLICT,
                         "La boutique \"" + shop.getName() + "\" ne livre pas jusqu'à " + cartItem.getDeliveryCityName()
@@ -307,7 +320,7 @@ public class OrderService {
                     "DELIVERY_ASSIGNED",
                     "Nouvelle livraison",
                     "La commande " + order.getOrderNumber() + " vous a été assignée.",
-                    "/livreur/livraisons/" + order.getId());
+                    "/livreur/livraisons");
         }
 
         orderRepository.save(order);
@@ -388,7 +401,7 @@ public class OrderService {
                     "DELIVERY_ASSIGNED",
                     "Nouvelle livraison",
                     "La commande " + order.getOrderNumber() + " vous a été assignée.",
-                    "/livreur/livraisons/" + order.getId());
+                    "/livreur/livraisons");
             results.add(new BulkAssignLivreurResult(orderId, order.getOrderNumber(), true, "Livreur assigné"));
         }
         return results;

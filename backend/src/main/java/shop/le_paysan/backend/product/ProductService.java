@@ -27,6 +27,7 @@ import shop.le_paysan.backend.product.dto.ProductCreateForm;
 import shop.le_paysan.backend.product.dto.ProductResponse;
 import shop.le_paysan.backend.review.ProductReviewRepository;
 import shop.le_paysan.backend.shop.Shop;
+import shop.le_paysan.backend.shop.ShopDeliveryTierService;
 import shop.le_paysan.backend.shop.ShopPayoutAccountRepository;
 import shop.le_paysan.backend.shop.ShopRepository;
 import shop.le_paysan.backend.user.User;
@@ -44,6 +45,7 @@ public class ProductService {
     private final FileStorageService fileStorageService;
     private final NotificationService notificationService;
     private final ProductReviewRepository productReviewRepository;
+    private final ShopDeliveryTierService deliveryTierService;
 
     public ProductService(
             ProductRepository productRepository,
@@ -53,7 +55,8 @@ public class ProductService {
             ShopPayoutAccountRepository payoutAccountRepository,
             FileStorageService fileStorageService,
             NotificationService notificationService,
-            ProductReviewRepository productReviewRepository) {
+            ProductReviewRepository productReviewRepository,
+            ShopDeliveryTierService deliveryTierService) {
         this.productRepository = productRepository;
         this.productValidationRepository = productValidationRepository;
         this.categoryRepository = categoryRepository;
@@ -62,6 +65,7 @@ public class ProductService {
         this.fileStorageService = fileStorageService;
         this.notificationService = notificationService;
         this.productReviewRepository = productReviewRepository;
+        this.deliveryTierService = deliveryTierService;
     }
 
     @Transactional
@@ -204,6 +208,7 @@ public class ProductService {
             String search,
             Double refLat,
             Double refLng,
+            String refCity,
             Pageable pageable) {
         Specification<Product> spec = Specification.allOf(
                 ProductSpecifications.isVisible(),
@@ -220,10 +225,14 @@ public class ProductService {
         // Cf. demande acheteur : "ville ou les environs", trie du plus proche au plus eloigne.
         // Pas d'index geospatial (PostGIS) en place : calcul Haversine en memoire, acceptable au
         // volume actuel du catalogue.
+        // Cf. demande vendeur : une boutique peut aussi declarer livrer explicitement dans une ville
+        // hors de son rayon habituel (ex : ferme a Samango qui livre a Bouake) ; ces produits restent
+        // visibles pour un acheteur de cette ville meme si la distance depasse CATALOGUE_RADIUS_KM.
+        java.util.Set<Long> shopIdsCoveringCity = deliveryTierService.shopIdsCoveringCity(refCity);
         List<ProductResponse> sorted = productRepository.findAll(spec).stream()
                 .map(p -> ProductResponse.from(
                         p, GeoUtils.haversineKm(refLat, refLng, p.getShop().getLatitude().doubleValue(), p.getShop().getLongitude().doubleValue())))
-                .filter(r -> r.distanceKm() <= CATALOGUE_RADIUS_KM)
+                .filter(r -> r.distanceKm() <= CATALOGUE_RADIUS_KM || shopIdsCoveringCity.contains(r.shopId()))
                 .sorted(Comparator.comparingDouble(ProductResponse::distanceKm))
                 .toList();
 

@@ -24,9 +24,22 @@ public final class ProductSpecifications {
         return (root, query, cb) -> shopId == null ? null : cb.equal(root.get("shop").get("id"), shopId);
     }
 
+    /**
+     * Cf. demande utilisateur : enrichit la recherche avec des synonymes (ex: "poisson" doit aussi
+     * remonter "tilapia"/"carpe") et verifie aussi le nom de la categorie, pas seulement le produit.
+     */
     public static Specification<Product> nameContains(String search) {
-        return (root, query, cb) ->
-                search == null || search.isBlank() ? null : cb.like(cb.lower(root.get("name")), "%" + search.toLowerCase() + "%");
+        return (root, query, cb) -> {
+            if (search == null || search.isBlank()) {
+                return null;
+            }
+            var terms = SearchSynonyms.expand(search);
+            var predicates = terms.stream()
+                    .map(term -> cb.like(cb.lower(root.get("name")), "%" + term.toLowerCase() + "%"))
+                    .toArray(jakarta.persistence.criteria.Predicate[]::new);
+            var categoryMatch = cb.like(cb.lower(root.get("category").get("name")), "%" + search.toLowerCase() + "%");
+            return cb.or(cb.or(predicates), categoryMatch);
+        };
     }
 
     public static Specification<Product> hasDeliveryMode(String mode) {
