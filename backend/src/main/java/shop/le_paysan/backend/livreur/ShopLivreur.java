@@ -38,6 +38,9 @@ public class ShopLivreur {
     @JoinColumn(name = "livreur_user_id", nullable = false)
     private User livreur;
 
+    @Column(nullable = false)
+    private boolean available = true;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }

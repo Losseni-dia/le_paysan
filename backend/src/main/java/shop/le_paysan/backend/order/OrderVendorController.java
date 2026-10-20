@@ -1,5 +1,7 @@
 package shop.le_paysan.backend.order;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -8,15 +10,20 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.validation.Valid;
 import shop.le_paysan.backend.auth.SecurityUser;
 import shop.le_paysan.backend.common.FileStorageService;
 import shop.le_paysan.backend.order.dto.AdminOrderResponse;
+import shop.le_paysan.backend.order.dto.BulkAssignLivreurRequest;
+import shop.le_paysan.backend.order.dto.BulkAssignLivreurResult;
 import shop.le_paysan.backend.shop.Shop;
 import shop.le_paysan.backend.shop.ShopRepository;
 
@@ -71,6 +78,12 @@ public class OrderVendorController {
             proofType = OrderStatusHistory.PROOF_NONE;
         }
         return service.markNextStatusForVendor(shopOf(principal), id, livreurId, proofType, proofUrl);
+    }
+
+    @PostMapping("/assigner-livreur")
+    public List<BulkAssignLivreurResult> bulkAssignLivreur(
+            @AuthenticationPrincipal SecurityUser principal, @Valid @RequestBody BulkAssignLivreurRequest request) {
+        return service.bulkAssignLivreur(shopOf(principal), request.orderIds(), request.livreurId());
     }
 
     private Shop shopOf(SecurityUser principal) {

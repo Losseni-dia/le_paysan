@@ -185,7 +185,7 @@ public class PaymentService {
                     "ORDER_PAID",
                     "Paiement confirmé",
                     "Votre paiement pour la commande " + order.getOrderNumber() + " a été confirmé.",
-                    "/mon-espace/commandes");
+                    "/mon-espace/commandes/" + order.getId() + "/facture");
 
             notificationService.notify(
                     order.getShop().getOwner(),
@@ -193,7 +193,7 @@ public class PaymentService {
                     "Nouvelle commande payée",
                     "Vous avez reçu une nouvelle commande (" + order.getOrderNumber() + ") de "
                             + order.getSubtotalAmount().add(order.getDeliveryAmount()) + " FCFA.",
-                    "/vendeur/commandes");
+                    "/vendeur/commandes/" + order.getId());
         }
     }
 

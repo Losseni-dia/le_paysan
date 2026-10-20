@@ -94,6 +94,10 @@ public class SecurityConfig {
                         // (verification achat livre faite dans ReviewService).
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/shops/*/avis/**")
                         .permitAll()
+                        // Bareme de livraison public (affiche sur la fiche produit/boutique) : lecture
+                        // ouverte, modification reservee au vendeur (cf. ShopDeliveryTierController).
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/shops/*/paliers-livraison")
+                        .permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

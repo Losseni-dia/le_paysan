@@ -10,6 +10,12 @@ CREATE TABLE users (
     first_name      VARCHAR(100) NOT NULL,
     last_name       VARCHAR(100) NOT NULL,
     phone           VARCHAR(30),
+    city            VARCHAR(100),
+    photo_url       VARCHAR(500),
+    id_document_front_url VARCHAR(500),
+    id_document_back_url  VARCHAR(500),
+    selfie_with_id_url    VARCHAR(500),
+    kyc_status      VARCHAR(20) CHECK (kyc_status IN ('EN_ATTENTE','VALIDE','REJETE')),
     security_selfie_url VARCHAR(500),
     auth_provider   VARCHAR(20) NOT NULL DEFAULT 'LOCAL' CHECK (auth_provider IN ('LOCAL','GOOGLE')),
     provider_id     VARCHAR(255),
@@ -147,9 +153,18 @@ CREATE TABLE product_delivery_options (
     product_id      BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
     mode            VARCHAR(20) NOT NULL CHECK (mode IN ('RETRAIT_BOUTIQUE','LIVRAISON_DOMICILE')),
     pickup_location VARCHAR(255),
+    -- Supplement optionnel (poids/volume) ajoute au prix du palier de distance (shop_delivery_tiers).
     delivery_price  NUMERIC(12,2),
     UNIQUE (product_id, mode)
 );
+
+CREATE TABLE shop_delivery_tiers (
+    id              BIGSERIAL PRIMARY KEY,
+    shop_id         BIGINT NOT NULL REFERENCES shops(id) ON DELETE CASCADE,
+    max_distance_km INTEGER NOT NULL CHECK (max_distance_km > 0),
+    price           NUMERIC(12,2) NOT NULL CHECK (price >= 0)
+);
+CREATE INDEX idx_shop_delivery_tiers_shop_id ON shop_delivery_tiers(shop_id);
 
 CREATE TABLE product_validations (
     id          BIGSERIAL PRIMARY KEY,
@@ -174,6 +189,11 @@ CREATE TABLE cart_items (
     quantity          INTEGER NOT NULL CHECK (quantity > 0),
     delivery_mode     VARCHAR(20) NOT NULL CHECK (delivery_mode IN ('RETRAIT_BOUTIQUE','LIVRAISON_DOMICILE')),
     delivery_address  TEXT,
+    -- Ville de reference choisie par l'acheteur (coordonnees connues), utilisee pour calculer
+    -- le palier de prix de livraison selon la distance a la boutique.
+    delivery_city_name VARCHAR(100),
+    delivery_city_lat   NUMERIC(10,7),
+    delivery_city_lng   NUMERIC(10,7),
     created_at        TIMESTAMP NOT NULL DEFAULT now(),
     UNIQUE (cart_id, product_id)
 );
@@ -195,7 +215,7 @@ CREATE TABLE orders (
     buyer_user_id           BIGINT NOT NULL REFERENCES users(id),
     shop_id                 BIGINT NOT NULL REFERENCES shops(id),
     status                  VARCHAR(25) NOT NULL DEFAULT 'EN_ATTENTE_PAIEMENT'
-                             CHECK (status IN ('EN_ATTENTE_PAIEMENT','PAYEE','EN_PREPARATION','PRETE','EXPEDIEE','LIVREE','ANNULEE')),
+                             CHECK (status IN ('EN_ATTENTE_PAIEMENT','PAYEE','EN_PREPARATION','PRETE','EXPEDIEE','RECUPEREE','EN_ROUTE','LIVREE','ANNULEE')),
     subtotal_amount         NUMERIC(12,2) NOT NULL,
     delivery_amount         NUMERIC(12,2) NOT NULL DEFAULT 0,
     total_amount            NUMERIC(12,2) NOT NULL,
@@ -212,6 +232,16 @@ CREATE TABLE shop_livreurs (
     id              BIGSERIAL PRIMARY KEY,
     shop_id         BIGINT NOT NULL REFERENCES shops(id) ON DELETE CASCADE,
     livreur_user_id BIGINT NOT NULL UNIQUE REFERENCES users(id),
+    available       BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at      TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE TABLE livreur_kyc_validations (
+    id              BIGSERIAL PRIMARY KEY,
+    livreur_user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    admin_id        BIGINT NOT NULL REFERENCES users(id),
+    decision        VARCHAR(20) NOT NULL CHECK (decision IN ('VALIDE','REJETE')),
+    reason          TEXT,
     created_at      TIMESTAMP NOT NULL DEFAULT now()
 );
 

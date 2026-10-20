@@ -1,8 +1,13 @@
 package shop.le_paysan.backend.product;
 
+import shop.le_paysan.backend.common.GeoUtils;
+
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -20,6 +25,7 @@ import shop.le_paysan.backend.common.FileStorageService;
 import shop.le_paysan.backend.common.notification.NotificationService;
 import shop.le_paysan.backend.product.dto.ProductCreateForm;
 import shop.le_paysan.backend.product.dto.ProductResponse;
+import shop.le_paysan.backend.review.ProductReviewRepository;
 import shop.le_paysan.backend.shop.Shop;
 import shop.le_paysan.backend.shop.ShopPayoutAccountRepository;
 import shop.le_paysan.backend.shop.ShopRepository;
@@ -37,6 +43,7 @@ public class ProductService {
     private final ShopPayoutAccountRepository payoutAccountRepository;
     private final FileStorageService fileStorageService;
     private final NotificationService notificationService;
+    private final ProductReviewRepository productReviewRepository;
 
     public ProductService(
             ProductRepository productRepository,
@@ -45,7 +52,8 @@ public class ProductService {
             ShopRepository shopRepository,
             ShopPayoutAccountRepository payoutAccountRepository,
             FileStorageService fileStorageService,
-            NotificationService notificationService) {
+            NotificationService notificationService,
+            ProductReviewRepository productReviewRepository) {
         this.productRepository = productRepository;
         this.productValidationRepository = productValidationRepository;
         this.categoryRepository = categoryRepository;
@@ -53,6 +61,7 @@ public class ProductService {
         this.payoutAccountRepository = payoutAccountRepository;
         this.fileStorageService = fileStorageService;
         this.notificationService = notificationService;
+        this.productReviewRepository = productReviewRepository;
     }
 
     @Transactional
@@ -95,7 +104,7 @@ public class ProductService {
                 "PRODUCT_SUBMITTED",
                 "Produit envoyé",
                 "Votre produit \"" + product.getName() + "\" a été envoyé et est en attente de validation.",
-                "/vendeur/produits");
+                "/vendeur/produits/" + product.getId() + "/modifier");
 
         return ProductResponse.from(product);
     }
@@ -149,7 +158,7 @@ public class ProductService {
                 Product.STATUS_DEPUBLIE.equals(product.getStatus())
                         ? "Votre produit \"" + product.getName() + "\" a été retiré du catalogue par l'administration."
                         : "Votre produit \"" + product.getName() + "\" est de nouveau visible dans le catalogue.",
-                "/vendeur/produits");
+                "/vendeur/produits/" + product.getId() + "/modifier");
 
         return ProductResponse.from(product);
     }
@@ -180,7 +189,9 @@ public class ProductService {
         if (!Product.STATUS_VALIDE.equals(product.getStatus()) || !Shop.STATUS_VALIDEE.equals(product.getShop().getStatus())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        return ProductResponse.from(product);
+        Double average = productReviewRepository.averageRating(id);
+        long count = productReviewRepository.countByProductIdAndStatus(id, "VISIBLE");
+        return ProductResponse.from(product).withRating(average, count);
     }
 
     private static final double CATALOGUE_RADIUS_KM = 50.0;
@@ -202,7 +213,8 @@ public class ProductService {
                 ProductSpecifications.nameContains(search));
 
         if (refLat == null || refLng == null) {
-            return productRepository.findAll(spec, pageable).map(ProductResponse::from);
+            Page<ProductResponse> page = productRepository.findAll(spec, pageable).map(ProductResponse::from);
+            return page.map(withRatings(page.getContent()));
         }
 
         // Cf. demande acheteur : "ville ou les environs", trie du plus proche au plus eloigne.
@@ -210,25 +222,33 @@ public class ProductService {
         // volume actuel du catalogue.
         List<ProductResponse> sorted = productRepository.findAll(spec).stream()
                 .map(p -> ProductResponse.from(
-                        p, haversineKm(refLat, refLng, p.getShop().getLatitude().doubleValue(), p.getShop().getLongitude().doubleValue())))
+                        p, GeoUtils.haversineKm(refLat, refLng, p.getShop().getLatitude().doubleValue(), p.getShop().getLongitude().doubleValue())))
                 .filter(r -> r.distanceKm() <= CATALOGUE_RADIUS_KM)
                 .sorted(Comparator.comparingDouble(ProductResponse::distanceKm))
                 .toList();
 
         int start = Math.min((int) pageable.getOffset(), sorted.size());
         int end = Math.min(start + pageable.getPageSize(), sorted.size());
-        return new PageImpl<>(sorted.subList(start, end), pageable, sorted.size());
+        List<ProductResponse> pageContent = sorted.subList(start, end);
+        List<ProductResponse> enriched = pageContent.stream().map(withRatings(pageContent)).toList();
+        return new PageImpl<>(enriched, pageable, sorted.size());
     }
 
-    private static double haversineKm(double lat1, double lon1, double lat2, double lon2) {
-        double earthRadiusKm = 6371.0;
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return earthRadiusKm * c;
+    private Function<ProductResponse, ProductResponse> withRatings(List<ProductResponse> products) {
+        List<Long> ids = products.stream().map(ProductResponse::id).toList();
+        Map<Long, Object[]> summaries = ids.isEmpty()
+                ? Map.of()
+                : productReviewRepository.ratingSummariesFor(ids).stream()
+                        .collect(Collectors.toMap(row -> (Long) row[0], row -> row));
+        return r -> {
+            Object[] row = summaries.get(r.id());
+            if (row == null) {
+                return r.withRating(null, 0L);
+            }
+            return r.withRating((Double) row[1], (Long) row[2]);
+        };
     }
+
 
     @Transactional(readOnly = true)
     public Page<ProductResponse> listForAdmin(String status, Pageable pageable) {
@@ -259,7 +279,7 @@ public class ProductService {
                 "PRODUCT_VALIDATED",
                 "Produit validé !",
                 "Votre produit \"" + product.getName() + "\" est maintenant visible dans le catalogue.",
-                "/vendeur/produits");
+                "/vendeur/produits/" + product.getId() + "/modifier");
 
         return ProductResponse.from(product);
     }
@@ -283,7 +303,7 @@ public class ProductService {
                 "PRODUCT_REJECTED",
                 "Produit rejeté",
                 "Votre produit \"" + product.getName() + "\" a été rejeté. Motif : " + reason,
-                "/vendeur/produits");
+                "/vendeur/produits/" + product.getId() + "/modifier");
 
         return ProductResponse.from(product);
     }
@@ -332,9 +352,11 @@ public class ProductService {
             product.getDeliveryOptions().add(option);
         }
         if (form.isLivraisonDomicile()) {
-            if (form.getDeliveryPrice() == null || form.getDeliveryPrice().signum() < 0) {
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST, "Le prix de livraison à domicile est obligatoire si ce mode est actif");
+            // Cf. demande utilisateur (paliers de livraison) : le prix de base est desormais defini
+            // par les paliers de distance de la boutique (ShopDeliveryTier). Ce champ ne sert plus
+            // qu'a un supplement optionnel (produit lourd/encombrant), donc n'est plus obligatoire.
+            if (form.getDeliveryPrice() != null && form.getDeliveryPrice().signum() < 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le supplément de livraison ne peut pas être négatif");
             }
             ProductDeliveryOption option = new ProductDeliveryOption();
             option.setProduct(product);

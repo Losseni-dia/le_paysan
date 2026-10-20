@@ -56,7 +56,7 @@ public class OrderAutoProgressionService {
                     "Donnez votre avis",
                     "Comment s'est passée votre commande " + order.getOrderNumber()
                             + " ? Donnez votre avis et notez les produits/la boutique.",
-                    "/mon-espace/commandes");
+                    "/mon-espace/commandes/" + order.getId() + "/facture");
         }
     }
 
@@ -78,7 +78,7 @@ public class OrderAutoProgressionService {
                     "ORDER_STATUS_CHANGED",
                     "Commande annulée",
                     "Votre commande " + order.getOrderNumber() + " a été annulée faute de paiement reçu à temps.",
-                    "/mon-espace/commandes");
+                    "/mon-espace/commandes/" + order.getId() + "/facture");
         }
     }
 
@@ -100,7 +100,7 @@ public class OrderAutoProgressionService {
                     "ORDER_STATUS_CHANGED",
                     "Commande livrée",
                     "Votre commande " + order.getOrderNumber() + " a été automatiquement marquée comme livrée.",
-                    "/mon-espace/commandes");
+                    "/mon-espace/commandes/" + order.getId() + "/facture");
 
             notificationService.notify(
                     order.getShop().getOwner(),
@@ -108,7 +108,7 @@ public class OrderAutoProgressionService {
                     "Commande livrée",
                     "La commande " + order.getOrderNumber() + " a été automatiquement confirmée livrée après "
                             + delaiJours + " jours.",
-                    "/vendeur/commandes");
+                    "/vendeur/commandes/" + order.getId());
         }
     }
 }

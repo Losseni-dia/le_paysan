@@ -37,6 +37,8 @@ public class Order {
     public static final String STATUS_EN_PREPARATION = "EN_PREPARATION";
     public static final String STATUS_PRETE = "PRETE";
     public static final String STATUS_EXPEDIEE = "EXPEDIEE";
+    public static final String STATUS_RECUPEREE = "RECUPEREE";
+    public static final String STATUS_EN_ROUTE = "EN_ROUTE";
     public static final String STATUS_LIVREE = "LIVREE";
     public static final String STATUS_ANNULEE = "ANNULEE";
 

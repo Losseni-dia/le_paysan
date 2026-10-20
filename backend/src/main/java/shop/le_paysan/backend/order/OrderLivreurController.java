@@ -32,13 +32,26 @@ public class OrderLivreurController {
     }
 
     @GetMapping
-    public Page<AdminOrderResponse> list(@AuthenticationPrincipal SecurityUser principal, Pageable pageable) {
-        return service.listForLivreur(principal.getUser(), pageable);
+    public Page<AdminOrderResponse> list(
+            @AuthenticationPrincipal SecurityUser principal,
+            @RequestParam(required = false) String status,
+            Pageable pageable) {
+        return service.listForLivreur(principal.getUser(), status, pageable);
     }
 
     @GetMapping("/{id}")
     public AdminOrderResponse detail(@AuthenticationPrincipal SecurityUser principal, @PathVariable Long id) {
         return service.getForLivreur(principal.getUser(), id);
+    }
+
+    @PostMapping("/{id}/recuperer")
+    public AdminOrderResponse markPickedUp(@AuthenticationPrincipal SecurityUser principal, @PathVariable Long id) {
+        return service.markPickedUpByLivreur(principal.getUser(), id);
+    }
+
+    @PostMapping("/{id}/en-route")
+    public AdminOrderResponse markEnRoute(@AuthenticationPrincipal SecurityUser principal, @PathVariable Long id) {
+        return service.markEnRouteByLivreur(principal.getUser(), id);
     }
 
     @PostMapping(value = "/{id}/confirmer-remise", consumes = "multipart/form-data")

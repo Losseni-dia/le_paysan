@@ -15,6 +15,7 @@ import shop.le_paysan.backend.cart.dto.UpdateCartItemRequest;
 import shop.le_paysan.backend.product.Product;
 import shop.le_paysan.backend.product.ProductRepository;
 import shop.le_paysan.backend.shop.Shop;
+import shop.le_paysan.backend.shop.ShopDeliveryTierService;
 import shop.le_paysan.backend.user.User;
 
 @Service
@@ -23,11 +24,17 @@ public class CartService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
+    private final ShopDeliveryTierService deliveryTierService;
 
-    public CartService(CartRepository cartRepository, CartItemRepository cartItemRepository, ProductRepository productRepository) {
+    public CartService(
+            CartRepository cartRepository,
+            CartItemRepository cartItemRepository,
+            ProductRepository productRepository,
+            ShopDeliveryTierService deliveryTierService) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.productRepository = productRepository;
+        this.deliveryTierService = deliveryTierService;
     }
 
     @Transactional(readOnly = true)
@@ -40,7 +47,25 @@ public class CartService {
         // restee obsolete dans le contexte de persistance lorsque getCart() est appele
         // juste apres une mutation faite via CartItemRepository (meme transaction).
         List<CartItem> items = cartItemRepository.findByCartIdOrderByIdAsc(cart.getId());
-        return CartResponse.from(items.stream().map(CartItemResponse::from).toList());
+        return CartResponse.from(items.stream().map(this::toResponse).toList());
+    }
+
+    private CartItemResponse toResponse(CartItem item) {
+        if (!"LIVRAISON_DOMICILE".equals(item.getDeliveryMode())
+                || item.getDeliveryCityLat() == null
+                || item.getDeliveryCityLng() == null) {
+            return CartItemResponse.from(item);
+        }
+        Shop shop = item.getProduct().getShop();
+        double distanceKm = deliveryTierService.distanceKm(
+                shop, item.getDeliveryCityLat().doubleValue(), item.getDeliveryCityLng().doubleValue());
+        var supplement = item.getProduct().getDeliveryOptions().stream()
+                .filter(o -> o.getMode().equals(item.getDeliveryMode()))
+                .findFirst()
+                .map(o -> o.getDeliveryPrice())
+                .orElse(null);
+        var price = deliveryTierService.computeDeliveryPrice(shop, supplement, distanceKm);
+        return price.map(p -> CartItemResponse.from(item, p)).orElseGet(() -> CartItemResponse.outOfRange(item));
     }
 
     @Transactional
@@ -50,7 +75,7 @@ public class CartService {
                 .findById(request.productId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Produit introuvable"));
         validatePurchasable(product);
-        validateDeliveryMode(product, request.deliveryMode(), request.deliveryAddress());
+        validateDeliveryMode(product, request.deliveryMode(), request.deliveryAddress(), request.deliveryCityLat(), request.deliveryCityLng());
 
         CartItem item = cartItemRepository
                 .findByCartIdAndProductId(cart.getId(), product.getId())
@@ -69,6 +94,9 @@ public class CartService {
         item.setQuantity(newQuantity);
         item.setDeliveryMode(request.deliveryMode());
         item.setDeliveryAddress(request.deliveryAddress());
+        item.setDeliveryCityName(request.deliveryCityName());
+        item.setDeliveryCityLat(request.deliveryCityLat());
+        item.setDeliveryCityLng(request.deliveryCityLng());
         cartItemRepository.save(item);
 
         touchCart(cart);
@@ -85,7 +113,7 @@ public class CartService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Produit absent du panier"));
 
         Product product = item.getProduct();
-        validateDeliveryMode(product, request.deliveryMode(), request.deliveryAddress());
+        validateDeliveryMode(product, request.deliveryMode(), request.deliveryAddress(), request.deliveryCityLat(), request.deliveryCityLng());
         if (request.quantity() > product.getStockQuantity()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quantité demandée supérieure au stock disponible");
         }
@@ -93,6 +121,9 @@ public class CartService {
         item.setQuantity(request.quantity());
         item.setDeliveryMode(request.deliveryMode());
         item.setDeliveryAddress(request.deliveryAddress());
+        item.setDeliveryCityName(request.deliveryCityName());
+        item.setDeliveryCityLat(request.deliveryCityLat());
+        item.setDeliveryCityLng(request.deliveryCityLng());
         cartItemRepository.save(item);
 
         touchCart(cart);
@@ -128,13 +159,23 @@ public class CartService {
         }
     }
 
-    private void validateDeliveryMode(Product product, String deliveryMode, String deliveryAddress) {
+    private void validateDeliveryMode(
+            Product product,
+            String deliveryMode,
+            String deliveryAddress,
+            java.math.BigDecimal deliveryCityLat,
+            java.math.BigDecimal deliveryCityLng) {
         boolean offered = product.getDeliveryOptions().stream().anyMatch(o -> o.getMode().equals(deliveryMode));
         if (!offered) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mode de livraison non proposé pour ce produit");
         }
-        if ("LIVRAISON_DOMICILE".equals(deliveryMode) && (deliveryAddress == null || deliveryAddress.isBlank())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'adresse de livraison est obligatoire");
+        if ("LIVRAISON_DOMICILE".equals(deliveryMode)) {
+            if (deliveryAddress == null || deliveryAddress.isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'adresse de livraison est obligatoire");
+            }
+            if (deliveryCityLat == null || deliveryCityLng == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La ville de livraison est obligatoire");
+            }
         }
     }
 }

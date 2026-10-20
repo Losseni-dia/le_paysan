@@ -23,11 +23,13 @@ import shop.le_paysan.backend.commission.CommissionSettingsRepository;
 import shop.le_paysan.backend.common.notification.NotificationService;
 import shop.le_paysan.backend.livreur.LivreurService;
 import shop.le_paysan.backend.order.dto.AdminOrderResponse;
+import shop.le_paysan.backend.order.dto.BulkAssignLivreurResult;
 import shop.le_paysan.backend.order.dto.OrderResponse;
 import shop.le_paysan.backend.order.dto.OrderStatusHistoryResponse;
 import shop.le_paysan.backend.product.Product;
 import shop.le_paysan.backend.product.ProductDeliveryOption;
 import shop.le_paysan.backend.shop.Shop;
+import shop.le_paysan.backend.shop.ShopDeliveryTierService;
 import shop.le_paysan.backend.user.User;
 
 @Service
@@ -42,6 +44,7 @@ public class OrderService {
     private final CommissionSettingsRepository commissionSettingsRepository;
     private final NotificationService notificationService;
     private final LivreurService livreurService;
+    private final ShopDeliveryTierService deliveryTierService;
     private final Random random = new Random();
 
     public OrderService(
@@ -51,7 +54,8 @@ public class OrderService {
             OrderStatusHistoryRepository historyRepository,
             CommissionSettingsRepository commissionSettingsRepository,
             NotificationService notificationService,
-            LivreurService livreurService) {
+            LivreurService livreurService,
+            ShopDeliveryTierService deliveryTierService) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.orderRepository = orderRepository;
@@ -59,6 +63,7 @@ public class OrderService {
         this.commissionSettingsRepository = commissionSettingsRepository;
         this.notificationService = notificationService;
         this.livreurService = livreurService;
+        this.deliveryTierService = deliveryTierService;
     }
 
     /** Ecrit une ligne d'historique pour la frise de suivi (cf. plan "timeline de commande"). */
@@ -119,11 +124,7 @@ public class OrderService {
             for (CartItem cartItem : shopItems) {
                 Product product = cartItem.getProduct();
                 BigDecimal lineSubtotal = product.getUnitPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
-                BigDecimal deliveryPrice = product.getDeliveryOptions().stream()
-                        .filter(o -> o.getMode().equals(cartItem.getDeliveryMode()))
-                        .findFirst()
-                        .map(o -> o.getDeliveryPrice() == null ? BigDecimal.ZERO : o.getDeliveryPrice())
-                        .orElse(BigDecimal.ZERO);
+                BigDecimal deliveryPrice = computeDeliveryPrice(shop, product, cartItem);
 
                 subtotal = subtotal.add(lineSubtotal);
                 delivery = delivery.add(deliveryPrice);
@@ -160,6 +161,33 @@ public class OrderService {
         return createdOrders.stream().map(OrderResponse::from).toList();
     }
 
+    /** Cf. demande utilisateur (paliers de livraison) : prix du palier de distance + supplement produit. */
+    private BigDecimal computeDeliveryPrice(Shop shop, Product product, CartItem cartItem) {
+        if (!ProductDeliveryOption.MODE_LIVRAISON.equals(cartItem.getDeliveryMode())) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal supplement = product.getDeliveryOptions().stream()
+                .filter(o -> o.getMode().equals(cartItem.getDeliveryMode()))
+                .findFirst()
+                .map(ProductDeliveryOption::getDeliveryPrice)
+                .orElse(null);
+
+        if (cartItem.getDeliveryCityLat() == null || cartItem.getDeliveryCityLng() == null) {
+            // Ancien article de panier sans ville renseignee (avant l'introduction des paliers) :
+            // on retombe sur l'ancien comportement (supplement seul, par defaut zero).
+            return supplement == null ? BigDecimal.ZERO : supplement;
+        }
+
+        double distanceKm = deliveryTierService.distanceKm(
+                shop, cartItem.getDeliveryCityLat().doubleValue(), cartItem.getDeliveryCityLng().doubleValue());
+        return deliveryTierService
+                .computeDeliveryPrice(shop, supplement, distanceKm)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.CONFLICT,
+                        "La boutique \"" + shop.getName() + "\" ne livre pas jusqu'à " + cartItem.getDeliveryCityName()
+                                + ". Choisissez le retrait en boutique ou une autre adresse."));
+    }
+
     @Transactional(readOnly = true)
     public List<OrderResponse> listMine(User buyer) {
         return orderRepository.findByBuyerUserIdOrderByCreatedAtDesc(buyer.getId()).stream()
@@ -180,7 +208,11 @@ public class OrderService {
         Order order = orderRepository
                 .findByIdAndBuyerUserId(orderId, buyer.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Commande introuvable"));
-        if (!Order.STATUS_PRETE.equals(order.getStatus()) && !Order.STATUS_EXPEDIEE.equals(order.getStatus())) {
+        boolean confirmable = Order.STATUS_PRETE.equals(order.getStatus())
+                || Order.STATUS_EXPEDIEE.equals(order.getStatus())
+                || Order.STATUS_RECUPEREE.equals(order.getStatus())
+                || Order.STATUS_EN_ROUTE.equals(order.getStatus());
+        if (!confirmable) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT, "Cette commande ne peut pas encore être confirmée comme reçue");
         }
@@ -194,7 +226,7 @@ public class OrderService {
                 "ORDER_STATUS_CHANGED",
                 "Commande " + order.getOrderNumber(),
                 "L'acheteur a confirmé la réception de la commande " + order.getOrderNumber() + ".",
-                "/vendeur/commandes");
+                "/vendeur/commandes/" + order.getId());
 
         return OrderResponse.from(order, historyOf(order.getId()));
     }
@@ -268,7 +300,14 @@ public class OrderService {
         // Cf. remarque utilisateur (plan Phase 2) : seules les commandes confirmees EXPEDIEE
         // (livraison a domicile) peuvent etre assignees a un livreur, pas le retrait boutique.
         if (Order.STATUS_EXPEDIEE.equals(newStatus) && livreurId != null) {
-            order.setAssignedLivreur(livreurService.requireBelongsToShop(shop, livreurId));
+            User livreur = livreurService.requireBelongsToShop(shop, livreurId);
+            order.setAssignedLivreur(livreur);
+            notificationService.notify(
+                    livreur,
+                    "DELIVERY_ASSIGNED",
+                    "Nouvelle livraison",
+                    "La commande " + order.getOrderNumber() + " vous a été assignée.",
+                    "/livreur/livraisons/" + order.getId());
         }
 
         orderRepository.save(order);
@@ -289,18 +328,139 @@ public class OrderService {
         notificationService.notify(
                 order.getBuyerUser(),
                 "ORDER_STATUS_CHANGED",
-                "Commande " + order.getOrderNumber(),
-                "Le statut de votre commande " + order.getOrderNumber() + " est passé à " + newStatus + ".",
-                "/mon-espace/commandes");
+                statusTitle(newStatus),
+                statusMessage(order, newStatus),
+                "/mon-espace/commandes/" + order.getId() + "/facture");
 
         return AdminOrderResponse.from(order, historyOf(order.getId()));
     }
 
+    private String statusTitle(String status) {
+        return switch (status) {
+            case Order.STATUS_EN_PREPARATION -> "Commande en préparation";
+            case Order.STATUS_PRETE -> "Commande prête";
+            case Order.STATUS_EXPEDIEE -> "Commande expédiée";
+            case Order.STATUS_RECUPEREE -> "Colis récupéré";
+            case Order.STATUS_EN_ROUTE -> "Colis en route";
+            case Order.STATUS_LIVREE -> "Commande livrée";
+            case Order.STATUS_ANNULEE -> "Commande annulée";
+            default -> "Commande mise à jour";
+        };
+    }
+
+    private String statusMessage(Order order, String status) {
+        String prefix = "Votre commande " + order.getOrderNumber() + " ";
+        return switch (status) {
+            case Order.STATUS_EN_PREPARATION -> prefix + "est en cours de préparation.";
+            case Order.STATUS_PRETE -> prefix + "est prête pour le retrait en boutique.";
+            case Order.STATUS_EXPEDIEE -> prefix + "a été expédiée.";
+            case Order.STATUS_RECUPEREE -> prefix + "a été récupérée par le livreur.";
+            case Order.STATUS_EN_ROUTE -> prefix + "est en route.";
+            case Order.STATUS_LIVREE -> prefix + "a été livrée.";
+            case Order.STATUS_ANNULEE -> prefix + "a été annulée.";
+            default -> prefix + "a été mise à jour.";
+        };
+    }
+
+    /** Assigne un livreur a plusieurs commandes deja Expediees en une seule action. */
+    @Transactional
+    public List<BulkAssignLivreurResult> bulkAssignLivreur(Shop shop, List<Long> orderIds, Long livreurId) {
+        User livreur = livreurService.requireBelongsToShop(shop, livreurId);
+        List<BulkAssignLivreurResult> results = new java.util.ArrayList<>();
+        for (Long orderId : orderIds) {
+            Order order;
+            try {
+                order = findOwnedByShop(shop, orderId);
+            } catch (ResponseStatusException e) {
+                results.add(new BulkAssignLivreurResult(orderId, null, false, "Commande introuvable"));
+                continue;
+            }
+            if (!Order.STATUS_EXPEDIEE.equals(order.getStatus())) {
+                results.add(new BulkAssignLivreurResult(
+                        orderId, order.getOrderNumber(), false, "La commande n'est pas au statut Expédiée"));
+                continue;
+            }
+            order.setAssignedLivreur(livreur);
+            order.setUpdatedAt(LocalDateTime.now());
+            orderRepository.save(order);
+            notificationService.notify(
+                    livreur,
+                    "DELIVERY_ASSIGNED",
+                    "Nouvelle livraison",
+                    "La commande " + order.getOrderNumber() + " vous a été assignée.",
+                    "/livreur/livraisons/" + order.getId());
+            results.add(new BulkAssignLivreurResult(orderId, order.getOrderNumber(), true, "Livreur assigné"));
+        }
+        return results;
+    }
+
+    private static final List<String> LIVREUR_ACTIVE_STATUSES =
+            List.of(Order.STATUS_EXPEDIEE, Order.STATUS_RECUPEREE, Order.STATUS_EN_ROUTE);
+
     @Transactional(readOnly = true)
-    public Page<AdminOrderResponse> listForLivreur(User livreur, Pageable pageable) {
+    public Page<AdminOrderResponse> listForLivreur(User livreur, String status, Pageable pageable) {
+        if (status != null) {
+            return orderRepository
+                    .findByAssignedLivreurIdAndStatusOrderByCreatedAtDesc(livreur.getId(), status, pageable)
+                    .map(order -> AdminOrderResponse.from(order, historyOf(order.getId())));
+        }
         return orderRepository
-                .findByAssignedLivreurIdAndStatusOrderByCreatedAtDesc(livreur.getId(), Order.STATUS_EXPEDIEE, pageable)
+                .findByAssignedLivreurIdAndStatusInOrderByCreatedAtDesc(livreur.getId(), LIVREUR_ACTIVE_STATUSES, pageable)
                 .map(order -> AdminOrderResponse.from(order, historyOf(order.getId())));
+    }
+
+    /** Le livreur recupere le colis chez le vendeur. */
+    @Transactional
+    public AdminOrderResponse markPickedUpByLivreur(User livreur, Long orderId) {
+        Order order = requireAssignedToLivreur(livreur, orderId);
+        if (!Order.STATUS_EXPEDIEE.equals(order.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Cette commande n'est pas en attente de récupération");
+        }
+        order.setStatus(Order.STATUS_RECUPEREE);
+        order.setUpdatedAt(LocalDateTime.now());
+        orderRepository.save(order);
+        recordHistory(order, Order.STATUS_RECUPEREE, OrderStatusHistory.CHANGED_BY_LIVREUR, "Colis récupéré par le livreur");
+
+        notificationService.notify(
+                order.getBuyerUser(),
+                "ORDER_STATUS_CHANGED",
+                "Colis récupéré",
+                "Votre colis a été récupéré par le livreur pour la commande " + order.getOrderNumber() + ".",
+                "/mon-espace/commandes/" + order.getId() + "/facture");
+
+        return AdminOrderResponse.from(order, historyOf(order.getId()));
+    }
+
+    /** Le livreur part livrer le colis. */
+    @Transactional
+    public AdminOrderResponse markEnRouteByLivreur(User livreur, Long orderId) {
+        Order order = requireAssignedToLivreur(livreur, orderId);
+        if (!Order.STATUS_RECUPEREE.equals(order.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ce colis n'a pas encore été récupéré");
+        }
+        order.setStatus(Order.STATUS_EN_ROUTE);
+        order.setUpdatedAt(LocalDateTime.now());
+        orderRepository.save(order);
+        recordHistory(order, Order.STATUS_EN_ROUTE, OrderStatusHistory.CHANGED_BY_LIVREUR, "Livreur en route");
+
+        notificationService.notify(
+                order.getBuyerUser(),
+                "ORDER_STATUS_CHANGED",
+                "Colis en route",
+                "Votre colis est en route pour la commande " + order.getOrderNumber() + ".",
+                "/mon-espace/commandes/" + order.getId() + "/facture");
+
+        return AdminOrderResponse.from(order, historyOf(order.getId()));
+    }
+
+    private Order requireAssignedToLivreur(User livreur, Long orderId) {
+        Order order = orderRepository
+                .findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Commande introuvable"));
+        if (order.getAssignedLivreur() == null || !order.getAssignedLivreur().getId().equals(livreur.getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Commande introuvable");
+        }
+        return order;
     }
 
     @Transactional(readOnly = true)
@@ -322,7 +482,10 @@ public class OrderService {
         if (order.getAssignedLivreur() == null || !order.getAssignedLivreur().getId().equals(livreur.getId())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Commande introuvable");
         }
-        if (!Order.STATUS_EXPEDIEE.equals(order.getStatus())) {
+        boolean readyForDelivery = Order.STATUS_EXPEDIEE.equals(order.getStatus())
+                || Order.STATUS_RECUPEREE.equals(order.getStatus())
+                || Order.STATUS_EN_ROUTE.equals(order.getStatus());
+        if (!readyForDelivery) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Cette commande n'est pas en attente de remise");
         }
 
@@ -336,13 +499,13 @@ public class OrderService {
                 "ORDER_STATUS_CHANGED",
                 "Commande livrée",
                 "Votre commande " + order.getOrderNumber() + " a été remise par le livreur.",
-                "/mon-espace/commandes");
+                "/mon-espace/commandes/" + order.getId() + "/facture");
         notificationService.notify(
                 order.getShop().getOwner(),
                 "ORDER_STATUS_CHANGED",
                 "Commande livrée",
                 "La commande " + order.getOrderNumber() + " a été remise par le livreur.",
-                "/vendeur/commandes");
+                "/vendeur/commandes/" + order.getId());
 
         return AdminOrderResponse.from(order, historyOf(order.getId()));
     }

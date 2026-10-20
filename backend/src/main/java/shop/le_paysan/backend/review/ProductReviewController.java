@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 import shop.le_paysan.backend.auth.SecurityUser;
 import shop.le_paysan.backend.review.dto.ProductReviewResponse;
 import shop.le_paysan.backend.review.dto.RatingSummaryResponse;
+import shop.le_paysan.backend.review.dto.ReviewEligibilityResponse;
 import shop.le_paysan.backend.review.dto.SubmitReviewRequest;
 
 @RestController
@@ -42,6 +43,12 @@ public class ProductReviewController {
             @AuthenticationPrincipal SecurityUser principal, @PathVariable Long productId) {
         ProductReviewResponse review = service.getMyProductReview(principal.getUser(), productId);
         return review != null ? ResponseEntity.ok(review) : ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/eligibilite")
+    public ReviewEligibilityResponse eligibility(
+            @AuthenticationPrincipal SecurityUser principal, @PathVariable Long productId) {
+        return service.getProductEligibility(principal.getUser(), productId);
     }
 
     @PostMapping

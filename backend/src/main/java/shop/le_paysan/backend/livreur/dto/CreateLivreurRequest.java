@@ -1,12 +1,23 @@
 package shop.le_paysan.backend.livreur.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import org.springframework.web.multipart.MultipartFile;
 
-public record CreateLivreurRequest(
-        @NotBlank @Size(max = 30) String username,
-        @NotBlank @Size(min = 8) String password,
-        @NotBlank String firstName,
-        @NotBlank String lastName,
-        String phone) {
+import lombok.Getter;
+import lombok.Setter;
+
+/** Formulaire multipart de creation d'un compte livreur par le vendeur. */
+@Getter
+@Setter
+public class CreateLivreurRequest {
+
+    private String username;
+    private String password;
+    private String firstName;
+    private String lastName;
+    private String phone;
+    private String city;
+    private MultipartFile photo;
+    private MultipartFile idDocumentFront;
+    private MultipartFile idDocumentBack;
+    private MultipartFile selfieWithId;
 }

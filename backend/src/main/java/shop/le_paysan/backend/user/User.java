@@ -29,6 +29,10 @@ public class User {
     public static final String PROVIDER_LOCAL = "LOCAL";
     public static final String PROVIDER_GOOGLE = "GOOGLE";
 
+    public static final String KYC_STATUS_EN_ATTENTE = "EN_ATTENTE";
+    public static final String KYC_STATUS_VALIDE = "VALIDE";
+    public static final String KYC_STATUS_REJETE = "REJETE";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -50,6 +54,24 @@ public class User {
 
     @Column(length = 30)
     private String phone;
+
+    @Column(length = 100)
+    private String city;
+
+    @Column(name = "photo_url")
+    private String photoUrl;
+
+    @Column(name = "id_document_front_url")
+    private String idDocumentFrontUrl;
+
+    @Column(name = "id_document_back_url")
+    private String idDocumentBackUrl;
+
+    @Column(name = "selfie_with_id_url")
+    private String selfieWithIdUrl;
+
+    @Column(name = "kyc_status")
+    private String kycStatus;
 
     @Column(name = "security_selfie_url")
     private String securitySelfieUrl;

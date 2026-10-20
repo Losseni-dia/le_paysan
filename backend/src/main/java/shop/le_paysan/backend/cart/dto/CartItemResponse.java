@@ -16,19 +16,39 @@ public record CartItemResponse(
         String deliveryMode,
         BigDecimal deliveryPrice,
         String deliveryAddress,
+        String deliveryCityName,
+        BigDecimal deliveryCityLat,
+        BigDecimal deliveryCityLng,
         BigDecimal lineSubtotal,
         List<String> availableDeliveryModes,
         Integer stockAvailable,
-        boolean available) {
+        boolean available,
+        boolean deliveryOutOfRange) {
 
     public static CartItemResponse from(CartItem item) {
+        var matchingOption = item.getProduct().getDeliveryOptions().stream()
+                .filter(o -> o.getMode().equals(item.getDeliveryMode()))
+                .findFirst();
+        BigDecimal deliveryPrice = matchingOption.map(o -> o.getDeliveryPrice()).orElse(BigDecimal.ZERO);
+        return build(item, deliveryPrice, false);
+    }
+
+    public static CartItemResponse from(CartItem item, BigDecimal deliveryPrice) {
+        return build(item, deliveryPrice, false);
+    }
+
+    /** La commande n'est pas livrable a la ville choisie par l'acheteur (hors de tous les paliers de la boutique). */
+    public static CartItemResponse outOfRange(CartItem item) {
+        return build(item, BigDecimal.ZERO, true);
+    }
+
+    private static CartItemResponse build(CartItem item, BigDecimal deliveryPrice, boolean deliveryOutOfRange) {
         var product = item.getProduct();
         var shop = product.getShop();
 
         var matchingOption = product.getDeliveryOptions().stream()
                 .filter(o -> o.getMode().equals(item.getDeliveryMode()))
                 .findFirst();
-        BigDecimal deliveryPrice = matchingOption.map(o -> o.getDeliveryPrice()).orElse(BigDecimal.ZERO);
 
         boolean isPublished = shop.getStatus().equals("VALIDEE") && product.getStatus().equals("VALIDE");
         boolean inStock = product.getStockQuantity() >= item.getQuantity();
@@ -47,9 +67,13 @@ public record CartItemResponse(
                 item.getDeliveryMode(),
                 deliveryPrice,
                 item.getDeliveryAddress(),
+                item.getDeliveryCityName(),
+                item.getDeliveryCityLat(),
+                item.getDeliveryCityLng(),
                 lineSubtotal,
                 product.getDeliveryOptions().stream().map(o -> o.getMode()).toList(),
                 product.getStockQuantity(),
-                isPublished && inStock && modeStillOffered);
+                isPublished && inStock && modeStillOffered && !deliveryOutOfRange,
+                deliveryOutOfRange);
     }
 }

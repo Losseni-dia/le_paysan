@@ -46,6 +46,15 @@ public class CartItem {
     @Column(name = "delivery_address")
     private String deliveryAddress;
 
+    @Column(name = "delivery_city_name")
+    private String deliveryCityName;
+
+    @Column(name = "delivery_city_lat", precision = 10, scale = 7)
+    private java.math.BigDecimal deliveryCityLat;
+
+    @Column(name = "delivery_city_lng", precision = 10, scale = 7)
+    private java.math.BigDecimal deliveryCityLng;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }

@@ -18,6 +18,7 @@ import shop.le_paysan.backend.product.Product;
 import shop.le_paysan.backend.product.ProductRepository;
 import shop.le_paysan.backend.review.dto.ProductReviewResponse;
 import shop.le_paysan.backend.review.dto.RatingSummaryResponse;
+import shop.le_paysan.backend.review.dto.ReviewEligibilityResponse;
 import shop.le_paysan.backend.review.dto.ShopReviewResponse;
 import shop.le_paysan.backend.shop.Shop;
 import shop.le_paysan.backend.shop.ShopRepository;
@@ -76,6 +77,23 @@ public class ReviewService {
                 .orElse(null);
     }
 
+    @Transactional(readOnly = true)
+    public ReviewEligibilityResponse getProductEligibility(User buyer, Long productId) {
+        Product product = productRepository
+                .findById(productId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Produit introuvable"));
+        if (product.getShop().getOwner().getId().equals(buyer.getId())) {
+            return ReviewEligibilityResponse.ofIneligible(ReviewEligibilityResponse.REASON_OWNER);
+        }
+        boolean purchased = orderItemRepository
+                .findFirstByProduct_IdAndOrder_BuyerUser_IdAndOrder_StatusOrderByOrder_CreatedAtDesc(
+                        productId, buyer.getId(), Order.STATUS_LIVREE)
+                .isPresent();
+        return purchased
+                ? ReviewEligibilityResponse.ofEligible()
+                : ReviewEligibilityResponse.ofIneligible(ReviewEligibilityResponse.REASON_NOT_PURCHASED);
+    }
+
     @Transactional
     public ProductReviewResponse submitProductReview(User buyer, Long productId, Integer rating, String comment) {
         Product product = productRepository
@@ -110,7 +128,7 @@ public class ReviewService {
                     "REVIEW_RECEIVED",
                     "Nouvel avis reçu",
                     "Votre produit \"" + product.getName() + "\" a reçu une note de " + rating + "/5.",
-                    "/vendeur/produits");
+                    "/vendeur/produits/" + product.getId() + "/modifier");
         }
 
         return ProductReviewResponse.from(review);
@@ -138,6 +156,22 @@ public class ReviewService {
                 .findByShopIdAndBuyerUserId(shopId, buyer.getId())
                 .map(ShopReviewResponse::from)
                 .orElse(null);
+    }
+
+    @Transactional(readOnly = true)
+    public ReviewEligibilityResponse getShopEligibility(User buyer, Long shopId) {
+        Shop shop = shopRepository
+                .findById(shopId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Boutique introuvable"));
+        if (shop.getOwner().getId().equals(buyer.getId())) {
+            return ReviewEligibilityResponse.ofIneligible(ReviewEligibilityResponse.REASON_OWNER);
+        }
+        boolean purchased = orderRepository
+                .findFirstByShopIdAndBuyerUserIdAndStatusOrderByCreatedAtDesc(shopId, buyer.getId(), Order.STATUS_LIVREE)
+                .isPresent();
+        return purchased
+                ? ReviewEligibilityResponse.ofEligible()
+                : ReviewEligibilityResponse.ofIneligible(ReviewEligibilityResponse.REASON_NOT_PURCHASED);
     }
 
     @Transactional

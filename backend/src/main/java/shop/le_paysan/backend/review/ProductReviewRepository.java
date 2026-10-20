@@ -1,5 +1,6 @@
 package shop.le_paysan.backend.review;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -22,4 +23,9 @@ public interface ProductReviewRepository extends JpaRepository<ProductReview, Lo
     long countByProductIdAndStatus(Long productId, String status);
 
     long countByStatus(String status);
+
+    @Query(
+            "SELECT r.product.id, AVG(r.rating), COUNT(r) FROM ProductReview r "
+                    + "WHERE r.product.id IN :productIds AND r.status = 'VISIBLE' GROUP BY r.product.id")
+    List<Object[]> ratingSummariesFor(@Param("productIds") List<Long> productIds);
 }

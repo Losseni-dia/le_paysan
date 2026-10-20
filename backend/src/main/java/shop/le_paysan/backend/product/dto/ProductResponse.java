@@ -26,7 +26,33 @@ public record ProductResponse(
         List<String> imageUrls,
         List<DeliveryOption> deliveryOptions,
         Double distanceKm,
+        Double ratingAverage,
+        Long ratingCount,
         LocalDateTime createdAt) {
+
+    public ProductResponse withRating(Double ratingAverage, Long ratingCount) {
+        return new ProductResponse(
+                id,
+                shopId,
+                shopName,
+                shopCity,
+                shopLatitude,
+                shopLongitude,
+                categoryId,
+                categoryName,
+                name,
+                description,
+                unit,
+                unitPrice,
+                stockQuantity,
+                status,
+                imageUrls,
+                deliveryOptions,
+                distanceKm,
+                ratingAverage,
+                ratingCount,
+                createdAt);
+    }
 
     public record DeliveryOption(String mode, String pickupLocation, BigDecimal deliveryPrice) {
         static DeliveryOption from(ProductDeliveryOption o) {
@@ -35,10 +61,14 @@ public record ProductResponse(
     }
 
     public static ProductResponse from(Product p) {
-        return from(p, null);
+        return from(p, null, null, null);
     }
 
     public static ProductResponse from(Product p, Double distanceKm) {
+        return from(p, distanceKm, null, null);
+    }
+
+    public static ProductResponse from(Product p, Double distanceKm, Double ratingAverage, Long ratingCount) {
         return new ProductResponse(
                 p.getId(),
                 p.getShop().getId(),
@@ -57,6 +87,8 @@ public record ProductResponse(
                 p.getImages().stream().map(ProductImage::getUrl).toList(),
                 p.getDeliveryOptions().stream().map(DeliveryOption::from).toList(),
                 distanceKm,
+                ratingAverage,
+                ratingCount,
                 p.getCreatedAt());
     }
 }

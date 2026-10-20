@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import shop.le_paysan.backend.auth.SecurityUser;
 import shop.le_paysan.backend.review.dto.RatingSummaryResponse;
+import shop.le_paysan.backend.review.dto.ReviewEligibilityResponse;
 import shop.le_paysan.backend.review.dto.ShopReviewResponse;
 import shop.le_paysan.backend.review.dto.SubmitReviewRequest;
 
@@ -41,6 +42,11 @@ public class ShopReviewController {
     public ResponseEntity<ShopReviewResponse> mine(@AuthenticationPrincipal SecurityUser principal, @PathVariable Long shopId) {
         ShopReviewResponse review = service.getMyShopReview(principal.getUser(), shopId);
         return review != null ? ResponseEntity.ok(review) : ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/eligibilite")
+    public ReviewEligibilityResponse eligibility(@AuthenticationPrincipal SecurityUser principal, @PathVariable Long shopId) {
+        return service.getShopEligibility(principal.getUser(), shopId);
     }
 
     @PostMapping
