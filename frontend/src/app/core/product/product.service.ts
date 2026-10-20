@@ -13,6 +13,7 @@ export interface PublicProductFilters {
   search?: string;
   refLat?: number;
   refLng?: number;
+  refCity?: string;
   page?: number;
 }
 
@@ -33,6 +34,7 @@ export class ProductService {
     if (filters.search) params = params.set('search', filters.search);
     if (filters.refLat != null) params = params.set('refLat', filters.refLat);
     if (filters.refLng != null) params = params.set('refLng', filters.refLng);
+    if (filters.refCity) params = params.set('refCity', filters.refCity);
     if (filters.page != null) params = params.set('page', filters.page);
     return this.http.get<PageResponse<ProductResponse>>(this.publicUrl, { params });
   }

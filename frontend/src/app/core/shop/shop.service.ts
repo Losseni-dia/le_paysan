@@ -3,7 +3,14 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { PageResponse, PayoutAccountResponse, ShopAdminDetailResponse, ShopDeliveryTier, ShopResponse } from './shop.model';
+import {
+  PageResponse,
+  PayoutAccountResponse,
+  ShopAdminDetailResponse,
+  ShopDeliveryCity,
+  ShopDeliveryTier,
+  ShopResponse,
+} from './shop.model';
 
 @Injectable({
   providedIn: 'root',
@@ -69,6 +76,21 @@ export class ShopService {
     return this.http.put<ShopDeliveryTier[]>(
       `${environment.apiBaseUrl}/vendor/shop/paliers-livraison`,
       tiers.map((t) => ({ maxDistanceKm: t.maxDistanceKm, price: t.price })),
+    );
+  }
+
+  getPublicDeliveryCities(shopId: number): Observable<ShopDeliveryCity[]> {
+    return this.http.get<ShopDeliveryCity[]>(`${this.baseUrl}/${shopId}/villes-livraison`);
+  }
+
+  getMyDeliveryCities(): Observable<ShopDeliveryCity[]> {
+    return this.http.get<ShopDeliveryCity[]>(`${environment.apiBaseUrl}/vendor/shop/villes-livraison`);
+  }
+
+  saveMyDeliveryCities(cities: ShopDeliveryCity[]): Observable<ShopDeliveryCity[]> {
+    return this.http.put<ShopDeliveryCity[]>(
+      `${environment.apiBaseUrl}/vendor/shop/villes-livraison`,
+      cities.map((c) => ({ cityName: c.cityName, price: c.price })),
     );
   }
 

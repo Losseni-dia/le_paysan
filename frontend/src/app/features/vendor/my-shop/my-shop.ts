@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { ShopService } from '../../../core/shop/shop.service';
-import { PayoutAccountResponse, ShopDeliveryTier, ShopResponse } from '../../../core/shop/shop.model';
+import { PayoutAccountResponse, ShopDeliveryCity, ShopDeliveryTier, ShopResponse } from '../../../core/shop/shop.model';
 import { MapPicker } from '../../../shared/ui/map-picker/map-picker';
 import { FieldError } from '../../../shared/ui/field-error/field-error';
 
@@ -45,6 +45,11 @@ export class MyShop {
   readonly tiersSaved = signal(false);
   readonly tiersError = signal<string | null>(null);
 
+  readonly deliveryCities = signal<ShopDeliveryCity[]>([]);
+  readonly citiesSaving = signal(false);
+  readonly citiesSaved = signal(false);
+  readonly citiesError = signal<string | null>(null);
+
   constructor() {
     this.shopService.getMyShop().subscribe({
       next: (shop) => {
@@ -54,6 +59,7 @@ export class MyShop {
         if (shop.status === 'VALIDEE') {
           this.loadPayoutAccount();
           this.loadDeliveryTiers();
+          this.loadDeliveryCities();
         }
       },
       error: () => {
@@ -65,6 +71,44 @@ export class MyShop {
 
   private loadDeliveryTiers(): void {
     this.shopService.getMyDeliveryTiers().subscribe({ next: (tiers) => this.deliveryTiers.set(tiers) });
+  }
+
+  private loadDeliveryCities(): void {
+    this.shopService.getMyDeliveryCities().subscribe({ next: (cities) => this.deliveryCities.set(cities) });
+  }
+
+  addCityRow(): void {
+    this.deliveryCities.update((cities) => [...cities, { cityName: '', price: 0 }]);
+  }
+
+  removeCityRow(index: number): void {
+    this.deliveryCities.update((cities) => cities.filter((_, i) => i !== index));
+  }
+
+  updateCityName(index: number, value: string): void {
+    this.deliveryCities.update((cities) => cities.map((c, i) => (i === index ? { ...c, cityName: value } : c)));
+  }
+
+  updateCityPrice(index: number, value: string): void {
+    const n = Number(value);
+    this.deliveryCities.update((cities) => cities.map((c, i) => (i === index ? { ...c, price: n } : c)));
+  }
+
+  saveDeliveryCities(): void {
+    this.citiesSaving.set(true);
+    this.citiesSaved.set(false);
+    this.citiesError.set(null);
+    this.shopService.saveMyDeliveryCities(this.deliveryCities()).subscribe({
+      next: (cities) => {
+        this.deliveryCities.set(cities);
+        this.citiesSaving.set(false);
+        this.citiesSaved.set(true);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.citiesSaving.set(false);
+        this.citiesError.set(err.error?.message ?? 'Impossible d’enregistrer les villes de livraison.');
+      },
+    });
   }
 
   addTierRow(): void {

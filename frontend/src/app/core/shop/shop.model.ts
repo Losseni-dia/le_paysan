@@ -39,6 +39,12 @@ export interface ShopDeliveryTier {
   price: number;
 }
 
+export interface ShopDeliveryCity {
+  id?: number;
+  cityName: string;
+  price: number;
+}
+
 export interface PageResponse<T> {
   content: T[];
   totalElements: number;

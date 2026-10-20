@@ -91,6 +91,59 @@
         </div>
       </section>
 
+      <section class="delivery-tiers-section">
+        <h2>Villes supplémentaires</h2>
+        <p class="form-hint">
+          Déclarez des villes où vous livrez à prix fixe même hors de votre rayon habituel (ex : vous êtes à
+          Samango mais livrez aussi à Bouaké). Vos produits deviendront visibles dans le catalogue pour les
+          acheteurs de ces villes.
+        </p>
+
+        @if (citiesError()) {
+          <p class="form-error-banner">{{ citiesError() }}</p>
+        }
+        @if (citiesSaved()) {
+          <p class="form-success-banner">Villes de livraison enregistrées.</p>
+        }
+
+        @if (deliveryCities().length === 0) {
+          <p class="form-hint">Aucune ville supplémentaire déclarée.</p>
+        }
+
+        @for (city of deliveryCities(); track $index) {
+          <div class="tier-row">
+            <label>
+              Ville
+              <input
+                class="form-input"
+                type="text"
+                [value]="city.cityName"
+                (input)="updateCityName($index, $any($event.target).value)"
+              />
+            </label>
+            <label>
+              Prix
+              <input
+                class="form-input"
+                type="number"
+                min="0"
+                [value]="city.price"
+                (input)="updateCityPrice($index, $any($event.target).value)"
+              />
+              FCFA
+            </label>
+            <button type="button" class="btn-ghost" (click)="removeCityRow($index)">Retirer</button>
+          </div>
+        }
+
+        <div class="tier-actions">
+          <button type="button" class="btn-secondary" (click)="addCityRow()">+ Ajouter une ville</button>
+          <button type="button" class="btn-primary" [disabled]="citiesSaving()" (click)="saveDeliveryCities()">
+            {{ citiesSaving() ? 'Enregistrement...' : 'Enregistrer les villes' }}
+          </button>
+        </div>
+      </section>
+
       <section class="payout-section">
         <h2>Compte Mobile Money de reversement</h2>
         <p class="form-hint">

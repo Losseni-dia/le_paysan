@@ -78,7 +78,7 @@ export const routes: Routes = [
   {
     path: 'mon-espace',
     loadComponent: () => import('./layout/user-layout/user-layout').then((m) => m.UserLayout),
-    canActivate: [authGuard, excludeRoleGuard('ROLE_LIVREUR', '/livreur')],
+    canActivate: [authGuard],
     children: [
       { path: '', redirectTo: 'tableau-de-bord', pathMatch: 'full' },
       {

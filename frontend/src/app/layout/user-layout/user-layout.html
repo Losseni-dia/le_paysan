@@ -13,7 +13,7 @@
 
     @if (authService.hasRole('ROLE_VENDEUR')) {
       <a routerLink="/vendeur" class="vendor-cta">Ma boutique</a>
-    } @else {
+    } @else if (!authService.hasRole('ROLE_LIVREUR')) {
       <a routerLink="/devenir-vendeur" class="vendor-cta">Devenir vendeur</a>
     }
 

@@ -61,6 +61,7 @@ export class CatalogueList {
         deliveryMode: v.deliveryMode || undefined,
         refLat: selectedCity?.lat,
         refLng: selectedCity?.lng,
+        refCity: selectedCity?.name,
         page: this.page(),
       })
       .subscribe({
