@@ -28,3 +28,19 @@ export function roleGuard(role: string): CanActivateFn {
     return true;
   };
 }
+
+/**
+ * Bloque l'acces a une route pour un role donne (ex: un livreur ne doit pas
+ * acceder aux espaces acheteur/vendeur, son backoffice se limite aux livraisons).
+ */
+export function excludeRoleGuard(role: string, redirectTo: string): CanActivateFn {
+  return () => {
+    const authService = inject(AuthService);
+    const router = inject(Router);
+
+    if (authService.hasRole(role)) {
+      return router.createUrlTree([redirectTo]);
+    }
+    return true;
+  };
+}

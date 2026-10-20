@@ -6,6 +6,8 @@ export type OrderStatus =
   | 'EN_PREPARATION'
   | 'PRETE'
   | 'EXPEDIEE'
+  | 'RECUPEREE'
+  | 'EN_ROUTE'
   | 'LIVREE'
   | 'ANNULEE';
 
@@ -64,4 +66,11 @@ export interface AdminOrderResponse {
   assignedLivreurId: number | null;
   assignedLivreurName: string | null;
   createdAt: string;
+}
+
+export interface BulkAssignLivreurResult {
+  orderId: number;
+  orderNumber: string | null;
+  success: boolean;
+  message: string;
 }

@@ -11,10 +11,11 @@ import { CategoryService } from '../../../core/category/category.service';
 import { CategoryResponse } from '../../../core/category/category.model';
 import { CI_CITIES } from '../../../core/catalogue/ci-cities';
 import { environment } from '../../../../environments/environment';
+import { StarRating } from '../../../shared/ui/star-rating/star-rating';
 
 @Component({
   selector: 'app-catalogue-list',
-  imports: [ReactiveFormsModule, RouterLink, DecimalPipe],
+  imports: [ReactiveFormsModule, RouterLink, DecimalPipe, StarRating],
   templateUrl: './catalogue-list.html',
   styleUrl: './catalogue-list.scss',
 })

@@ -25,5 +25,7 @@ export interface ProductResponse {
   imageUrls: string[];
   deliveryOptions: ProductDeliveryOptionResponse[];
   distanceKm: number | null;
+  ratingAverage: number | null;
+  ratingCount: number | null;
   createdAt: string;
 }

@@ -74,3 +74,52 @@
   background: #fdecea;
   color: var(--color-danger);
 }
+
+.bulk-assign-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: var(--color-surface-tint);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+
+  select {
+    min-width: 200px;
+  }
+}
+
+.btn-primary {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.bulk-results {
+  margin-bottom: 16px;
+
+  p {
+    margin: 2px 0;
+    font-size: 13px;
+
+    &.success {
+      color: var(--color-primary-dark);
+    }
+
+    &.failure {
+      color: var(--color-danger);
+    }
+  }
+}

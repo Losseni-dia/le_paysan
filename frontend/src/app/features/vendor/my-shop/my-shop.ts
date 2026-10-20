@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { ShopService } from '../../../core/shop/shop.service';
-import { PayoutAccountResponse, ShopResponse } from '../../../core/shop/shop.model';
+import { PayoutAccountResponse, ShopDeliveryTier, ShopResponse } from '../../../core/shop/shop.model';
 import { MapPicker } from '../../../shared/ui/map-picker/map-picker';
 import { FieldError } from '../../../shared/ui/field-error/field-error';
 
@@ -40,6 +40,11 @@ export class MyShop {
     accountHolderName: ['', [Validators.required]],
   });
 
+  readonly deliveryTiers = signal<ShopDeliveryTier[]>([]);
+  readonly tiersSaving = signal(false);
+  readonly tiersSaved = signal(false);
+  readonly tiersError = signal<string | null>(null);
+
   constructor() {
     this.shopService.getMyShop().subscribe({
       next: (shop) => {
@@ -48,11 +53,51 @@ export class MyShop {
         this.loading.set(false);
         if (shop.status === 'VALIDEE') {
           this.loadPayoutAccount();
+          this.loadDeliveryTiers();
         }
       },
       error: () => {
         this.hasShop.set(false);
         this.loading.set(false);
+      },
+    });
+  }
+
+  private loadDeliveryTiers(): void {
+    this.shopService.getMyDeliveryTiers().subscribe({ next: (tiers) => this.deliveryTiers.set(tiers) });
+  }
+
+  addTierRow(): void {
+    this.deliveryTiers.update((tiers) => [...tiers, { maxDistanceKm: 10, price: 0 }]);
+  }
+
+  removeTierRow(index: number): void {
+    this.deliveryTiers.update((tiers) => tiers.filter((_, i) => i !== index));
+  }
+
+  updateTierDistance(index: number, value: string): void {
+    const n = Number(value);
+    this.deliveryTiers.update((tiers) => tiers.map((t, i) => (i === index ? { ...t, maxDistanceKm: n } : t)));
+  }
+
+  updateTierPrice(index: number, value: string): void {
+    const n = Number(value);
+    this.deliveryTiers.update((tiers) => tiers.map((t, i) => (i === index ? { ...t, price: n } : t)));
+  }
+
+  saveDeliveryTiers(): void {
+    this.tiersSaving.set(true);
+    this.tiersSaved.set(false);
+    this.tiersError.set(null);
+    this.shopService.saveMyDeliveryTiers(this.deliveryTiers()).subscribe({
+      next: (tiers) => {
+        this.deliveryTiers.set(tiers);
+        this.tiersSaving.set(false);
+        this.tiersSaved.set(true);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.tiersSaving.set(false);
+        this.tiersError.set(err.error?.message ?? 'Impossible d’enregistrer les paliers de livraison.');
       },
     });
   }

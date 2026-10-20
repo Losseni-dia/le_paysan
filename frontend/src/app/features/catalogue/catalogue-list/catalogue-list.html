@@ -47,9 +47,16 @@
               }
             </p>
             <p class="product-price">{{ p.unitPrice }} FCFA / {{ p.unit }}</p>
+            @if (p.ratingCount) {
+              <div class="product-rating">
+                <app-star-rating [rating]="p.ratingAverage ?? 0" />
+                <span class="product-rating-count">({{ p.ratingCount }})</span>
+              </div>
+            }
             @if (p.distanceKm != null) {
               <p class="product-distance">📍 {{ p.distanceKm | number: '1.0-1' }} km</p>
             }
+            <button type="button" class="btn-buy">Acheter</button>
           </div>
         </a>
       }

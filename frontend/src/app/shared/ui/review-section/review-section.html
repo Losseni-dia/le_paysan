@@ -17,11 +17,15 @@
 
   @if (authService.isAuthenticated() && !isOwner()) {
     @if (!editing()) {
-      <button type="button" class="btn-secondary" (click)="startEdit()">
-        {{ myReview() ? 'Modifier mon avis' : 'Laisser un avis' }}
-      </button>
+      @if (myReview() || !ineligibleMessage()) {
+        <button type="button" class="btn-secondary" (click)="startEdit()">
+          {{ myReview() ? 'Modifier mon avis' : 'Laisser un avis' }}
+        </button>
+      } @else {
+        <p class="form-hint ineligible-message">{{ ineligibleMessage() }}</p>
+      }
     } @else {
-      <form class="review-form" (ngSubmit)="submit()">
+      <div class="review-form">
         @if (error()) {
           <p class="form-error-banner">{{ error() }}</p>
         }
@@ -34,12 +38,12 @@
           (input)="formComment.set($any($event.target).value)"
         ></textarea>
         <div class="review-form-actions">
-          <button type="submit" class="btn-primary" [disabled]="submitting()">
+          <button type="button" class="btn-primary" [disabled]="submitting()" (click)="submit()">
             {{ submitting() ? 'Envoi...' : 'Publier' }}
           </button>
           <button type="button" class="btn-ghost" (click)="cancelEdit()">Annuler</button>
         </div>
-      </form>
+      </div>
     }
   }
 

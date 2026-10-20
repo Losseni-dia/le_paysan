@@ -5,7 +5,6 @@ import { RouterLink } from '@angular/router';
 import { OrderService } from '../../../core/order/order.service';
 import { OrderResponse } from '../../../core/order/order.model';
 import { PaymentService } from '../../../core/payment/payment.service';
-import { OrderTimeline } from '../../../shared/ui/order-timeline/order-timeline';
 
 const STATUS_LABELS: Record<string, string> = {
   EN_ATTENTE_PAIEMENT: 'En attente de paiement',
@@ -13,13 +12,15 @@ const STATUS_LABELS: Record<string, string> = {
   EN_PREPARATION: 'En préparation',
   PRETE: 'Prête (retrait)',
   EXPEDIEE: 'Expédiée',
+  RECUPEREE: 'Récupérée par le livreur',
+  EN_ROUTE: 'En route',
   LIVREE: 'Livrée',
   ANNULEE: 'Annulée',
 };
 
 @Component({
   selector: 'app-my-orders',
-  imports: [RouterLink, OrderTimeline],
+  imports: [RouterLink],
   templateUrl: './my-orders.html',
   styleUrl: './my-orders.scss',
 })

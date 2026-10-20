@@ -20,6 +20,14 @@
   color: var(--color-text-muted);
 }
 
+.ineligible-message {
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: var(--color-bg-alt);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
 .btn-secondary {
   padding: 8px 16px;
   border-radius: var(--radius-sm);

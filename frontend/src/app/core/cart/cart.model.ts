@@ -11,10 +11,14 @@ export interface CartItemResponse {
   deliveryMode: DeliveryMode;
   deliveryPrice: number;
   deliveryAddress: string | null;
+  deliveryCityName: string | null;
+  deliveryCityLat: number | null;
+  deliveryCityLng: number | null;
   lineSubtotal: number;
   availableDeliveryModes: DeliveryMode[];
   stockAvailable: number;
   available: boolean;
+  deliveryOutOfRange: boolean;
 }
 
 export interface CartResponse {
@@ -29,10 +33,16 @@ export interface AddCartItemRequest {
   quantity: number;
   deliveryMode: DeliveryMode;
   deliveryAddress?: string;
+  deliveryCityName?: string;
+  deliveryCityLat?: number;
+  deliveryCityLng?: number;
 }
 
 export interface UpdateCartItemRequest {
   quantity: number;
   deliveryMode: DeliveryMode;
   deliveryAddress?: string;
+  deliveryCityName?: string;
+  deliveryCityLat?: number;
+  deliveryCityLng?: number;
 }

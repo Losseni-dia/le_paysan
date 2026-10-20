@@ -6,25 +6,29 @@
     </div>
 
     <nav class="sidebar-nav">
-      <a routerLink="/vendeur/tableau-de-bord" routerLinkActive="active">
-        {{ 'sidebar.vendor.dashboard' | translate }}
-      </a>
-      <a routerLink="/vendeur/ma-boutique" routerLinkActive="active">
-        {{ 'sidebar.vendor.myShop' | translate }}
-      </a>
-      <a routerLink="/vendeur/produits" routerLinkActive="active">
-        {{ 'sidebar.vendor.myProducts' | translate }}
-      </a>
-      <a routerLink="/vendeur/commandes" routerLinkActive="active">
-        {{ 'sidebar.vendor.orders' | translate }}
-      </a>
-      <a routerLink="/vendeur/statistiques" routerLinkActive="active">
-        {{ 'sidebar.vendor.stats' | translate }}
-      </a>
-      <a routerLink="/vendeur/livreurs" routerLinkActive="active">Mes livreurs</a>
-      <a routerLink="/vendeur/parametres" routerLinkActive="active">
-        {{ 'sidebar.vendor.settings' | translate }}
-      </a>
+      @if (authService.hasRole('ROLE_VENDEUR')) {
+        <a routerLink="/vendeur/tableau-de-bord" routerLinkActive="active">
+          {{ 'sidebar.vendor.dashboard' | translate }}
+        </a>
+        <a routerLink="/vendeur/ma-boutique" routerLinkActive="active">
+          {{ 'sidebar.vendor.myShop' | translate }}
+        </a>
+        <a routerLink="/vendeur/produits" routerLinkActive="active">
+          {{ 'sidebar.vendor.myProducts' | translate }}
+        </a>
+        <a routerLink="/vendeur/commandes" routerLinkActive="active">
+          {{ 'sidebar.vendor.orders' | translate }}
+        </a>
+        <a routerLink="/vendeur/statistiques" routerLinkActive="active">
+          {{ 'sidebar.vendor.stats' | translate }}
+        </a>
+        <a routerLink="/vendeur/livreurs" routerLinkActive="active">Mes livreurs</a>
+        <a routerLink="/vendeur/parametres" routerLinkActive="active">
+          {{ 'sidebar.vendor.settings' | translate }}
+        </a>
+      } @else {
+        <a routerLink="/vendeur/ma-boutique" routerLinkActive="active">Statut de ma demande</a>
+      }
     </nav>
 
     <button type="button" class="collapse-btn" (click)="toggleSidebar()">

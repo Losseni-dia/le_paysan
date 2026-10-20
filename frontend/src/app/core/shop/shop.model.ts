@@ -33,6 +33,12 @@ export interface PayoutAccountResponse {
   verified: boolean;
 }
 
+export interface ShopDeliveryTier {
+  id?: number;
+  maxDistanceKm: number;
+  price: number;
+}
+
 export interface PageResponse<T> {
   content: T[];
   totalElements: number;

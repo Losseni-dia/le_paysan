@@ -12,21 +12,6 @@
     }
 
     @if (nextActionLabel()) {
-      @if (willBeExpediee() && livreurs().length > 0) {
-        <div class="status-actions">
-          <select
-            class="form-input livreur-select"
-            [ngModel]="selectedLivreurId()"
-            (ngModelChange)="selectedLivreurId.set($event)"
-          >
-            <option [ngValue]="null">Pas de livreur (je livre moi-même)</option>
-            @for (l of livreurs(); track l.id) {
-              <option [ngValue]="l.id">{{ l.firstName }} {{ l.lastName }}</option>
-            }
-          </select>
-        </div>
-      }
-
       @if (isDeliveryStep()) {
         <div class="proof-section">
           <p class="form-hint">
@@ -65,6 +50,10 @@
         </div>
       }
 
+      @if (willBeExpediee()) {
+        <p class="form-hint">Vous pourrez assigner un livreur juste après ce changement de statut.</p>
+      }
+
       <div class="status-actions">
         <button type="button" class="btn-primary" [disabled]="updating()" (click)="markNextStatus()">
           {{ nextActionLabel() }}
@@ -74,6 +63,37 @@
 
     @if (order()!.assignedLivreurName) {
       <p class="form-hint">Livreur assigné : {{ order()!.assignedLivreurName }}</p>
+    }
+
+    @if (canAssignLivreur() && livreurs().length > 0) {
+      <div class="reassign-livreur-section">
+        <h2>{{ order()!.assignedLivreurName ? 'Réassigner un livreur' : 'Assigner un livreur' }}</h2>
+        @if (reassignError()) {
+          <p class="form-error-banner">{{ reassignError() }}</p>
+        }
+        <div class="status-actions">
+          <select
+            class="form-input livreur-select"
+            [ngModel]="reassignLivreurId()"
+            (ngModelChange)="reassignLivreurId.set($event)"
+          >
+            <option [ngValue]="null">-- Choisir un livreur --</option>
+            @for (l of livreurs(); track l.id) {
+              <option [ngValue]="l.id">
+                {{ l.firstName }} {{ l.lastName }} {{ l.available ? '(disponible)' : '(indisponible)' }}
+              </option>
+            }
+          </select>
+          <button
+            type="button"
+            class="btn-primary"
+            [disabled]="!reassignLivreurId() || reassigning()"
+            (click)="confirmAssignLivreur()"
+          >
+            {{ reassigning() ? 'Validation...' : 'Valider' }}
+          </button>
+        </div>
+      </div>
     }
 
     <app-order-timeline [historique]="order()!.historique" [status]="order()!.status" />

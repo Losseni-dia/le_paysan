@@ -28,10 +28,6 @@
         <p>Livraison : {{ order.deliveryAmount }} FCFA</p>
         <p class="order-total">Total : {{ order.totalAmount }} FCFA</p>
 
-        @if (order.status !== 'EN_ATTENTE_PAIEMENT') {
-          <app-order-timeline [historique]="order.historique" [status]="order.status" />
-        }
-
         @if (order.status === 'EN_ATTENTE_PAIEMENT') {
           <button type="button" class="btn-pay" [disabled]="payingId() === order.id" (click)="payNow(order)">
             {{ payingId() === order.id ? 'Redirection...' : 'Payer maintenant' }}
@@ -40,7 +36,12 @@
           <a class="btn-invoice" [routerLink]="['/mon-espace/commandes', order.id, 'facture']">Voir la facture</a>
         }
 
-        @if (order.status === 'PRETE' || order.status === 'EXPEDIEE') {
+        @if (
+          order.status === 'PRETE' ||
+          order.status === 'EXPEDIEE' ||
+          order.status === 'RECUPEREE' ||
+          order.status === 'EN_ROUTE'
+        ) {
           <button
             type="button"
             class="btn-confirm"

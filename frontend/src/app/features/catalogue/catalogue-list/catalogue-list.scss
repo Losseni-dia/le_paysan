@@ -82,6 +82,36 @@
   margin: 4px 0 0;
 }
 
+.product-rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 0;
+
+  app-star-rating {
+    transform: scale(0.8);
+    transform-origin: left center;
+  }
+}
+
+.product-rating-count {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.btn-buy {
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
 .pagination {
   display: flex;
   align-items: center;

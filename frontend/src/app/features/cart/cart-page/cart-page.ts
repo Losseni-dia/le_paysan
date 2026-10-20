@@ -5,6 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { CartService } from '../../../core/cart/cart.service';
 import { CartItemResponse, DeliveryMode } from '../../../core/cart/cart.model';
 import { OrderService } from '../../../core/order/order.service';
+import { CI_CITIES } from '../../../core/catalogue/ci-cities';
 import { environment } from '../../../../environments/environment';
 
 interface ShopGroup {
@@ -47,6 +48,7 @@ export class CartPage {
   });
 
   readonly hasUnavailableItems = computed(() => this.cart()?.items.some((i) => !i.available) ?? false);
+  readonly cities = CI_CITIES;
 
   constructor() {
     this.cartService.fetch().subscribe({
@@ -63,7 +65,14 @@ export class CartPage {
     }
     this.error.set(null);
     this.cartService
-      .updateItem(item.productId, { quantity, deliveryMode: item.deliveryMode, deliveryAddress: item.deliveryAddress ?? undefined })
+      .updateItem(item.productId, {
+        quantity,
+        deliveryMode: item.deliveryMode,
+        deliveryAddress: item.deliveryAddress ?? undefined,
+        deliveryCityName: item.deliveryCityName ?? undefined,
+        deliveryCityLat: item.deliveryCityLat ?? undefined,
+        deliveryCityLng: item.deliveryCityLng ?? undefined,
+      })
       .subscribe({ error: (err: HttpErrorResponse) => this.error.set(err.error?.message ?? 'Erreur de mise à jour.') });
   }
 
@@ -76,6 +85,9 @@ export class CartPage {
         quantity: item.quantity,
         deliveryMode,
         deliveryAddress: deliveryMode === 'LIVRAISON_DOMICILE' ? (item.deliveryAddress ?? '') : undefined,
+        deliveryCityName: item.deliveryCityName ?? undefined,
+        deliveryCityLat: item.deliveryCityLat ?? undefined,
+        deliveryCityLng: item.deliveryCityLng ?? undefined,
       })
       .subscribe({ error: (err: HttpErrorResponse) => this.error.set(err.error?.message ?? 'Erreur de mise à jour.') });
   }
@@ -85,7 +97,31 @@ export class CartPage {
     const deliveryAddress = input.value;
     this.error.set(null);
     this.cartService
-      .updateItem(item.productId, { quantity: item.quantity, deliveryMode: item.deliveryMode, deliveryAddress })
+      .updateItem(item.productId, {
+        quantity: item.quantity,
+        deliveryMode: item.deliveryMode,
+        deliveryAddress,
+        deliveryCityName: item.deliveryCityName ?? undefined,
+        deliveryCityLat: item.deliveryCityLat ?? undefined,
+        deliveryCityLng: item.deliveryCityLng ?? undefined,
+      })
+      .subscribe({ error: (err: HttpErrorResponse) => this.error.set(err.error?.message ?? 'Erreur de mise à jour.') });
+  }
+
+  updateCity(item: CartItemResponse, event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const city = this.cities.find((c) => c.name === select.value);
+    if (!city) return;
+    this.error.set(null);
+    this.cartService
+      .updateItem(item.productId, {
+        quantity: item.quantity,
+        deliveryMode: item.deliveryMode,
+        deliveryAddress: item.deliveryAddress ?? undefined,
+        deliveryCityName: city.name,
+        deliveryCityLat: city.lat,
+        deliveryCityLng: city.lng,
+      })
       .subscribe({ error: (err: HttpErrorResponse) => this.error.set(err.error?.message ?? 'Erreur de mise à jour.') });
   }
 

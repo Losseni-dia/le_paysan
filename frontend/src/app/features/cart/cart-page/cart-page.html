@@ -29,7 +29,9 @@
 
             <div class="item-info">
               <h3>{{ item.productName }}</h3>
-              @if (!item.available) {
+              @if (item.deliveryOutOfRange) {
+                <p class="unavailable-tag">Livraison indisponible à cette distance — changez de ville ou de mode</p>
+              } @else if (!item.available) {
                 <p class="unavailable-tag">Indisponible</p>
               }
               <p class="item-price">{{ item.unitPrice }} FCFA / unité</p>
@@ -59,6 +61,15 @@
               </div>
 
               @if (item.deliveryMode === 'LIVRAISON_DOMICILE') {
+                <label class="address-label">
+                  Ville de livraison
+                  <select (change)="updateCity(item, $event)">
+                    <option value="">-- Choisir une ville --</option>
+                    @for (c of cities; track c.name) {
+                      <option [value]="c.name" [selected]="c.name === item.deliveryCityName">{{ c.name }}</option>
+                    }
+                  </select>
+                </label>
                 <label class="address-label">
                   Adresse de livraison
                   <input type="text" [value]="item.deliveryAddress" (change)="updateAddress(item, $event)" />

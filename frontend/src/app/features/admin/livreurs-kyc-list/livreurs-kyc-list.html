@@ -1,0 +1,56 @@
+<div class="livreurs-kyc-list">
+  <h1>Validation KYC des livreurs</h1>
+  <p class="form-hint">Pièce d'identité (recto/verso) et selfie soumis par les livreurs via leur vendeur.</p>
+
+  <div class="filters">
+    @for (status of statusFilters; track status.value) {
+      <button
+        type="button"
+        class="filter-btn"
+        [class.active]="selectedStatus() === status.value"
+        (click)="selectStatus(status.value)"
+      >
+        {{ status.label }}
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (livreurs().length === 0) {
+    <p class="form-hint">Aucun livreur avec ce statut.</p>
+  } @else {
+    <table class="requests-table">
+      <thead>
+        <tr>
+          <th>Photo</th>
+          <th>Livreur</th>
+          <th>Boutique</th>
+          <th>Ville</th>
+          <th>Statut KYC</th>
+          <th>Date</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (l of livreurs(); track l.id) {
+          <tr>
+            <td><app-avatar-thumb [path]="l.photoUrl" [alt]="l.firstName" /></td>
+            <td>{{ l.firstName }} {{ l.lastName }}</td>
+            <td>{{ l.shopName }}</td>
+            <td>{{ l.city ?? '—' }}</td>
+            <td>
+              @if (l.kycStatus) {
+                <span class="status-badge" [class]="'status-' + l.kycStatus">{{ l.kycStatus }}</span>
+              } @else {
+                <span class="status-badge status-NON_SOUMIS">Non soumis</span>
+              }
+            </td>
+            <td>{{ l.createdAt | date: 'dd/MM/yyyy' }}</td>
+            <td><a [routerLink]="['/admin/livreurs-kyc', l.id]">Voir</a></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

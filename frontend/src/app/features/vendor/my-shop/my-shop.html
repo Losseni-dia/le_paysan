@@ -36,6 +36,61 @@
     <app-map-picker [latitude]="shop()!.latitude" [longitude]="shop()!.longitude" [readonly]="true" />
 
     @if (shop()!.status === 'VALIDEE') {
+      <section class="delivery-tiers-section">
+        <h2>Paliers de livraison à domicile</h2>
+        <p class="form-hint">
+          Définissez le prix de livraison selon la distance entre votre boutique et la ville de l'acheteur. Au-delà
+          du dernier palier, la livraison à domicile n'est pas proposée (l'acheteur peut toujours choisir le retrait
+          en boutique).
+        </p>
+
+        @if (tiersError()) {
+          <p class="form-error-banner">{{ tiersError() }}</p>
+        }
+        @if (tiersSaved()) {
+          <p class="form-success-banner">Paliers de livraison enregistrés.</p>
+        }
+
+        @if (deliveryTiers().length === 0) {
+          <p class="form-hint">Aucun palier défini : la livraison à domicile est actuellement gratuite partout.</p>
+        }
+
+        @for (tier of deliveryTiers(); track $index) {
+          <div class="tier-row">
+            <label>
+              Jusqu'à
+              <input
+                class="form-input"
+                type="number"
+                min="1"
+                [value]="tier.maxDistanceKm"
+                (input)="updateTierDistance($index, $any($event.target).value)"
+              />
+              km
+            </label>
+            <label>
+              Prix
+              <input
+                class="form-input"
+                type="number"
+                min="0"
+                [value]="tier.price"
+                (input)="updateTierPrice($index, $any($event.target).value)"
+              />
+              FCFA
+            </label>
+            <button type="button" class="btn-ghost" (click)="removeTierRow($index)">Retirer</button>
+          </div>
+        }
+
+        <div class="tier-actions">
+          <button type="button" class="btn-secondary" (click)="addTierRow()">+ Ajouter un palier</button>
+          <button type="button" class="btn-primary" [disabled]="tiersSaving()" (click)="saveDeliveryTiers()">
+            {{ tiersSaving() ? 'Enregistrement...' : 'Enregistrer les paliers' }}
+          </button>
+        </div>
+      </section>
+
       <section class="payout-section">
         <h2>Compte Mobile Money de reversement</h2>
         <p class="form-hint">

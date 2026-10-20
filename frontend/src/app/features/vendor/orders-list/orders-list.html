@@ -19,9 +19,50 @@
   } @else if (orders().length === 0) {
     <p class="form-hint">Aucune commande avec ce statut.</p>
   } @else {
+    @if (selectedOrderIds().size > 0) {
+      <div class="bulk-assign-bar">
+        <span>{{ selectedOrderIds().size }} commande(s) sélectionnée(s)</span>
+        <select
+          class="form-input"
+          [ngModel]="bulkLivreurId()"
+          (ngModelChange)="bulkLivreurId.set($event)"
+        >
+          <option [ngValue]="null">-- Choisir un livreur --</option>
+          @for (l of livreurs(); track l.id) {
+            <option [ngValue]="l.id">{{ l.firstName }} {{ l.lastName }}</option>
+          }
+        </select>
+        <button
+          type="button"
+          class="btn-primary"
+          [disabled]="!bulkLivreurId() || bulkAssigning()"
+          (click)="confirmBulkAssign()"
+        >
+          {{ bulkAssigning() ? 'Assignation...' : 'Assigner le livreur' }}
+        </button>
+      </div>
+    }
+
+    @if (bulkResults()) {
+      <div class="bulk-results">
+        @for (r of bulkResults(); track r.orderId) {
+          <p [class.success]="r.success" [class.failure]="!r.success">
+            {{ r.orderNumber ?? ('#' + r.orderId) }} — {{ r.message }}
+          </p>
+        }
+      </div>
+    }
+
     <table class="requests-table">
       <thead>
         <tr>
+          <th>
+            <input
+              type="checkbox"
+              [checked]="selectedOrderIds().size > 0"
+              (change)="toggleSelectAllAssignable()"
+            />
+          </th>
           <th>N° commande</th>
           <th>Acheteur</th>
           <th>Total</th>
@@ -33,6 +74,11 @@
       <tbody>
         @for (o of orders(); track o.id) {
           <tr>
+            <td>
+              @if (isAssignable(o)) {
+                <input type="checkbox" [checked]="isSelected(o.id)" (change)="toggleSelection(o.id)" />
+              }
+            </td>
             <td>{{ o.orderNumber }}</td>
             <td>{{ o.buyerFullName }}</td>
             <td>{{ o.totalAmount }} FCFA</td>

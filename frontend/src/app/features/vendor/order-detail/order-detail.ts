@@ -32,10 +32,15 @@ export class OrderDetail {
   readonly updating = signal(false);
   readonly error = signal<string | null>(null);
   readonly livreurs = signal<LivreurResponse[]>([]);
-  readonly selectedLivreurId = signal<number | null>(null);
   readonly proofMode = signal<ProofMode>('NONE');
   readonly photoFile = signal<File | null>(null);
   readonly photoPreviewUrl = signal<string | null>(null);
+
+  readonly reassignLivreurId = signal<number | null>(null);
+  readonly reassigning = signal(false);
+  readonly reassignError = signal<string | null>(null);
+
+  readonly canAssignLivreur = computed(() => this.order()?.status === 'EXPEDIEE');
 
   readonly willBeExpediee = computed(() => {
     const order = this.order();
@@ -104,14 +109,12 @@ export class OrderDetail {
     this.updating.set(true);
     this.orderService
       .markNextStatus(order.id, {
-        livreurId: this.selectedLivreurId() ?? undefined,
         proofType: mode !== 'NONE' && proof ? mode : undefined,
         proof,
       })
       .subscribe({
         next: (updated) => {
           this.order.set(updated);
-          this.selectedLivreurId.set(null);
           this.proofMode.set('NONE');
           this.photoFile.set(null);
           this.photoPreviewUrl.set(null);
@@ -122,6 +125,31 @@ export class OrderDetail {
           this.error.set(err.error?.message ?? 'Impossible de mettre à jour le statut.');
         },
       });
+  }
+
+  confirmAssignLivreur(): void {
+    const order = this.order();
+    const livreurId = this.reassignLivreurId();
+    if (!order || !livreurId) return;
+
+    this.reassigning.set(true);
+    this.reassignError.set(null);
+    this.orderService.bulkAssignLivreur([order.id], livreurId).subscribe({
+      next: (results) => {
+        this.reassigning.set(false);
+        const result = results[0];
+        if (!result?.success) {
+          this.reassignError.set(result?.message ?? "Impossible d'assigner ce livreur.");
+          return;
+        }
+        this.reassignLivreurId.set(null);
+        this.load();
+      },
+      error: () => {
+        this.reassigning.set(false);
+        this.reassignError.set("Impossible d'assigner ce livreur.");
+      },
+    });
   }
 
   private load(): void {

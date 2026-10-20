@@ -8,6 +8,9 @@ import { ProductResponse } from '../../../core/product/product.model';
 import { CartService } from '../../../core/cart/cart.service';
 import { DeliveryMode } from '../../../core/cart/cart.model';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ShopService } from '../../../core/shop/shop.service';
+import { ShopDeliveryTier } from '../../../core/shop/shop.model';
+import { CI_CITIES, CiCity } from '../../../core/catalogue/ci-cities';
 import { FieldError } from '../../../shared/ui/field-error/field-error';
 import { MapPicker } from '../../../shared/ui/map-picker/map-picker';
 import { ReviewSection } from '../../../shared/ui/review-section/review-section';
@@ -23,6 +26,7 @@ export class ProductDetail {
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
   private readonly cartService = inject(CartService);
+  private readonly shopService = inject(ShopService);
   private readonly fb = inject(FormBuilder);
   readonly authService = inject(AuthService);
 
@@ -36,10 +40,14 @@ export class ProductDetail {
   readonly addedToCart = signal(false);
   readonly cartError = signal<string | null>(null);
 
+  readonly cities = CI_CITIES;
+  readonly deliveryTiers = signal<ShopDeliveryTier[]>([]);
+
   readonly addForm = this.fb.nonNullable.group({
     quantity: [1, [Validators.required, Validators.min(1)]],
     deliveryMode: ['' as DeliveryMode | '', [Validators.required]],
     deliveryAddress: [''],
+    deliveryCity: [''],
   });
 
   constructor() {
@@ -51,6 +59,7 @@ export class ProductDetail {
         if (p.deliveryOptions.length === 1) {
           this.addForm.controls.deliveryMode.setValue(p.deliveryOptions[0].mode);
         }
+        this.shopService.getPublicDeliveryTiers(p.shopId).subscribe({ next: (tiers) => this.deliveryTiers.set(tiers) });
       },
       error: () => {
         this.notFound.set(true);
@@ -79,6 +88,15 @@ export class ProductDetail {
       this.addForm.controls.deliveryAddress.markAsTouched();
       return;
     }
+    let city: CiCity | undefined;
+    if (this.needsAddress) {
+      city = this.cities.find((c) => c.name === v.deliveryCity);
+      if (!city) {
+        this.addForm.controls.deliveryCity.setErrors({ required: true });
+        this.addForm.controls.deliveryCity.markAsTouched();
+        return;
+      }
+    }
 
     this.addingToCart.set(true);
     this.addedToCart.set(false);
@@ -89,6 +107,9 @@ export class ProductDetail {
         quantity: v.quantity,
         deliveryMode: v.deliveryMode as DeliveryMode,
         deliveryAddress: this.needsAddress ? v.deliveryAddress : undefined,
+        deliveryCityName: city?.name,
+        deliveryCityLat: city?.lat,
+        deliveryCityLng: city?.lng,
       })
       .subscribe({
         next: () => {

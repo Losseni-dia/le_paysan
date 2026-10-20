@@ -15,8 +15,35 @@ export class MyDeliveries {
 
   readonly orders = signal<AdminOrderResponse[]>([]);
   readonly loading = signal(true);
+  readonly updatingId = signal<number | null>(null);
 
   constructor() {
+    this.load();
+  }
+
+  markPickedUp(order: AdminOrderResponse): void {
+    this.updatingId.set(order.id);
+    this.livreurService.markPickedUp(order.id).subscribe({
+      next: (updated) => {
+        this.orders.set(this.orders().map((o) => (o.id === updated.id ? updated : o)));
+        this.updatingId.set(null);
+      },
+      error: () => this.updatingId.set(null),
+    });
+  }
+
+  markEnRoute(order: AdminOrderResponse): void {
+    this.updatingId.set(order.id);
+    this.livreurService.markEnRoute(order.id).subscribe({
+      next: (updated) => {
+        this.orders.set(this.orders().map((o) => (o.id === updated.id ? updated : o)));
+        this.updatingId.set(null);
+      },
+      error: () => this.updatingId.set(null),
+    });
+  }
+
+  private load(): void {
     this.livreurService.listMyDeliveries().subscribe({
       next: (page) => {
         this.orders.set(page.content);

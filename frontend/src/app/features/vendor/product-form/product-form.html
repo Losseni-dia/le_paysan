@@ -144,9 +144,13 @@
               </div>
               @if (form.controls.livraisonDomicile.value) {
                 <div class="form-field">
-                  <label class="form-label" for="deliveryPrice">Prix de la livraison (FCFA)</label>
+                  <label class="form-label" for="deliveryPrice">Supplément de livraison (optionnel, FCFA)</label>
                   <input id="deliveryPrice" class="form-input" type="number" min="0" formControlName="deliveryPrice" />
                   <app-field-error [control]="form.controls.deliveryPrice" />
+                  <p class="form-hint">
+                    Le prix de base dépend des paliers de livraison de votre boutique (réglables dans "Ma boutique").
+                    Ajoutez ici un supplément uniquement si ce produit est plus lourd/encombrant que la moyenne.
+                  </p>
                 </div>
               }
 
@@ -171,7 +175,9 @@
                   ,
                 }
                 @if (form.controls.livraisonDomicile.value) {
-                  Livraison à domicile ({{ form.controls.deliveryPrice.value }} FCFA)
+                  Livraison à domicile (selon les paliers de la boutique{{
+                    form.controls.deliveryPrice.value ? ' + ' + form.controls.deliveryPrice.value + ' FCFA' : ''
+                  }})
                 }
               </p>
               <p class="form-hint">

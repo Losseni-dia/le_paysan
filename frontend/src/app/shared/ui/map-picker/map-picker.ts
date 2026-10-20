@@ -40,6 +40,7 @@ export class MapPicker implements AfterViewInit, OnChanges, OnDestroy {
   @Input() latitude: number | null = null;
   @Input() longitude: number | null = null;
   @Input() readonly = false;
+  @Input() heightPx = 320;
 
   @Output() positionChange = new EventEmitter<{ latitude: number; longitude: number }>();
 

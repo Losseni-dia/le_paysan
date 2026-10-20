@@ -9,6 +9,8 @@ const STEP_LABELS: Record<string, string> = {
   EN_PREPARATION: 'En préparation',
   PRETE: 'Prête (retrait)',
   EXPEDIEE: 'Expédiée',
+  RECUPEREE: 'Récupérée par le livreur',
+  EN_ROUTE: 'En route',
   LIVREE: 'Livrée',
 };
 
@@ -49,13 +51,16 @@ export class OrderTimeline {
 
   readonly steps = computed<TimelineStep[]>(() => {
     const history = this.historique();
+    const hasLivreurSteps = history.some((h) => h.status === 'RECUPEREE' || h.status === 'EN_ROUTE');
     const thirdStepStatus = history.find((h) => h.status === 'EXPEDIEE')
       ? 'EXPEDIEE'
       : history.find((h) => h.status === 'PRETE')
         ? 'PRETE'
         : 'PRETE';
 
-    const sequence = ['PAYEE', 'EN_PREPARATION', thirdStepStatus, 'LIVREE'];
+    const sequence = hasLivreurSteps
+      ? ['PAYEE', 'EN_PREPARATION', 'EXPEDIEE', 'RECUPEREE', 'EN_ROUTE', 'LIVREE']
+      : ['PAYEE', 'EN_PREPARATION', thirdStepStatus, 'LIVREE'];
     const currentIndex = sequence.indexOf(this.status());
 
     return sequence.map((status, index) => {

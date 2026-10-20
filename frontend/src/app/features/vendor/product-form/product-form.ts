@@ -166,7 +166,7 @@ export class ProductForm {
     if (!v.retraitBoutique && !v.livraisonDomicile) {
       return false;
     }
-    if (v.livraisonDomicile && (v.deliveryPrice == null || v.deliveryPrice < 0)) {
+    if (v.livraisonDomicile && v.deliveryPrice != null && v.deliveryPrice < 0) {
       return false;
     }
     return true;

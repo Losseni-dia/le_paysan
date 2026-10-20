@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { PageResponse, PayoutAccountResponse, ShopAdminDetailResponse, ShopResponse } from './shop.model';
+import { PageResponse, PayoutAccountResponse, ShopAdminDetailResponse, ShopDeliveryTier, ShopResponse } from './shop.model';
 
 @Injectable({
   providedIn: 'root',
@@ -55,6 +55,21 @@ export class ShopService {
       params = params.set('search', search);
     }
     return this.http.get<PageResponse<ShopResponse>>(this.baseUrl, { params });
+  }
+
+  getPublicDeliveryTiers(shopId: number): Observable<ShopDeliveryTier[]> {
+    return this.http.get<ShopDeliveryTier[]>(`${this.baseUrl}/${shopId}/paliers-livraison`);
+  }
+
+  getMyDeliveryTiers(): Observable<ShopDeliveryTier[]> {
+    return this.http.get<ShopDeliveryTier[]>(`${environment.apiBaseUrl}/vendor/shop/paliers-livraison`);
+  }
+
+  saveMyDeliveryTiers(tiers: ShopDeliveryTier[]): Observable<ShopDeliveryTier[]> {
+    return this.http.put<ShopDeliveryTier[]>(
+      `${environment.apiBaseUrl}/vendor/shop/paliers-livraison`,
+      tiers.map((t) => ({ maxDistanceKm: t.maxDistanceKm, price: t.price })),
+    );
   }
 
   // --- Admin ---

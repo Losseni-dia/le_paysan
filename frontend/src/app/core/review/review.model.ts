@@ -35,3 +35,10 @@ export interface SubmitReviewRequest {
   rating: number;
   comment?: string;
 }
+
+export type ReviewIneligibleReason = 'OWNER' | 'NOT_PURCHASED';
+
+export interface ReviewEligibilityResponse {
+  eligible: boolean;
+  reason: ReviewIneligibleReason | null;
+}

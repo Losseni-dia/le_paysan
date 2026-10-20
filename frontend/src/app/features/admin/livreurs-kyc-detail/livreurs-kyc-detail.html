@@ -1,0 +1,61 @@
+<div class="livreurs-kyc-detail">
+  <a routerLink="/admin/livreurs-kyc" class="back-link">&larr; Retour à la liste</a>
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (detail()) {
+    <h1>{{ detail()!.firstName }} {{ detail()!.lastName }}</h1>
+    <p class="form-hint">
+      Livreur — Boutique : {{ detail()!.shopName }}
+      @if (detail()!.city) { — {{ detail()!.city }} }
+    </p>
+
+    @if (error()) {
+      <p class="form-error-banner">{{ error() }}</p>
+    }
+
+    <section class="info-block">
+      <h2>Informations</h2>
+      <p><strong>Identifiant :</strong> {{ detail()!.username }}</p>
+      <p><strong>Téléphone :</strong> {{ detail()!.phone || '—' }}</p>
+      <p><strong>Compte :</strong> {{ detail()!.enabled ? 'Actif' : 'Désactivé' }}</p>
+      <app-secure-document [path]="detail()!.photoUrl" label="Photo" />
+    </section>
+
+    <section class="info-block">
+      <h2>Pièce d'identité</h2>
+      <div class="docs-row">
+        <app-secure-document [path]="detail()!.idDocumentFrontUrl" label="Pièce (recto)" />
+        <app-secure-document [path]="detail()!.idDocumentBackUrl" label="Pièce (verso)" />
+        <app-secure-document [path]="detail()!.selfieWithIdUrl" label="Selfie avec pièce" />
+      </div>
+    </section>
+
+    @if (!detail()!.idDocumentFrontUrl || !detail()!.selfieWithIdUrl) {
+      <p class="form-hint">Ce livreur n'a pas encore soumis l'ensemble de ses documents KYC.</p>
+    } @else if (detail()!.kycStatus === 'EN_ATTENTE') {
+      <section class="actions">
+        <button type="button" class="btn-validate" [disabled]="saving()" (click)="validate()">Valider le KYC</button>
+        <button type="button" class="btn-reject" (click)="showRejectForm.set(!showRejectForm())">Rejeter</button>
+
+        @if (showRejectForm()) {
+          <form [formGroup]="rejectForm" (ngSubmit)="reject()" class="reject-form">
+            <div class="form-field">
+              <label class="form-label" for="reason">Motif du rejet</label>
+              <textarea id="reason" class="form-textarea" formControlName="reason" rows="3"></textarea>
+              <app-field-error [control]="rejectForm.controls.reason" />
+            </div>
+            <button type="submit" class="btn-reject" [disabled]="saving()">Confirmer le rejet</button>
+          </form>
+        }
+      </section>
+    } @else if (detail()!.kycStatus === 'VALIDE') {
+      <p class="form-success-banner">KYC validé.</p>
+    } @else if (detail()!.kycStatus === 'REJETE') {
+      <section class="actions">
+        <p class="form-error-banner">KYC rejeté.</p>
+        <button type="button" class="btn-validate" [disabled]="saving()" (click)="validate()">Valider quand même</button>
+      </section>
+    }
+  }
+</div>

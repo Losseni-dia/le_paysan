@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { Placeholder } from './shared/ui/placeholder/placeholder';
-import { authGuard, roleGuard } from './core/auth/auth.guard';
+import { authGuard, excludeRoleGuard, roleGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
   {
@@ -65,7 +65,7 @@ export const routes: Routes = [
       },
       {
         path: 'devenir-vendeur',
-        canActivate: [authGuard],
+        canActivate: [authGuard, excludeRoleGuard('ROLE_LIVREUR', '/livreur')],
         loadComponent: () => import('./features/shop/shop-request/shop-request').then((m) => m.ShopRequest),
       },
       { path: 'contact', component: Placeholder, data: { title: 'Contact' } },
@@ -78,7 +78,7 @@ export const routes: Routes = [
   {
     path: 'mon-espace',
     loadComponent: () => import('./layout/user-layout/user-layout').then((m) => m.UserLayout),
-    canActivate: [authGuard],
+    canActivate: [authGuard, excludeRoleGuard('ROLE_LIVREUR', '/livreur')],
     children: [
       { path: '', redirectTo: 'tableau-de-bord', pathMatch: 'full' },
       {
@@ -104,7 +104,7 @@ export const routes: Routes = [
     loadComponent: () => import('./layout/vendor-layout/vendor-layout').then((m) => m.VendorLayout),
     // Garde l'acces a tout user connecte (pas seulement ROLE_VENDEUR) : un user
     // sans boutique encore validee doit pouvoir suivre le statut de sa demande.
-    canActivate: [authGuard],
+    canActivate: [authGuard, excludeRoleGuard('ROLE_LIVREUR', '/livreur')],
     children: [
       { path: '', redirectTo: 'tableau-de-bord', pathMatch: 'full' },
       {
@@ -164,6 +164,15 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/livreur/delivery-confirm/delivery-confirm').then((m) => m.DeliveryConfirm),
       },
+      {
+        path: 'historique',
+        loadComponent: () =>
+          import('./features/livreur/delivery-history/delivery-history').then((m) => m.DeliveryHistory),
+      },
+      {
+        path: 'parametres',
+        loadComponent: () => import('./features/account/account-settings/account-settings').then((m) => m.AccountSettings),
+      },
     ],
   },
   {
@@ -221,6 +230,16 @@ export const routes: Routes = [
       {
         path: 'avis',
         loadComponent: () => import('./features/admin/reviews/reviews').then((m) => m.Reviews),
+      },
+      {
+        path: 'livreurs-kyc',
+        loadComponent: () =>
+          import('./features/admin/livreurs-kyc-list/livreurs-kyc-list').then((m) => m.LivreursKycList),
+      },
+      {
+        path: 'livreurs-kyc/:id',
+        loadComponent: () =>
+          import('./features/admin/livreurs-kyc-detail/livreurs-kyc-detail').then((m) => m.LivreursKycDetail),
       },
       {
         path: 'statistiques',

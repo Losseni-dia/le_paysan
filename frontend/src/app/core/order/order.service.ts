@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { PageResponse } from '../shop/shop.model';
-import { AdminOrderResponse, OrderResponse } from './order.model';
+import { AdminOrderResponse, BulkAssignLivreurResult, OrderResponse } from './order.model';
 
 @Injectable({
   providedIn: 'root',
@@ -72,5 +72,9 @@ export class OrderService {
       formData.append('proof', options.proof, options.proofType === 'SIGNATURE' ? 'signature.png' : 'photo.jpg');
     }
     return this.http.patch<AdminOrderResponse>(`${this.vendorUrl}/${id}/status`, formData);
+  }
+
+  bulkAssignLivreur(orderIds: number[], livreurId: number): Observable<BulkAssignLivreurResult[]> {
+    return this.http.post<BulkAssignLivreurResult[]>(`${this.vendorUrl}/assigner-livreur`, { orderIds, livreurId });
   }
 }

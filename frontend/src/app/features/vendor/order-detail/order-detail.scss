@@ -55,6 +55,19 @@ h1 {
   font-size: 13px;
 }
 
+.reassign-livreur-section {
+  margin: 16px 0 20px;
+  padding: 14px;
+  background: var(--color-surface-tint);
+  border-radius: var(--radius-md);
+
+  h2 {
+    font-size: 14px;
+    color: var(--color-primary-dark);
+    margin: 0 0 10px;
+  }
+}
+
 .proof-section {
   margin-bottom: 16px;
 }

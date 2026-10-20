@@ -7,6 +7,7 @@ import { PageResponse } from '../shop/shop.model';
 import {
   ProductReviewResponse,
   RatingSummaryResponse,
+  ReviewEligibilityResponse,
   ShopReviewResponse,
   SubmitReviewRequest,
 } from './review.model';
@@ -40,6 +41,10 @@ export class ReviewService {
     return this.http.post<ProductReviewResponse>(`${this.base}/products/${productId}/avis`, request);
   }
 
+  getProductEligibility(productId: number): Observable<ReviewEligibilityResponse> {
+    return this.http.get<ReviewEligibilityResponse>(`${this.base}/products/${productId}/avis/eligibilite`);
+  }
+
   // --- Boutique ---
 
   listForShop(shopId: number, page = 0): Observable<PageResponse<ShopReviewResponse>> {
@@ -56,6 +61,10 @@ export class ReviewService {
 
   submitShopReview(shopId: number, request: SubmitReviewRequest): Observable<ShopReviewResponse> {
     return this.http.post<ShopReviewResponse>(`${this.base}/shops/${shopId}/avis`, request);
+  }
+
+  getShopEligibility(shopId: number): Observable<ReviewEligibilityResponse> {
+    return this.http.get<ReviewEligibilityResponse>(`${this.base}/shops/${shopId}/avis/eligibilite`);
   }
 
   // --- Admin ---

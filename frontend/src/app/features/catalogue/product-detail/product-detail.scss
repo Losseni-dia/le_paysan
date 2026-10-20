@@ -69,6 +69,56 @@
 .stock {
   color: var(--color-text-muted);
   font-size: 13px;
+  margin: 0;
+}
+
+.delivery-location-row {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.delivery-cart-column {
+  flex: 1;
+  min-width: 240px;
+
+  .delivery-section {
+    margin: 0;
+    padding: 0;
+    border-top: none;
+  }
+}
+
+.farm-location-inline {
+  width: 220px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+
+  app-map-picker {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+
+    ::ng-deep .map-picker {
+      flex: 1;
+      height: auto !important;
+    }
+  }
+}
+
+.location-label {
+  display: block;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
 }
 
 .delivery-section {
@@ -88,6 +138,26 @@
   }
 }
 
+.tiers-table {
+  width: 100%;
+  max-width: 260px;
+  border-collapse: collapse;
+  margin: 6px 0;
+  font-size: 13px;
+
+  th,
+  td {
+    text-align: left;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  th {
+    color: var(--color-text-muted);
+    font-weight: 600;
+  }
+}
+
 .add-to-cart-section {
   margin-top: 20px;
   padding-top: 16px;
@@ -99,6 +169,12 @@
     flex-direction: column;
     gap: 4px;
   }
+}
+
+.reviews-section-wrap {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
 }
 
 .btn-primary {

@@ -6,7 +6,12 @@ import { Observable } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { PageResponse } from '../../../core/shop/shop.model';
 import { ReviewService } from '../../../core/review/review.service';
-import { ProductReviewResponse, RatingSummaryResponse, ShopReviewResponse } from '../../../core/review/review.model';
+import {
+  ProductReviewResponse,
+  RatingSummaryResponse,
+  ReviewEligibilityResponse,
+  ShopReviewResponse,
+} from '../../../core/review/review.model';
 import { StarRating } from '../star-rating/star-rating';
 
 type ReviewEntity = 'product' | 'shop';
@@ -30,6 +35,7 @@ export class ReviewSection implements OnInit {
   readonly summary = signal<RatingSummaryResponse | null>(null);
   readonly reviews = signal<ReviewItem[]>([]);
   readonly myReview = signal<ReviewItem | null>(null);
+  readonly eligibility = signal<ReviewEligibilityResponse | null>(null);
   readonly loading = signal(true);
 
   readonly editing = signal(false);
@@ -103,6 +109,24 @@ export class ReviewSection implements OnInit {
         ? this.reviewService.getMyProductReview(this.entityId())
         : this.reviewService.getMyShopReview(this.entityId());
       mine$.subscribe({ next: (r) => this.myReview.set(r), error: () => this.myReview.set(null) });
+
+      const eligibility$: Observable<ReviewEligibilityResponse> = isProduct
+        ? this.reviewService.getProductEligibility(this.entityId())
+        : this.reviewService.getShopEligibility(this.entityId());
+      eligibility$.subscribe({ next: (e) => this.eligibility.set(e), error: () => this.eligibility.set(null) });
     }
   }
+
+  readonly ineligibleMessage = () => {
+    const e = this.eligibility();
+    if (!e || e.eligible) return null;
+    if (e.reason === 'OWNER') {
+      return this.entityType() === 'product'
+        ? 'Vous ne pouvez pas noter votre propre produit.'
+        : 'Vous ne pouvez pas noter votre propre boutique.';
+    }
+    return this.entityType() === 'product'
+      ? "Vous devez avoir reçu ce produit (commande livrée) pour pouvoir laisser un avis."
+      : 'Vous devez avoir reçu une commande de cette boutique pour pouvoir laisser un avis.';
+  };
 }

@@ -30,88 +30,131 @@
         <p class="description">{{ product()!.description || 'Aucune description.' }}</p>
         <p class="stock">Stock disponible : {{ product()!.stockQuantity }} {{ product()!.unit }}</p>
 
-        <section class="delivery-section">
-          <h2>Livraison</h2>
-          @for (opt of product()!.deliveryOptions; track opt.mode) {
-            @if (opt.mode === 'RETRAIT_BOUTIQUE') {
-              <p>Retrait en boutique : {{ opt.pickupLocation }}</p>
-            } @else {
-              <p>Livraison à domicile : {{ opt.deliveryPrice }} FCFA</p>
-            }
-          }
-        </section>
-
-        @if (product()!.shopLatitude != null && product()!.shopLongitude != null) {
-          <section class="farm-location-section">
-            <h2>Localisation de la ferme</h2>
-            @if (product()!.shopCity) {
-              <p class="form-hint">{{ product()!.shopCity }}</p>
-            }
-            <app-map-picker [latitude]="product()!.shopLatitude" [longitude]="product()!.shopLongitude" [readonly]="true" />
-          </section>
-        }
-
-        <section class="add-to-cart-section">
-          @if (!authService.isAuthenticated()) {
-            <p class="form-hint">
-              <a routerLink="/connexion">Connectez-vous</a> pour ajouter ce produit au panier.
-            </p>
-          } @else if (product()!.stockQuantity === 0) {
-            <p class="form-error-banner">Rupture de stock.</p>
-          } @else {
-            <form [formGroup]="addForm" (ngSubmit)="addToCart()" novalidate>
-              @if (cartError()) {
-                <p class="form-error-banner">{{ cartError() }}</p>
-              }
-              @if (addedToCart()) {
-                <p class="form-success-banner">
-                  Ajouté au panier. <a routerLink="/panier">Voir le panier</a>
-                </p>
-              }
-
-              <div class="form-field">
-                <label class="form-label" for="quantity">Quantité</label>
-                <input
-                  id="quantity"
-                  class="form-input"
-                  type="number"
-                  min="1"
-                  [max]="product()!.stockQuantity"
-                  formControlName="quantity"
-                />
-                <app-field-error [control]="addForm.controls.quantity" />
-              </div>
-
-              <div class="form-field">
-                <label class="form-label" for="deliveryMode">Mode de livraison</label>
-                <select id="deliveryMode" class="form-select" formControlName="deliveryMode">
-                  <option value="">-- Choisir --</option>
-                  @for (opt of product()!.deliveryOptions; track opt.mode) {
-                    <option [value]="opt.mode">
-                      {{ opt.mode === 'RETRAIT_BOUTIQUE' ? 'Retrait en boutique' : 'Livraison à domicile' }}
-                    </option>
+        <div class="delivery-location-row">
+          <div class="delivery-cart-column">
+            <section class="delivery-section">
+              <h2>Livraison</h2>
+              @for (opt of product()!.deliveryOptions; track opt.mode) {
+                @if (opt.mode === 'RETRAIT_BOUTIQUE') {
+                  <p>Retrait en boutique : {{ opt.pickupLocation }}</p>
+                } @else {
+                  <p>
+                    Livraison à domicile
+                    @if (opt.deliveryPrice) {
+                      (+{{ opt.deliveryPrice }} FCFA supplément)
+                    }
+                  </p>
+                  @if (deliveryTiers().length > 0) {
+                    <table class="tiers-table">
+                      <thead>
+                        <tr>
+                          <th>Distance</th>
+                          <th>Prix</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (tier of deliveryTiers(); track tier.maxDistanceKm) {
+                          <tr>
+                            <td>Jusqu'à {{ tier.maxDistanceKm }} km</td>
+                            <td>{{ tier.price }} FCFA</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  } @else {
+                    <p class="form-hint">Livraison gratuite, toutes distances.</p>
                   }
-                </select>
-                <app-field-error [control]="addForm.controls.deliveryMode" />
-              </div>
-
-              @if (needsAddress) {
-                <div class="form-field">
-                  <label class="form-label" for="deliveryAddress">Adresse de livraison</label>
-                  <input id="deliveryAddress" class="form-input" type="text" formControlName="deliveryAddress" />
-                  <app-field-error [control]="addForm.controls.deliveryAddress" />
-                </div>
+                }
               }
+            </section>
 
-              <button type="submit" class="btn-primary" [disabled]="addingToCart()">
-                {{ addingToCart() ? 'Ajout...' : 'Ajouter au panier' }}
-              </button>
-            </form>
+            <section class="add-to-cart-section">
+              @if (!authService.isAuthenticated()) {
+                <p class="form-hint">
+                  <a routerLink="/connexion">Connectez-vous</a> pour ajouter ce produit au panier.
+                </p>
+              } @else if (product()!.stockQuantity === 0) {
+                <p class="form-error-banner">Rupture de stock.</p>
+              } @else {
+                <form [formGroup]="addForm" (ngSubmit)="addToCart()" novalidate>
+                  @if (cartError()) {
+                    <p class="form-error-banner">{{ cartError() }}</p>
+                  }
+                  @if (addedToCart()) {
+                    <p class="form-success-banner">
+                      Ajouté au panier. <a routerLink="/panier">Voir le panier</a>
+                    </p>
+                  }
+
+                  <div class="form-field">
+                    <label class="form-label" for="quantity">Quantité</label>
+                    <input
+                      id="quantity"
+                      class="form-input"
+                      type="number"
+                      min="1"
+                      [max]="product()!.stockQuantity"
+                      formControlName="quantity"
+                    />
+                    <app-field-error [control]="addForm.controls.quantity" />
+                  </div>
+
+                  <div class="form-field">
+                    <label class="form-label" for="deliveryMode">Mode de livraison</label>
+                    <select id="deliveryMode" class="form-select" formControlName="deliveryMode">
+                      <option value="">-- Choisir --</option>
+                      @for (opt of product()!.deliveryOptions; track opt.mode) {
+                        <option [value]="opt.mode">
+                          {{ opt.mode === 'RETRAIT_BOUTIQUE' ? 'Retrait en boutique' : 'Livraison à domicile' }}
+                        </option>
+                      }
+                    </select>
+                    <app-field-error [control]="addForm.controls.deliveryMode" />
+                  </div>
+
+                  @if (needsAddress) {
+                    <div class="form-field">
+                      <label class="form-label" for="deliveryCity">Ville de livraison</label>
+                      <select id="deliveryCity" class="form-select" formControlName="deliveryCity">
+                        <option value="">-- Choisir une ville --</option>
+                        @for (c of cities; track c.name) {
+                          <option [value]="c.name">{{ c.name }}</option>
+                        }
+                      </select>
+                      <app-field-error [control]="addForm.controls.deliveryCity" />
+                    </div>
+                    <div class="form-field">
+                      <label class="form-label" for="deliveryAddress">Adresse précise (quartier, rue...)</label>
+                      <input id="deliveryAddress" class="form-input" type="text" formControlName="deliveryAddress" />
+                      <app-field-error [control]="addForm.controls.deliveryAddress" />
+                    </div>
+                  }
+
+                  <button type="submit" class="btn-primary" [disabled]="addingToCart()">
+                    {{ addingToCart() ? 'Ajout...' : 'Ajouter au panier' }}
+                  </button>
+                </form>
+              }
+            </section>
+          </div>
+
+          @if (product()!.shopLatitude != null && product()!.shopLongitude != null) {
+            <div class="farm-location-inline">
+              <span class="location-label">Localisation {{ product()!.shopCity ? '— ' + product()!.shopCity : '' }}</span>
+              <app-map-picker
+                [latitude]="product()!.shopLatitude"
+                [longitude]="product()!.shopLongitude"
+                [readonly]="true"
+                [heightPx]="260"
+              />
+            </div>
           }
-        </section>
-
-        <app-review-section entityType="product" [entityId]="product()!.id" />
+        </div>
       </div>
     </div>
+
+    <section class="reviews-section-wrap">
+      <app-review-section entityType="product" [entityId]="product()!.id" />
+    </section>
   }
 </div>

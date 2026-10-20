@@ -1,6 +1,6 @@
 <div class="my-deliveries-page">
   <h1>Mes livraisons</h1>
-  <p class="form-hint">Commandes expédiées qui vous sont assignées, en attente de remise.</p>
+  <p class="form-hint">Commandes qui vous sont assignées, en cours de livraison.</p>
 
   @if (loading()) {
     <p>Chargement...</p>
@@ -13,6 +13,7 @@
           <h2>N° {{ order.orderNumber }}</h2>
           <span class="order-total">{{ order.totalAmount }} FCFA</span>
         </div>
+        <span class="status-badge">{{ order.status }}</span>
         <p>Boutique : {{ order.shopName }}</p>
         <p>Acheteur : {{ order.buyerFullName }}</p>
         @for (item of order.items; track item.productId) {
@@ -20,7 +21,28 @@
             <p class="address">📍 {{ item.deliveryAddress }}</p>
           }
         }
-        <a class="btn-primary" [routerLink]="['/livreur/livraisons', order.id]">Confirmer la remise</a>
+
+        @if (order.status === 'EXPEDIEE') {
+          <button
+            type="button"
+            class="btn-primary"
+            [disabled]="updatingId() === order.id"
+            (click)="markPickedUp(order)"
+          >
+            {{ updatingId() === order.id ? 'Mise à jour...' : 'Marquer récupérée' }}
+          </button>
+        } @else if (order.status === 'RECUPEREE') {
+          <button
+            type="button"
+            class="btn-primary"
+            [disabled]="updatingId() === order.id"
+            (click)="markEnRoute(order)"
+          >
+            {{ updatingId() === order.id ? 'Mise à jour...' : 'Marquer en route' }}
+          </button>
+        } @else if (order.status === 'EN_ROUTE') {
+          <a class="btn-primary" [routerLink]="['/livreur/livraisons', order.id]">Confirmer la remise</a>
+        }
       </section>
     }
   }
