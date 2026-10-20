@@ -25,7 +25,7 @@ public class PaymentController {
     @PostMapping("/api/payments")
     public InitiatePaymentResponse initiate(
             @AuthenticationPrincipal SecurityUser principal, @Valid @RequestBody InitiatePaymentRequest request) {
-        return service.initiate(principal.getUser(), request.orderIds());
+        return service.initiate(principal.getUser(), request.orderIds(), request.returnUrl());
     }
 
     /** Appele par Fedapay (jamais par le frontend) : pas de session, auth par signature uniquement. */

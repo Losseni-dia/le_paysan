@@ -47,6 +47,7 @@ public class PaymentService {
     private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
     private final String frontendUrl;
+    private final String mobileDeeplinkScheme;
     private final String webhookSecret;
 
     public PaymentService(
@@ -58,6 +59,7 @@ public class PaymentService {
             NotificationService notificationService,
             ObjectMapper objectMapper,
             @Value("${app.frontend-url}") String frontendUrl,
+            @Value("${app.mobile-deeplink-scheme:}") String mobileDeeplinkScheme,
             @Value("${app.fedapay.webhook-secret}") String webhookSecret) {
         this.transactionRepository = transactionRepository;
         this.orderRepository = orderRepository;
@@ -67,11 +69,12 @@ public class PaymentService {
         this.notificationService = notificationService;
         this.objectMapper = objectMapper;
         this.frontendUrl = frontendUrl;
+        this.mobileDeeplinkScheme = mobileDeeplinkScheme;
         this.webhookSecret = webhookSecret;
     }
 
     @Transactional
-    public InitiatePaymentResponse initiate(User buyer, List<Long> orderIds) {
+    public InitiatePaymentResponse initiate(User buyer, List<Long> orderIds, String requestedReturnUrl) {
         List<Order> orders = orderRepository.findByIdInAndBuyerUserId(orderIds, buyer.getId());
         if (orders.size() != orderIds.size()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Commande introuvable");
@@ -97,7 +100,7 @@ public class PaymentService {
                 new FedapayClient.CustomerInfo(buyer.getFirstName(), buyer.getLastName(), buyer.getPhone());
 
         FedapayClient.CreatedTransaction created =
-                fedapayClient.createTransaction(description, total, frontendUrl + "/commandes/paiement-retour", customer);
+                fedapayClient.createTransaction(description, total, resolveReturnUrl(requestedReturnUrl), customer);
         String paymentUrl = fedapayClient.generatePaymentUrl(created.id());
 
         PaymentTransaction transaction = new PaymentTransaction();
@@ -114,6 +117,27 @@ public class PaymentService {
         }
 
         return new InitiatePaymentResponse(paymentUrl);
+    }
+
+    /**
+     * Cf. prepa app mobile : un client mobile ne peut pas atterrir sur une route web apres le
+     * paiement Fedapay (webview sans page a afficher). Il doit alors fournir son propre deep link
+     * (schema {@code app.mobile-deeplink-scheme}, ex. "lepaysan://paiement-retour") ; on ne garde
+     * requestedReturnUrl que s'il correspond au frontend web connu ou a ce schema mobile, pour
+     * eviter qu'un appelant malveillant redirige l'utilisateur apres paiement vers une URL arbitraire.
+     */
+    private String resolveReturnUrl(String requestedReturnUrl) {
+        String defaultReturnUrl = frontendUrl + "/commandes/paiement-retour";
+        if (requestedReturnUrl == null || requestedReturnUrl.isBlank()) {
+            return defaultReturnUrl;
+        }
+        boolean isWebFrontend = requestedReturnUrl.startsWith(frontendUrl);
+        boolean isMobileDeeplink =
+                !mobileDeeplinkScheme.isBlank() && requestedReturnUrl.startsWith(mobileDeeplinkScheme);
+        if (isWebFrontend || isMobileDeeplink) {
+            return requestedReturnUrl;
+        }
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "URL de retour non autorisée");
     }
 
     @Transactional

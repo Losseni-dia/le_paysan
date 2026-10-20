@@ -40,6 +40,7 @@ app:
   uploads:
     base-dir: ${UPLOADS_BASE_DIR}
   frontend-url: ${FRONTEND_URL}
+  mobile-deeplink-scheme: ${MOBILE_DEEPLINK_SCHEME:}
 
 logging:
   level:
