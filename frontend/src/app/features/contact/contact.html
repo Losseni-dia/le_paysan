@@ -1,0 +1,48 @@
+<div class="contact-page">
+  <h1>Contact</h1>
+  <p class="form-hint">
+    Une question, un souci avec une commande, une boutique ou votre compte ? Écrivez-nous, nous vous répondons par
+    email dans les meilleurs délais.
+  </p>
+
+  @if (submitted()) {
+    <p class="form-success-banner">
+      Votre message a été envoyé. Nous vous répondrons à l'adresse email indiquée.
+    </p>
+  } @else {
+    @if (serverError()) {
+      <p class="form-error-banner">{{ serverError() }}</p>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="form-field">
+        <label class="form-label" for="fullName">Nom complet</label>
+        <input id="fullName" class="form-input" type="text" formControlName="fullName" />
+        <app-field-error [control]="form.controls.fullName" />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="email">Email</label>
+        <input id="email" class="form-input" type="email" formControlName="email" />
+        <app-field-error [control]="form.controls.email" />
+        <p class="form-hint">Obligatoire : c'est la seule façon pour nous de vous répondre.</p>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="subject">Sujet</label>
+        <input id="subject" class="form-input" type="text" formControlName="subject" />
+        <app-field-error [control]="form.controls.subject" />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="message">Message</label>
+        <textarea id="message" class="form-input" rows="6" formControlName="message"></textarea>
+        <app-field-error [control]="form.controls.message" />
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="submitting()">
+        {{ submitting() ? 'Envoi...' : 'Envoyer' }}
+      </button>
+    </form>
+  }
+</div>

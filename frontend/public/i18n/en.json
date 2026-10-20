@@ -12,6 +12,9 @@
     "logout": "Log out"
   },
   "footer": {
+    "tagline": "Côte d'Ivoire's online farmers' market: local producers delivered directly to you.",
+    "navTitle": "Navigation",
+    "legalTitle": "Legal information",
     "legalNotice": "Legal notice",
     "terms": "Terms of use",
     "sales": "Terms of sale",

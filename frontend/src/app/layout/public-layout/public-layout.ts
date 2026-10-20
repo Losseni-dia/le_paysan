@@ -17,6 +17,7 @@ import { NotificationBell } from '../../shared/ui/notification-bell/notification
 export class PublicLayout {
   readonly authService = inject(AuthService);
   readonly cartService = inject(CartService);
+  readonly currentYear = new Date().getFullYear();
 
   constructor() {
     if (this.authService.isAuthenticated()) {

@@ -1,12 +1,6 @@
 <div class="public-layout">
   <header class="public-header">
-    <a class="brand" routerLink="/">
-      <img src="/logo_paysan.jpg" alt="Le Paysan" class="brand-logo" />
-    </a>
-
-    <nav class="main-nav">
-      <a routerLink="/catalogue">{{ 'nav.catalog' | translate }}</a>
-    </nav>
+    <a class="brand" routerLink="/catalogue">{{ 'app.title' | translate }}</a>
 
     <div class="header-actions">
       @if (authService.isAuthenticated()) {
@@ -34,14 +28,30 @@
   </main>
 
   <footer class="public-footer">
-    <div class="footer-links">
-      <a routerLink="/legal/mentions-legales">{{ 'footer.legalNotice' | translate }}</a>
-      <a routerLink="/legal/cgu">{{ 'footer.terms' | translate }}</a>
-      <a routerLink="/legal/cgv">{{ 'footer.sales' | translate }}</a>
-      <a routerLink="/legal/confidentialite">{{ 'footer.privacy' | translate }}</a>
-      <a routerLink="/legal/cookies">{{ 'footer.cookies' | translate }}</a>
-      <a routerLink="/contact">{{ 'footer.contact' | translate }}</a>
+    <div class="footer-content">
+      <div class="footer-brand">
+        <span class="footer-brand-name">{{ 'app.title' | translate }}</span>
+        <p>{{ 'footer.tagline' | translate }}</p>
+      </div>
+
+      <div class="footer-column">
+        <h3>{{ 'footer.navTitle' | translate }}</h3>
+        <a routerLink="/catalogue">{{ 'nav.catalog' | translate }}</a>
+        <a routerLink="/contact">{{ 'footer.contact' | translate }}</a>
+      </div>
+
+      <div class="footer-column">
+        <h3>{{ 'footer.legalTitle' | translate }}</h3>
+        <a routerLink="/legal/mentions-legales">{{ 'footer.legalNotice' | translate }}</a>
+        <a routerLink="/legal/cgu">{{ 'footer.terms' | translate }}</a>
+        <a routerLink="/legal/cgv">{{ 'footer.sales' | translate }}</a>
+        <a routerLink="/legal/confidentialite">{{ 'footer.privacy' | translate }}</a>
+        <a routerLink="/legal/cookies">{{ 'footer.cookies' | translate }}</a>
+      </div>
     </div>
-    <p class="copyright">&copy; {{ 'app.title' | translate }}</p>
+
+    <div class="footer-bottom">
+      <p class="copyright">&copy; {{ currentYear }} {{ 'app.title' | translate }}</p>
+    </div>
   </footer>
 </div>

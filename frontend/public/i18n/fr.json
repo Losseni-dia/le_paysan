@@ -12,6 +12,9 @@
     "logout": "Déconnexion"
   },
   "footer": {
+    "tagline": "Le marché agricole en ligne de Côte d'Ivoire : des producteurs locaux directement chez vous.",
+    "navTitle": "Navigation",
+    "legalTitle": "Informations légales",
     "legalNotice": "Mentions légales",
     "terms": "CGU",
     "sales": "CGV",

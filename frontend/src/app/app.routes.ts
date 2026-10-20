@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 
-import { Placeholder } from './shared/ui/placeholder/placeholder';
 import { authGuard, excludeRoleGuard, roleGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
@@ -68,7 +67,10 @@ export const routes: Routes = [
         canActivate: [authGuard, excludeRoleGuard('ROLE_LIVREUR', '/livreur')],
         loadComponent: () => import('./features/shop/shop-request/shop-request').then((m) => m.ShopRequest),
       },
-      { path: 'contact', component: Placeholder, data: { title: 'Contact' } },
+      {
+        path: 'contact',
+        loadComponent: () => import('./features/contact/contact').then((m) => m.Contact),
+      },
       {
         path: 'legal/:slug',
         loadComponent: () => import('./features/legal/legal-page/legal-page').then((m) => m.LegalPage),
