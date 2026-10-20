@@ -20,3 +20,6 @@ frontend/.angular/
 # Env / secrets
 .env
 *.env.local
+
+# Notes personnelles
+docs/cheat.md
