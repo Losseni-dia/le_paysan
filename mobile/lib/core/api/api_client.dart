@@ -8,7 +8,11 @@ import 'api_config.dart';
 /// requete d'origine (cf. backend/.../auth/JwtAuthFilter + AuthService.refresh).
 class ApiClient {
   ApiClient._internal() {
-    _dio = Dio(BaseOptions(baseUrl: ApiConfig.baseUrl));
+    _dio = Dio(BaseOptions(
+      baseUrl: ApiConfig.baseUrl,
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+    ));
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final token = await _tokenStorage.readAccessToken();

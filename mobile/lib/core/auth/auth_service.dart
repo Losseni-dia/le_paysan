@@ -40,6 +40,10 @@ class AuthService extends ChangeNotifier {
     required String firstName,
     required String lastName,
     String? email,
+    String? phone,
+    required bool acceptCgu,
+    required bool acceptCgv,
+    required bool acceptPrivacy,
   }) async {
     final response = await _dio.post('/auth/register', data: {
       'username': username,
@@ -47,6 +51,10 @@ class AuthService extends ChangeNotifier {
       'firstName': firstName,
       'lastName': lastName,
       if (email != null && email.isNotEmpty) 'email': email,
+      if (phone != null && phone.isNotEmpty) 'phone': phone,
+      'acceptCgu': acceptCgu,
+      'acceptCgv': acceptCgv,
+      'acceptPrivacy': acceptPrivacy,
     });
     await _applyAuthResponse(response.data as Map<String, dynamic>);
   }

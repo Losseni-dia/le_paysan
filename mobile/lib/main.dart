@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'core/auth/auth_service.dart';
-import 'features/auth/login/login_screen.dart';
-import 'features/home/home_screen.dart';
+import 'features/catalogue/catalogue_screen.dart';
 
 void main() {
   runApp(const LeePaysanApp());
@@ -19,7 +18,7 @@ class LeePaysanApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Le Paysan',
         theme: _buildTheme(),
-        home: const _RootScreen(),
+        home: const CatalogueScreen(),
       ),
     );
   }
@@ -68,14 +67,4 @@ ThemeData _buildTheme() {
       ),
     ),
   );
-}
-
-class _RootScreen extends StatelessWidget {
-  const _RootScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    final auth = context.watch<AuthService>();
-    return auth.isAuthenticated ? const HomeScreen() : const LoginScreen();
-  }
 }
