@@ -12,6 +12,7 @@ public record UserResponse(
         String firstName,
         String lastName,
         String phone,
+        String city,
         boolean hasSecuritySelfie,
         List<String> roles) {
 
@@ -23,6 +24,7 @@ public record UserResponse(
                 user.getFirstName(),
                 user.getLastName(),
                 user.getPhone(),
+                user.getCity(),
                 user.getSecuritySelfieUrl() != null,
                 user.getRoles().stream().map(Role::getName).toList());
     }

@@ -23,6 +23,7 @@ public record RegisterRequest(
         @NotBlank String firstName,
         @NotBlank String lastName,
         String phone,
+        String city,
 
         @AssertTrue(message = "L'acceptation des CGU est obligatoire")
         boolean acceptCgu,

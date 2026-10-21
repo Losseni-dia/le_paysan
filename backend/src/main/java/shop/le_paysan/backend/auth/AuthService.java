@@ -71,6 +71,7 @@ public class AuthService {
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
         user.setPhone(blankToNull(request.phone()));
+        user.setCity(blankToNull(request.city()));
         user.setAuthProvider(User.PROVIDER_LOCAL);
 
         LocalDateTime now = LocalDateTime.now();
