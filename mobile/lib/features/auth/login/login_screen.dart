@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/auth/auth_service.dart';
 import '../../../shared/widgets/auth_card_scaffold.dart';
+import '../password_recovery/password_recovery_screen.dart';
 import '../register/register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -88,7 +89,15 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               validator: (value) => (value == null || value.isEmpty) ? 'Champ obligatoire' : null,
             ),
-            const SizedBox(height: 24),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () =>
+                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PasswordRecoveryScreen())),
+                child: const Text('Mot de passe oublié ?'),
+              ),
+            ),
+            const SizedBox(height: 8),
             SizedBox(
               height: 52,
               child: FilledButton(

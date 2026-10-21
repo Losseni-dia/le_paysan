@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/auth/auth_service.dart';
 import '../../../shared/widgets/auth_card_scaffold.dart';
+import '../security_selfie/security_selfie_setup_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -70,7 +71,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
             acceptCgv: _acceptCgv,
             acceptPrivacy: _acceptPrivacy,
           );
-      if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
+      if (mounted) {
+        final emailProvided = _emailController.text.trim().isNotEmpty;
+        if (emailProvided) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        } else {
+          // Sans email, le selfie de securite est le seul moyen de recuperer le compte
+          // plus tard (cf. SecuritySelfieSetupScreen) : on le propose tout de suite.
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const SecuritySelfieSetupScreen()),
+          );
+        }
+      }
     } on DioException catch (e) {
       setState(() {
         _errorMessage = (e.response?.data is Map) ? e.response?.data['message'] as String? : null;

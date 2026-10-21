@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../api/api_client.dart';
 import 'token_storage.dart';
@@ -59,6 +60,37 @@ class AuthService extends ChangeNotifier {
       'acceptPrivacy': acceptPrivacy,
     });
     await _applyAuthResponse(response.data as Map<String, dynamic>);
+  }
+
+  /// Flux email classique (cf. docs UC-01) : lien de reinitialisation envoye par email.
+  /// Reserve aux comptes ayant un email renseigne - cf. [accountRecoveryRequest] sinon.
+  Future<void> forgotPassword(String email) async {
+    await _dio.post('/auth/forgot-password', data: {'email': email});
+  }
+
+  /// Flux sans email (cf. docs UC-01b) : la majorite des utilisateurs en Cote d'Ivoire
+  /// n'ont pas d'adresse email. Le compte est recupere par comparaison manuelle, par un
+  /// admin, entre ce selfie fraichement pris et le selfie de securite enregistre a
+  /// l'inscription. Resultat : un mot de passe temporaire communique hors-ligne (pas via
+  /// cette app, cf. AccountRecoveryController.approve cote backend).
+  Future<void> accountRecoveryRequest(String username, XFile selfie) async {
+    final formData = FormData.fromMap({
+      'username': username,
+      'selfie': await MultipartFile.fromFile(selfie.path, filename: 'selfie.jpg'),
+    });
+    await _dio.post('/auth/account-recovery-requests', data: formData);
+  }
+
+  /// Photo de reference utilisee plus tard pour comparer au selfie soumis lors d'une
+  /// demande de recuperation de compte sans email (cf. [accountRecoveryRequest]).
+  /// A proposer juste apres l'inscription si l'utilisateur n'a pas renseigne d'email.
+  Future<void> updateSecuritySelfie(XFile selfie) async {
+    final formData = FormData.fromMap({
+      'selfie': await MultipartFile.fromFile(selfie.path, filename: 'selfie.jpg'),
+    });
+    final response = await _dio.put('/users/me/security-selfie', data: formData);
+    _currentUser = AppUser.fromJson(response.data as Map<String, dynamic>);
+    notifyListeners();
   }
 
   Future<void> logout() async {

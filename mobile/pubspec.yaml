@@ -41,6 +41,8 @@ dependencies:
   flutter_secure_storage: ^9.2.2
   # Gestion d'etat simple (equivalent des signals Angular cote mobile).
   provider: ^6.1.2
+  # Selfie en direct (camera), cf. recuperation de compte sans email (UC-01b).
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
