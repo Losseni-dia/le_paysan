@@ -20,9 +20,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   bool _submitting = false;
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   String? _errorMessage;
 
   bool _acceptCgu = false;
@@ -37,6 +40,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _lastNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _cityController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -60,6 +65,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             lastName: _lastNameController.text.trim(),
             email: _emailController.text.trim(),
             phone: _phoneController.text.trim(),
+            city: _cityController.text.trim(),
             acceptCgu: _acceptCgu,
             acceptCgv: _acceptCgv,
             acceptPrivacy: _acceptPrivacy,
@@ -115,7 +121,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 labelText: 'Identifiant',
                 prefixIcon: Icon(Icons.person_outline),
               ),
-              validator: (v) => (v == null || v.isEmpty) ? 'Obligatoire' : null,
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'Obligatoire';
+                if (!RegExp(r'^[a-zA-Z0-9._-]{3,30}$').hasMatch(v)) {
+                  return 'Login invalide (3-30 caractères, lettres/chiffres/._-)';
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -125,6 +137,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 labelText: 'Email (optionnel)',
                 prefixIcon: Icon(Icons.email_outlined),
               ),
+              validator: (v) {
+                if (v == null || v.isEmpty) return null;
+                if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v)) {
+                  return 'Adresse email invalide';
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -133,6 +152,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
               decoration: const InputDecoration(
                 labelText: 'Téléphone (optionnel)',
                 prefixIcon: Icon(Icons.phone_outlined),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _cityController,
+              decoration: const InputDecoration(
+                labelText: 'Localité (optionnel)',
+                prefixIcon: Icon(Icons.location_city_outlined),
               ),
             ),
             const SizedBox(height: 16),
@@ -152,6 +179,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 if (!RegExp(r'(?=.*[0-9])(?=.*[A-Za-z])').hasMatch(v)) {
                   return 'Au moins une lettre et un chiffre';
                 }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _confirmPasswordController,
+              obscureText: _obscureConfirmPassword,
+              decoration: InputDecoration(
+                labelText: 'Confirmer le mot de passe',
+                prefixIcon: const Icon(Icons.lock_outline),
+                suffixIcon: IconButton(
+                  icon: Icon(_obscureConfirmPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                  onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                ),
+              ),
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'Obligatoire';
+                if (v != _passwordController.text) return 'Les mots de passe ne correspondent pas';
                 return null;
               },
             ),

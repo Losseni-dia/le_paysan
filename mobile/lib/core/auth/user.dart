@@ -5,6 +5,7 @@ class AppUser {
   final String firstName;
   final String lastName;
   final String? phone;
+  final String? city;
   final bool hasSecuritySelfie;
   final List<String> roles;
 
@@ -15,6 +16,7 @@ class AppUser {
     required this.firstName,
     required this.lastName,
     required this.phone,
+    required this.city,
     required this.hasSecuritySelfie,
     required this.roles,
   });
@@ -27,6 +29,7 @@ class AppUser {
       firstName: json['firstName'] as String,
       lastName: json['lastName'] as String,
       phone: json['phone'] as String?,
+      city: json['city'] as String?,
       hasSecuritySelfie: json['hasSecuritySelfie'] as bool? ?? false,
       roles: (json['roles'] as List<dynamic>).map((r) => r as String).toList(),
     );
