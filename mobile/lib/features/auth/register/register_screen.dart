@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/auth/auth_service.dart';
+import '../../../core/cart/cart_service.dart';
 import '../../../shared/widgets/auth_card_scaffold.dart';
 import '../security_selfie/security_selfie_setup_screen.dart';
 
@@ -49,7 +50,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (!_acceptCgu || !_acceptCgv || !_acceptPrivacy) {
-      setState(() => _errorMessage = "Vous devez accepter les CGU, les CGV et la politique de confidentialité.");
+      setState(
+        () => _errorMessage =
+            "Vous devez accepter les CGU, les CGV et la politique de confidentialité.",
+      );
       return;
     }
 
@@ -60,17 +64,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       await context.read<AuthService>().register(
-            username: _usernameController.text.trim(),
-            password: _passwordController.text,
-            firstName: _firstNameController.text.trim(),
-            lastName: _lastNameController.text.trim(),
-            email: _emailController.text.trim(),
-            phone: _phoneController.text.trim(),
-            city: _cityController.text.trim(),
-            acceptCgu: _acceptCgu,
-            acceptCgv: _acceptCgv,
-            acceptPrivacy: _acceptPrivacy,
-          );
+        username: _usernameController.text.trim(),
+        password: _passwordController.text,
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+        email: _emailController.text.trim(),
+        phone: _phoneController.text.trim(),
+        city: _cityController.text.trim(),
+        acceptCgu: _acceptCgu,
+        acceptCgv: _acceptCgv,
+        acceptPrivacy: _acceptPrivacy,
+      );
+      if (!mounted) return;
+      await context.read<CartService>().fetch().catchError((_) {});
       if (mounted) {
         final emailProvided = _emailController.text.trim().isNotEmpty;
         if (emailProvided) {
@@ -79,13 +85,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
           // Sans email, le selfie de securite est le seul moyen de recuperer le compte
           // plus tard (cf. SecuritySelfieSetupScreen) : on le propose tout de suite.
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const SecuritySelfieSetupScreen()),
+            MaterialPageRoute(
+              builder: (_) => const SecuritySelfieSetupScreen(),
+            ),
           );
         }
       }
     } on DioException catch (e) {
       setState(() {
-        _errorMessage = (e.response?.data is Map) ? e.response?.data['message'] as String? : null;
+        _errorMessage = (e.response?.data is Map)
+            ? e.response?.data['message'] as String?
+            : null;
         _errorMessage ??= 'Une erreur est survenue, veuillez réessayer.';
       });
     } finally {
@@ -113,7 +123,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: TextFormField(
                     controller: _firstNameController,
                     decoration: const InputDecoration(labelText: 'Prénom'),
-                    validator: (v) => (v == null || v.isEmpty) ? 'Obligatoire' : null,
+                    validator: (v) =>
+                        (v == null || v.isEmpty) ? 'Obligatoire' : null,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -121,7 +132,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: TextFormField(
                     controller: _lastNameController,
                     decoration: const InputDecoration(labelText: 'Nom'),
-                    validator: (v) => (v == null || v.isEmpty) ? 'Obligatoire' : null,
+                    validator: (v) =>
+                        (v == null || v.isEmpty) ? 'Obligatoire' : null,
                   ),
                 ),
               ],
@@ -182,8 +194,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 labelText: 'Mot de passe',
                 prefixIcon: const Icon(Icons.lock_outline),
                 suffixIcon: IconButton(
-                  icon: Icon(_obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
-                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  icon: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                  ),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                 ),
               ),
               validator: (v) {
@@ -202,13 +219,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 labelText: 'Confirmer le mot de passe',
                 prefixIcon: const Icon(Icons.lock_outline),
                 suffixIcon: IconButton(
-                  icon: Icon(_obscureConfirmPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
-                  onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                  icon: Icon(
+                    _obscureConfirmPassword
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                  ),
+                  onPressed: () => setState(
+                    () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                  ),
                 ),
               ),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'Obligatoire';
-                if (v != _passwordController.text) return 'Les mots de passe ne correspondent pas';
+                if (v != _passwordController.text) {
+                  return 'Les mots de passe ne correspondent pas';
+                }
                 return null;
               },
             ),
@@ -224,7 +249,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               onChanged: (v) => setState(() => _acceptCgv = v),
             ),
             _ConsentCheckbox(
-              label: "J'ai pris connaissance de la politique de confidentialité",
+              label:
+                  "J'ai pris connaissance de la politique de confidentialité",
               value: _acceptPrivacy,
               onChanged: (v) => setState(() => _acceptPrivacy = v),
             ),
@@ -237,9 +263,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ? const SizedBox(
                         width: 22,
                         height: 22,
-                        child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: Colors.white,
+                        ),
                       )
-                    : const Text("S'inscrire", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    : const Text(
+                        "S'inscrire",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
             ),
           ],
@@ -254,7 +289,11 @@ class _ConsentCheckbox extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
 
-  const _ConsentCheckbox({required this.label, required this.value, required this.onChanged});
+  const _ConsentCheckbox({
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -16,7 +16,8 @@ class SecuritySelfieSetupScreen extends StatefulWidget {
   const SecuritySelfieSetupScreen({super.key});
 
   @override
-  State<SecuritySelfieSetupScreen> createState() => _SecuritySelfieSetupScreenState();
+  State<SecuritySelfieSetupScreen> createState() =>
+      _SecuritySelfieSetupScreenState();
 }
 
 class _SecuritySelfieSetupScreenState extends State<SecuritySelfieSetupScreen> {
@@ -38,7 +39,9 @@ class _SecuritySelfieSetupScreenState extends State<SecuritySelfieSetupScreen> {
       if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
     } on DioException catch (e) {
       setState(() {
-        _errorMessage = (e.response?.data is Map) ? e.response?.data['message'] as String? : null;
+        _errorMessage = (e.response?.data is Map)
+            ? e.response?.data['message'] as String?
+            : null;
         _errorMessage ??= 'Une erreur est survenue, veuillez réessayer.';
       });
     } finally {
@@ -64,7 +67,10 @@ class _SecuritySelfieSetupScreenState extends State<SecuritySelfieSetupScreen> {
             AuthErrorBanner(message: _errorMessage!),
             const SizedBox(height: 16),
           ],
-          SelfieCaptureField(selfie: _selfie, onCaptured: (f) => setState(() => _selfie = f)),
+          SelfieCaptureField(
+            selfie: _selfie,
+            onCaptured: (f) => setState(() => _selfie = f),
+          ),
           const SizedBox(height: 24),
           SizedBox(
             height: 52,
@@ -74,14 +80,26 @@ class _SecuritySelfieSetupScreenState extends State<SecuritySelfieSetupScreen> {
                   ? const SizedBox(
                       width: 22,
                       height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
                     )
-                  : const Text('Enregistrer', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  : const Text(
+                      'Enregistrer',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
             ),
           ),
           const SizedBox(height: 12),
           TextButton(
-            onPressed: _submitting ? null : () => Navigator.of(context).popUntil((route) => route.isFirst),
+            onPressed: _submitting
+                ? null
+                : () =>
+                      Navigator.of(context).popUntil((route) => route.isFirst),
             child: const Text('Plus tard'),
           ),
         ],

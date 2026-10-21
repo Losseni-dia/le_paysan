@@ -1,3 +1,23 @@
+class ProductDeliveryOption {
+  final String mode;
+  final String? pickupLocation;
+  final double? deliveryPrice;
+
+  ProductDeliveryOption({
+    required this.mode,
+    required this.pickupLocation,
+    required this.deliveryPrice,
+  });
+
+  factory ProductDeliveryOption.fromJson(Map<String, dynamic> json) {
+    return ProductDeliveryOption(
+      mode: json['mode'] as String,
+      pickupLocation: json['pickupLocation'] as String?,
+      deliveryPrice: (json['deliveryPrice'] as num?)?.toDouble(),
+    );
+  }
+}
+
 class Product {
   final int id;
   final int shopId;
@@ -9,6 +29,7 @@ class Product {
   final double unitPrice;
   final int stockQuantity;
   final List<String> imageUrls;
+  final List<ProductDeliveryOption> deliveryOptions;
   final double? ratingAverage;
   final int ratingCount;
 
@@ -23,6 +44,7 @@ class Product {
     required this.unitPrice,
     required this.stockQuantity,
     required this.imageUrls,
+    required this.deliveryOptions,
     required this.ratingAverage,
     required this.ratingCount,
   });
@@ -38,7 +60,12 @@ class Product {
       unit: json['unit'] as String,
       unitPrice: (json['unitPrice'] as num).toDouble(),
       stockQuantity: json['stockQuantity'] as int,
-      imageUrls: (json['imageUrls'] as List<dynamic>).map((e) => e as String).toList(),
+      imageUrls: (json['imageUrls'] as List<dynamic>)
+          .map((e) => e as String)
+          .toList(),
+      deliveryOptions: (json['deliveryOptions'] as List<dynamic>? ?? [])
+          .map((e) => ProductDeliveryOption.fromJson(e as Map<String, dynamic>))
+          .toList(),
       ratingAverage: (json['ratingAverage'] as num?)?.toDouble(),
       ratingCount: (json['ratingCount'] as num?)?.toInt() ?? 0,
     );
@@ -50,7 +77,11 @@ class ProductPage {
   final int totalPages;
   final int number;
 
-  ProductPage({required this.content, required this.totalPages, required this.number});
+  ProductPage({
+    required this.content,
+    required this.totalPages,
+    required this.number,
+  });
 
   factory ProductPage.fromJson(Map<String, dynamic> json) {
     return ProductPage(

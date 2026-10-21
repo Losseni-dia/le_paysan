@@ -10,7 +10,12 @@ class AuthCardScaffold extends StatelessWidget {
   final String subtitle;
   final Widget child;
 
-  const AuthCardScaffold({super.key, required this.title, required this.subtitle, required this.child});
+  const AuthCardScaffold({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,19 +39,30 @@ class AuthCardScaffold extends StatelessWidget {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Icon(Icons.eco_outlined, color: authPrimary, size: 40),
+                    child: const Icon(
+                      Icons.eco_outlined,
+                      color: authPrimary,
+                      size: 40,
+                    ),
                   ),
                   const SizedBox(height: 20),
                   Text(
                     title,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     subtitle,
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 15),
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 15,
+                    ),
                   ),
                   const SizedBox(height: 32),
                   Container(

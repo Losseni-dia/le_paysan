@@ -28,10 +28,10 @@ class AuthService extends ChangeNotifier {
   }
 
   Future<void> login(String username, String password) async {
-    final response = await _dio.post('/auth/login', data: {
-      'username': username,
-      'password': password,
-    });
+    final response = await _dio.post(
+      '/auth/login',
+      data: {'username': username, 'password': password},
+    );
     await _applyAuthResponse(response.data as Map<String, dynamic>);
   }
 
@@ -47,18 +47,21 @@ class AuthService extends ChangeNotifier {
     required bool acceptCgv,
     required bool acceptPrivacy,
   }) async {
-    final response = await _dio.post('/auth/register', data: {
-      'username': username,
-      'password': password,
-      'firstName': firstName,
-      'lastName': lastName,
-      if (email != null && email.isNotEmpty) 'email': email,
-      if (phone != null && phone.isNotEmpty) 'phone': phone,
-      if (city != null && city.isNotEmpty) 'city': city,
-      'acceptCgu': acceptCgu,
-      'acceptCgv': acceptCgv,
-      'acceptPrivacy': acceptPrivacy,
-    });
+    final response = await _dio.post(
+      '/auth/register',
+      data: {
+        'username': username,
+        'password': password,
+        'firstName': firstName,
+        'lastName': lastName,
+        if (email != null && email.isNotEmpty) 'email': email,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
+        if (city != null && city.isNotEmpty) 'city': city,
+        'acceptCgu': acceptCgu,
+        'acceptCgv': acceptCgv,
+        'acceptPrivacy': acceptPrivacy,
+      },
+    );
     await _applyAuthResponse(response.data as Map<String, dynamic>);
   }
 
@@ -76,7 +79,10 @@ class AuthService extends ChangeNotifier {
   Future<void> accountRecoveryRequest(String username, XFile selfie) async {
     final formData = FormData.fromMap({
       'username': username,
-      'selfie': await MultipartFile.fromFile(selfie.path, filename: 'selfie.jpg'),
+      'selfie': await MultipartFile.fromFile(
+        selfie.path,
+        filename: 'selfie.jpg',
+      ),
     });
     await _dio.post('/auth/account-recovery-requests', data: formData);
   }
@@ -86,9 +92,15 @@ class AuthService extends ChangeNotifier {
   /// A proposer juste apres l'inscription si l'utilisateur n'a pas renseigne d'email.
   Future<void> updateSecuritySelfie(XFile selfie) async {
     final formData = FormData.fromMap({
-      'selfie': await MultipartFile.fromFile(selfie.path, filename: 'selfie.jpg'),
+      'selfie': await MultipartFile.fromFile(
+        selfie.path,
+        filename: 'selfie.jpg',
+      ),
     });
-    final response = await _dio.put('/users/me/security-selfie', data: formData);
+    final response = await _dio.put(
+      '/users/me/security-selfie',
+      data: formData,
+    );
     _currentUser = AppUser.fromJson(response.data as Map<String, dynamic>);
     notifyListeners();
   }

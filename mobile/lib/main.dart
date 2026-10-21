@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'core/auth/auth_service.dart';
+import 'core/cart/cart_service.dart';
 import 'features/catalogue/catalogue_screen.dart';
 
 void main() {
@@ -13,8 +14,13 @@ class LeePaysanApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AuthService()..tryRestoreSession(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => AuthService()..tryRestoreSession(),
+        ),
+        ChangeNotifierProvider(create: (_) => CartService()),
+      ],
       child: MaterialApp(
         title: 'Le Paysan',
         theme: _buildTheme(),

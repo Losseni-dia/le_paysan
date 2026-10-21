@@ -8,38 +8,44 @@ import 'api_config.dart';
 /// requete d'origine (cf. backend/.../auth/JwtAuthFilter + AuthService.refresh).
 class ApiClient {
   ApiClient._internal() {
-    _dio = Dio(BaseOptions(
-      baseUrl: ApiConfig.baseUrl,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
-    ));
-    _dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = await _tokenStorage.readAccessToken();
-        if (token != null) {
-          options.headers['Authorization'] = 'Bearer $token';
-        }
-        handler.next(options);
-      },
-      onError: (error, handler) async {
-        final isAuthRoute = error.requestOptions.path.contains('/auth/');
-        if (error.response?.statusCode == 401 && !isAuthRoute && !_isRetry(error.requestOptions)) {
-          final refreshed = await _tryRefresh();
-          if (refreshed) {
-            final retryOptions = error.requestOptions;
-            retryOptions.extra['retried'] = true;
-            try {
-              final response = await _dio.fetch(retryOptions);
-              handler.resolve(response);
-              return;
-            } catch (_) {
-              // tombe dans le handler.next ci-dessous
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: ApiConfig.baseUrl,
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 10),
+      ),
+    );
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final token = await _tokenStorage.readAccessToken();
+          if (token != null) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+          handler.next(options);
+        },
+        onError: (error, handler) async {
+          final isAuthRoute = error.requestOptions.path.contains('/auth/');
+          if (error.response?.statusCode == 401 &&
+              !isAuthRoute &&
+              !_isRetry(error.requestOptions)) {
+            final refreshed = await _tryRefresh();
+            if (refreshed) {
+              final retryOptions = error.requestOptions;
+              retryOptions.extra['retried'] = true;
+              try {
+                final response = await _dio.fetch(retryOptions);
+                handler.resolve(response);
+                return;
+              } catch (_) {
+                // tombe dans le handler.next ci-dessous
+              }
             }
           }
-        }
-        handler.next(error);
-      },
-    ));
+          handler.next(error);
+        },
+      ),
+    );
   }
 
   static final ApiClient instance = ApiClient._internal();
@@ -55,7 +61,10 @@ class ApiClient {
     final refreshToken = await _tokenStorage.readRefreshToken();
     if (refreshToken == null) return false;
     try {
-      final response = await _dio.post('/auth/refresh', data: {'refreshToken': refreshToken});
+      final response = await _dio.post(
+        '/auth/refresh',
+        data: {'refreshToken': refreshToken},
+      );
       await _tokenStorage.save(
         accessToken: response.data['accessToken'] as String,
         refreshToken: response.data['refreshToken'] as String,

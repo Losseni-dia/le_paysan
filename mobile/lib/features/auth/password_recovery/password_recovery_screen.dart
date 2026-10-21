@@ -27,9 +27,18 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
   @override
   Widget build(BuildContext context) {
     final (title, subtitle) = switch (_mode) {
-      _RecoveryMode.choice => ('Mot de passe oublié', 'Comment pouvons-nous vous aider ?'),
-      _RecoveryMode.email => ('Réinitialisation par email', 'Recevez un lien par email'),
-      _RecoveryMode.noEmail => ('Récupération par selfie', 'Vérification par un administrateur'),
+      _RecoveryMode.choice => (
+        'Mot de passe oublié',
+        'Comment pouvons-nous vous aider ?',
+      ),
+      _RecoveryMode.email => (
+        'Réinitialisation par email',
+        'Recevez un lien par email',
+      ),
+      _RecoveryMode.noEmail => (
+        'Récupération par selfie',
+        'Vérification par un administrateur',
+      ),
     };
 
     return AuthCardScaffold(
@@ -37,11 +46,15 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
       subtitle: subtitle,
       child: switch (_mode) {
         _RecoveryMode.choice => _ChoiceStep(
-            onHasEmail: () => setState(() => _mode = _RecoveryMode.email),
-            onNoEmail: () => setState(() => _mode = _RecoveryMode.noEmail),
-          ),
-        _RecoveryMode.email => _EmailStep(onBack: () => setState(() => _mode = _RecoveryMode.choice)),
-        _RecoveryMode.noEmail => _NoEmailStep(onBack: () => setState(() => _mode = _RecoveryMode.choice)),
+          onHasEmail: () => setState(() => _mode = _RecoveryMode.email),
+          onNoEmail: () => setState(() => _mode = _RecoveryMode.noEmail),
+        ),
+        _RecoveryMode.email => _EmailStep(
+          onBack: () => setState(() => _mode = _RecoveryMode.choice),
+        ),
+        _RecoveryMode.noEmail => _NoEmailStep(
+          onBack: () => setState(() => _mode = _RecoveryMode.choice),
+        ),
       },
     );
   }
@@ -62,14 +75,18 @@ class _ChoiceStep extends StatelessWidget {
           onPressed: onHasEmail,
           icon: const Icon(Icons.email_outlined),
           label: const Text("J'ai un email enregistré"),
-          style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+          ),
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(
           onPressed: onNoEmail,
           icon: const Icon(Icons.camera_alt_outlined),
           label: const Text("Je n'ai pas d'email"),
-          style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+          ),
         ),
       ],
     );
@@ -105,11 +122,15 @@ class _EmailStepState extends State<_EmailStep> {
       _errorMessage = null;
     });
     try {
-      await context.read<AuthService>().forgotPassword(_emailController.text.trim());
+      await context.read<AuthService>().forgotPassword(
+        _emailController.text.trim(),
+      );
       if (mounted) setState(() => _done = true);
     } on DioException catch (e) {
       setState(() {
-        _errorMessage = (e.response?.data is Map) ? e.response?.data['message'] as String? : null;
+        _errorMessage = (e.response?.data is Map)
+            ? e.response?.data['message'] as String?
+            : null;
         _errorMessage ??= 'Une erreur est survenue, veuillez réessayer.';
       });
     } finally {
@@ -146,10 +167,15 @@ class _EmailStepState extends State<_EmailStep> {
           TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email_outlined)),
+            decoration: const InputDecoration(
+              labelText: 'Email',
+              prefixIcon: Icon(Icons.email_outlined),
+            ),
             validator: (v) {
               if (v == null || v.isEmpty) return 'Obligatoire';
-              if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v)) return 'Adresse email invalide';
+              if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v)) {
+                return 'Adresse email invalide';
+              }
               return null;
             },
           ),
@@ -162,9 +188,18 @@ class _EmailStepState extends State<_EmailStep> {
                   ? const SizedBox(
                       width: 22,
                       height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
                     )
-                  : const Text('Envoyer le lien', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  : const Text(
+                      'Envoyer le lien',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
             ),
           ),
           const SizedBox(height: 12),
@@ -201,7 +236,9 @@ class _NoEmailStepState extends State<_NoEmailStep> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selfie == null) {
-      setState(() => _errorMessage = 'Veuillez prendre ou sélectionner un selfie.');
+      setState(
+        () => _errorMessage = 'Veuillez prendre ou sélectionner un selfie.',
+      );
       return;
     }
     setState(() {
@@ -209,12 +246,19 @@ class _NoEmailStepState extends State<_NoEmailStep> {
       _errorMessage = null;
     });
     try {
-      await context.read<AuthService>().accountRecoveryRequest(_usernameController.text.trim(), _selfie!);
+      await context.read<AuthService>().accountRecoveryRequest(
+        _usernameController.text.trim(),
+        _selfie!,
+      );
       if (mounted) setState(() => _done = true);
     } on DioException catch (e) {
       setState(() {
-        _errorMessage = (e.response?.data is Map) ? e.response?.data['message'] as String? : null;
-        _errorMessage ??= e.response?.statusCode == 404 ? 'Aucun compte trouvé pour ce login.' : 'Une erreur est survenue.';
+        _errorMessage = (e.response?.data is Map)
+            ? e.response?.data['message'] as String?
+            : null;
+        _errorMessage ??= e.response?.statusCode == 404
+            ? 'Aucun compte trouvé pour ce login.'
+            : 'Une erreur est survenue.';
       });
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -256,11 +300,17 @@ class _NoEmailStepState extends State<_NoEmailStep> {
           ],
           TextFormField(
             controller: _usernameController,
-            decoration: const InputDecoration(labelText: 'Identifiant', prefixIcon: Icon(Icons.person_outline)),
+            decoration: const InputDecoration(
+              labelText: 'Identifiant',
+              prefixIcon: Icon(Icons.person_outline),
+            ),
             validator: (v) => (v == null || v.isEmpty) ? 'Obligatoire' : null,
           ),
           const SizedBox(height: 16),
-          SelfieCaptureField(selfie: _selfie, onCaptured: (f) => setState(() => _selfie = f)),
+          SelfieCaptureField(
+            selfie: _selfie,
+            onCaptured: (f) => setState(() => _selfie = f),
+          ),
           const SizedBox(height: 24),
           SizedBox(
             height: 52,
@@ -270,9 +320,18 @@ class _NoEmailStepState extends State<_NoEmailStep> {
                   ? const SizedBox(
                       width: 22,
                       height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
                     )
-                  : const Text('Envoyer ma demande', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  : const Text(
+                      'Envoyer ma demande',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
             ),
           ),
           const SizedBox(height: 12),
