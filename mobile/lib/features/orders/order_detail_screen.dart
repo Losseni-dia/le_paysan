@@ -1,8 +1,12 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/order/order.dart';
 import '../../core/order/order_service.dart';
 import '../../core/order/order_status_labels.dart';
+import '../../core/payment/payment_service.dart';
+import '../checkout/payment_pending_screen.dart';
 
 const _confirmableStatuses = {'PRETE', 'EXPEDIEE', 'RECUPEREE', 'EN_ROUTE'};
 
@@ -17,10 +21,12 @@ class OrderDetailScreen extends StatefulWidget {
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   final OrderService _orderService = OrderService();
+  final PaymentService _paymentService = PaymentService();
 
   Order? _order;
   bool _loading = true;
   bool _confirming = false;
+  bool _paying = false;
   String? _errorMessage;
 
   @override
@@ -42,6 +48,36 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  Future<void> _pay() async {
+    final order = _order;
+    if (order == null) return;
+    setState(() => _paying = true);
+    try {
+      final paymentUrl = await _paymentService.initiate([order.id]);
+      final launched = await launchUrl(
+        Uri.parse(paymentUrl),
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) throw Exception('launch_failed');
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => PaymentPendingScreen(orders: [order])),
+        );
+      }
+    } on DioException catch (_) {
+      _showError('Impossible de démarrer le paiement, réessayez.');
+    } catch (_) {
+      _showError("Impossible d'ouvrir la page de paiement.");
+    } finally {
+      if (mounted) setState(() => _paying = false);
+    }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _confirmReception() async {
@@ -137,6 +173,25 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         _summaryRow('Livraison', order.deliveryAmount),
         const Divider(height: 20),
         _summaryRow('Total', order.totalAmount, bold: true),
+        if (order.status == 'EN_ATTENTE_PAIEMENT') ...[
+          const SizedBox(height: 24),
+          SizedBox(
+            height: 52,
+            child: FilledButton(
+              onPressed: _paying ? null : _pay,
+              child: _paying
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text('Payer ${order.totalAmount.toStringAsFixed(0)} FCFA'),
+            ),
+          ),
+        ],
         if (_confirmableStatuses.contains(order.status)) ...[
           const SizedBox(height: 24),
           SizedBox(

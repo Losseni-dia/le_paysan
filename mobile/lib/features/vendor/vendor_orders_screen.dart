@@ -150,9 +150,11 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Commande ${order.orderNumber}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        Expanded(
+                          child: Text(
+                            'Commande ${order.orderNumber}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -162,6 +164,8 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
                           ),
                           child: Text(orderStatusLabel(order.status), style: const TextStyle(fontSize: 12)),
                         ),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.chevron_right, color: Colors.black38),
                       ],
                     ),
                     const SizedBox(height: 6),

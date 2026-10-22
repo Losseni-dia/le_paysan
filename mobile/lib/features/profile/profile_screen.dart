@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../core/auth/auth_service.dart';
 import '../../core/auth/user.dart';
 import '../../core/cart/cart_service.dart';
+import '../admin/admin_livreurs_kyc_screen.dart';
+import '../admin/admin_shop_requests_screen.dart';
 import '../auth/login/login_screen.dart';
 import '../livreur/livreur_home_screen.dart';
 import '../orders/orders_screen.dart';
@@ -51,6 +53,7 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildLoggedIn(BuildContext context, AppUser user) {
     final isLivreur = user.hasRole('ROLE_LIVREUR');
     final isVendeur = user.hasRole('ROLE_VENDEUR');
+    final isAdmin = user.hasRole('ROLE_ADMIN');
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -97,6 +100,37 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
         ),
+        if (isAdmin) ...[
+          const SizedBox(height: 20),
+          const Text(
+            'Espace admin',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black54),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.storefront_outlined),
+                  title: const Text('Demandes boutique'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AdminShopRequestsScreen()),
+                  ),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.badge_outlined),
+                  title: const Text('KYC livreurs'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AdminLivreursKycScreen()),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
         if (isLivreur || isVendeur) ...[
           const SizedBox(height: 20),
           const Text(

@@ -1,8 +1,12 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/order/order.dart';
 import '../../core/order/order_service.dart';
 import '../../core/order/order_status_labels.dart';
+import '../../core/payment/payment_service.dart';
+import '../checkout/payment_pending_screen.dart';
 import 'order_detail_screen.dart';
 
 const _terminalStatuses = {'LIVREE', 'ANNULEE'};
@@ -117,26 +121,70 @@ class _OrdersScreenState extends State<OrdersScreen> {
         padding: const EdgeInsets.all(16),
         itemCount: orders.length,
         separatorBuilder: (_, _) => const SizedBox(height: 12),
-        itemBuilder: (context, index) => _OrderCard(order: orders[index]),
+        itemBuilder: (context, index) => _OrderCard(order: orders[index], onChanged: _load),
       ),
     );
   }
 }
 
-class _OrderCard extends StatelessWidget {
+class _OrderCard extends StatefulWidget {
   final Order order;
+  final VoidCallback onChanged;
 
-  const _OrderCard({required this.order});
+  const _OrderCard({required this.order, required this.onChanged});
+
+  @override
+  State<_OrderCard> createState() => _OrderCardState();
+}
+
+class _OrderCardState extends State<_OrderCard> {
+  final PaymentService _paymentService = PaymentService();
+  bool _paying = false;
+
+  Future<void> _pay() async {
+    setState(() => _paying = true);
+    try {
+      final paymentUrl = await _paymentService.initiate([widget.order.id]);
+      final launched = await launchUrl(
+        Uri.parse(paymentUrl),
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) throw Exception('launch_failed');
+      if (mounted) {
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => PaymentPendingScreen(orders: [widget.order]),
+          ),
+        );
+        widget.onChanged();
+      }
+    } on DioException catch (_) {
+      _showError('Impossible de démarrer le paiement, réessayez.');
+    } catch (_) {
+      _showError("Impossible d'ouvrir la page de paiement.");
+    } finally {
+      if (mounted) setState(() => _paying = false);
+    }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
 
   @override
   Widget build(BuildContext context) {
+    final order = widget.order;
     return Card(
       child: InkWell(
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => OrderDetailScreen(orderId: order.id),
-          ),
-        ),
+        onTap: () async {
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => OrderDetailScreen(orderId: order.id),
+            ),
+          );
+          widget.onChanged();
+        },
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(
@@ -145,9 +193,11 @@ class _OrderCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Commande ${order.orderNumber}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  Expanded(
+                    child: Text(
+                      'Commande ${order.orderNumber}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -163,6 +213,8 @@ class _OrderCard extends StatelessWidget {
                       style: const TextStyle(fontSize: 12),
                     ),
                   ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.chevron_right, color: Colors.black38),
                 ],
               ),
               const SizedBox(height: 6),
@@ -178,6 +230,22 @@ class _OrderCard extends StatelessWidget {
                   color: Color(0xFF1B5E3A),
                 ),
               ),
+              if (order.status == 'EN_ATTENTE_PAIEMENT') ...[
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 40,
+                  child: FilledButton(
+                    onPressed: _paying ? null : _pay,
+                    child: _paying
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Text('Payer maintenant'),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
