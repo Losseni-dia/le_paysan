@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/auth/auth_service.dart';
 import '../../core/auth/user.dart';
 import '../../core/cart/cart_service.dart';
+import '../admin/admin_dashboard_screen.dart';
 import '../admin/admin_livreurs_kyc_screen.dart';
 import '../admin/admin_orders_screen.dart';
 import '../admin/admin_categories_screen.dart';
@@ -117,6 +118,15 @@ class ProfileScreen extends StatelessWidget {
           Card(
             child: Column(
               children: [
+                ListTile(
+                  leading: const Icon(Icons.dashboard_outlined),
+                  title: const Text('Tableau de bord'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+                  ),
+                ),
+                const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.storefront_outlined),
                   title: const Text('Demandes boutique'),
