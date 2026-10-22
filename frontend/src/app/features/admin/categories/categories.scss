@@ -74,6 +74,32 @@
   cursor: pointer;
 }
 
+.btn-ghost {
+  margin-left: 8px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.edit-category-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+
+  input {
+    flex: 1;
+  }
+}
+
 .search-input {
   display: block;
   width: 100%;

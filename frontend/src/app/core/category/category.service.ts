@@ -35,4 +35,12 @@ export class CategoryService {
   validate(id: number): Observable<CategoryResponse> {
     return this.http.post<CategoryResponse>(`${this.adminUrl}/${id}/validate`, {});
   }
+
+  update(id: number, name: string): Observable<CategoryResponse> {
+    return this.http.patch<CategoryResponse>(`${this.adminUrl}/${id}`, { name });
+  }
+
+  remove(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.adminUrl}/${id}`);
+  }
 }

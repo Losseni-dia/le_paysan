@@ -33,10 +33,38 @@
     <ul class="categories-list">
       @for (c of filteredCategories(); track c.id) {
         <li>
-          <span>{{ c.name }} <span class="slug">({{ c.slug }})</span></span>
-          @if (c.status === 'EN_ATTENTE') {
-            <span class="status-badge status-EN_ATTENTE">Suggérée par un vendeur</span>
-            <button type="button" class="validate-btn" (click)="validate(c)">Valider</button>
+          @if (editingId() === c.id) {
+            <div class="edit-category-row">
+              @if (editError()) {
+                <p class="form-error-banner">{{ editError() }}</p>
+              }
+              <input
+                type="text"
+                class="form-input"
+                [ngModel]="editName()"
+                (ngModelChange)="editName.set($event)"
+                [ngModelOptions]="{ standalone: true }"
+              />
+              <button type="button" class="btn-primary" [disabled]="editSaving()" (click)="saveEdit(c)">
+                {{ editSaving() ? 'Enregistrement...' : 'Enregistrer' }}
+              </button>
+              <button type="button" class="btn-ghost" (click)="cancelEdit()">Annuler</button>
+            </div>
+          } @else {
+            <span>{{ c.name }} <span class="slug">({{ c.slug }})</span></span>
+            @if (c.status === 'EN_ATTENTE') {
+              <span class="status-badge status-EN_ATTENTE">Suggérée par un vendeur</span>
+              <button type="button" class="validate-btn" (click)="validate(c)">Valider</button>
+            }
+            <button type="button" class="btn-ghost" (click)="startEdit(c)">Modifier</button>
+            <button
+              type="button"
+              class="btn-ghost"
+              [disabled]="deletingId() === c.id"
+              (click)="remove(c)"
+            >
+              {{ deletingId() === c.id ? 'Suppression...' : 'Supprimer' }}
+            </button>
           }
         </li>
       }
