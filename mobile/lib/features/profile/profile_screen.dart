@@ -8,6 +8,7 @@ import '../admin/admin_livreurs_kyc_screen.dart';
 import '../admin/admin_orders_screen.dart';
 import '../admin/admin_products_screen.dart';
 import '../admin/admin_shop_requests_screen.dart';
+import '../admin/admin_users_screen.dart';
 import '../auth/login/login_screen.dart';
 import '../livreur/livreur_home_screen.dart';
 import '../orders/orders_screen.dart';
@@ -145,6 +146,15 @@ class ProfileScreen extends StatelessWidget {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const AdminProductsScreen()),
+                  ),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.people_outline),
+                  title: const Text('Utilisateurs'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AdminUsersScreen()),
                   ),
                 ),
               ],
