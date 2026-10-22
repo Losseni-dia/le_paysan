@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -32,6 +32,18 @@ export class OrdersList {
   readonly selectedStatus = signal('');
   readonly orders = signal<AdminOrderResponse[]>([]);
   readonly loading = signal(true);
+  readonly searchQuery = signal('');
+
+  readonly filteredOrders = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    if (!q) return this.orders();
+    return this.orders().filter(
+      (o) =>
+        o.orderNumber.toLowerCase().includes(q) ||
+        o.buyerFullName.toLowerCase().includes(q) ||
+        o.items.some((i) => i.productName.toLowerCase().includes(q)),
+    );
+  });
 
   readonly livreurs = signal<LivreurResponse[]>([]);
   readonly selectedOrderIds = signal<Set<number>>(new Set());

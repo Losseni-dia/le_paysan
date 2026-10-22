@@ -62,10 +62,21 @@
     </form>
   }
 
+  <input
+    type="search"
+    class="form-input search-input"
+    placeholder="Rechercher (nom, identifiant, ville)..."
+    [ngModel]="searchQuery()"
+    (ngModelChange)="searchQuery.set($event)"
+    [ngModelOptions]="{ standalone: true }"
+  />
+
   @if (loading()) {
     <p>Chargement...</p>
   } @else if (livreurs().length === 0) {
     <p class="form-hint">Aucun livreur pour le moment.</p>
+  } @else if (filteredLivreurs().length === 0) {
+    <p class="form-hint">Aucun résultat pour cette recherche.</p>
   } @else {
     <table class="requests-table">
       <thead>
@@ -83,7 +94,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (l of livreurs(); track l.id) {
+        @for (l of filteredLivreurs(); track l.id) {
           <tr>
             <td><app-avatar-thumb [path]="l.photoUrl" [alt]="l.firstName" /></td>
             <td>{{ l.firstName }} {{ l.lastName }}</td>

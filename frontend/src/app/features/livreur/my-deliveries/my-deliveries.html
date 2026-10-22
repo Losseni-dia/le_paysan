@@ -2,12 +2,22 @@
   <h1>Mes livraisons</h1>
   <p class="form-hint">Commandes qui vous sont assignées, en cours de livraison.</p>
 
+  <input
+    type="search"
+    class="form-input search-input"
+    placeholder="Rechercher (n° commande, acheteur, produit)..."
+    [ngModel]="searchQuery()"
+    (ngModelChange)="searchQuery.set($event)"
+  />
+
   @if (loading()) {
     <p>Chargement...</p>
   } @else if (orders().length === 0) {
     <p class="form-hint">Aucune livraison en attente.</p>
+  } @else if (filteredOrders().length === 0) {
+    <p class="form-hint">Aucun résultat pour cette recherche.</p>
   } @else {
-    @for (order of orders(); track order.id) {
+    @for (order of filteredOrders(); track order.id) {
       <section class="order-card">
         <div class="order-header">
           <h2>N° {{ order.orderNumber }}</h2>

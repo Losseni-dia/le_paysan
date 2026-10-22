@@ -1,6 +1,15 @@
 <div class="my-orders-page">
   <h1>Mes commandes</h1>
 
+  <div class="order-tabs">
+    <button type="button" [class.active]="activeTab() === 'EN_COURS'" (click)="setTab('EN_COURS')">
+      En cours
+    </button>
+    <button type="button" [class.active]="activeTab() === 'HISTORIQUE'" (click)="setTab('HISTORIQUE')">
+      Historique
+    </button>
+  </div>
+
   @if (loading()) {
     <p>Chargement...</p>
   } @else if (orders().length === 0) {
@@ -10,7 +19,15 @@
       <p class="form-error-banner">{{ paymentError() }}</p>
     }
 
-    @for (order of orders(); track order.id) {
+    @let visibleOrders = activeTab() === 'EN_COURS' ? ongoingOrders() : historyOrders();
+
+    @if (visibleOrders.length === 0) {
+      <p class="form-hint">
+        {{ activeTab() === 'EN_COURS' ? "Vous n'avez pas de commande en cours." : "Aucune commande dans l'historique." }}
+      </p>
+    }
+
+    @for (order of visibleOrders; track order.id) {
       <section class="order-card">
         <div class="order-header">
           <h2>{{ order.shopName }}</h2>

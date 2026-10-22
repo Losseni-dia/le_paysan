@@ -1,12 +1,13 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
 import { LivreurService } from '../../../core/livreur/livreur.service';
 import { AdminOrderResponse } from '../../../core/order/order.model';
 
 @Component({
   selector: 'app-my-deliveries',
-  imports: [RouterLink],
+  imports: [RouterLink, FormsModule],
   templateUrl: './my-deliveries.html',
   styleUrl: './my-deliveries.scss',
 })
@@ -16,6 +17,18 @@ export class MyDeliveries {
   readonly orders = signal<AdminOrderResponse[]>([]);
   readonly loading = signal(true);
   readonly updatingId = signal<number | null>(null);
+  readonly searchQuery = signal('');
+
+  readonly filteredOrders = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    if (!q) return this.orders();
+    return this.orders().filter(
+      (o) =>
+        o.orderNumber.toLowerCase().includes(q) ||
+        o.buyerFullName.toLowerCase().includes(q) ||
+        o.items.some((i) => i.productName.toLowerCase().includes(q)),
+    );
+  });
 
   constructor() {
     this.load();

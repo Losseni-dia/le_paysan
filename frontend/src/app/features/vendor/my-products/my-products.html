@@ -4,13 +4,23 @@
     <a routerLink="/vendeur/produits/nouveau" class="btn-primary-link">+ Nouveau produit</a>
   </div>
 
+  <input
+    type="search"
+    class="form-input search-input"
+    placeholder="Rechercher un produit..."
+    [ngModel]="searchQuery()"
+    (ngModelChange)="searchQuery.set($event)"
+  />
+
   @if (loading()) {
     <p>Chargement...</p>
   } @else if (products().length === 0) {
     <p class="form-hint">Vous n'avez pas encore ajouté de produit.</p>
+  } @else if (filteredProducts().length === 0) {
+    <p class="form-hint">Aucun résultat pour cette recherche.</p>
   } @else {
     <div class="products-grid">
-      @for (p of products(); track p.id) {
+      @for (p of filteredProducts(); track p.id) {
         <div class="product-card">
           @if (p.imageUrls.length > 0) {
             <img [src]="apiFilesBase + p.imageUrls[0]" alt="{{ p.name }}" class="product-thumb" />

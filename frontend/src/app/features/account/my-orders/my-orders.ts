@@ -1,10 +1,13 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 
 import { OrderService } from '../../../core/order/order.service';
 import { OrderResponse } from '../../../core/order/order.model';
 import { PaymentService } from '../../../core/payment/payment.service';
+
+const TERMINAL_STATUSES = new Set(['LIVREE', 'ANNULEE']);
+const HISTORY_VISIBILITY_DAYS = 3;
 
 const STATUS_LABELS: Record<string, string> = {
   EN_ATTENTE_PAIEMENT: 'En attente de paiement',
@@ -34,6 +37,26 @@ export class MyOrders {
   readonly payingId = signal<number | null>(null);
   readonly paymentError = signal<string | null>(null);
   readonly confirmingId = signal<number | null>(null);
+  readonly activeTab = signal<'EN_COURS' | 'HISTORIQUE'>('EN_COURS');
+
+  readonly ongoingOrders = computed(() => this.orders().filter((o) => !TERMINAL_STATUSES.has(o.status)));
+
+  /** Une commande livree disparait de l'historique 3 jours apres la livraison (reste archivee en base). */
+  readonly historyOrders = computed(() =>
+    this.orders().filter((o) => {
+      if (o.status === 'ANNULEE') return true;
+      if (o.status !== 'LIVREE') return false;
+      const deliveredEntry = [...o.historique].reverse().find((h) => h.status === 'LIVREE');
+      if (!deliveredEntry) return true;
+      const deliveredAt = new Date(deliveredEntry.changedAt).getTime();
+      const daysSince = (Date.now() - deliveredAt) / (1000 * 60 * 60 * 24);
+      return daysSince < HISTORY_VISIBILITY_DAYS;
+    }),
+  );
+
+  setTab(tab: 'EN_COURS' | 'HISTORIQUE'): void {
+    this.activeTab.set(tab);
+  }
 
   constructor() {
     this.orderService.listMine().subscribe({

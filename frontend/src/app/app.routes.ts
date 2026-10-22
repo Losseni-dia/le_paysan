@@ -82,11 +82,7 @@ export const routes: Routes = [
     loadComponent: () => import('./layout/user-layout/user-layout').then((m) => m.UserLayout),
     canActivate: [authGuard],
     children: [
-      { path: '', redirectTo: 'tableau-de-bord', pathMatch: 'full' },
-      {
-        path: 'tableau-de-bord',
-        loadComponent: () => import('./features/account/user-dashboard/user-dashboard').then((m) => m.UserDashboard),
-      },
+      { path: '', redirectTo: 'commandes', pathMatch: 'full' },
       {
         path: 'commandes',
         loadComponent: () => import('./features/account/my-orders/my-orders').then((m) => m.MyOrders),

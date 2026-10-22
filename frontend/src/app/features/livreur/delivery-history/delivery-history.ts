@@ -1,12 +1,13 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 import { LivreurService } from '../../../core/livreur/livreur.service';
 import { AdminOrderResponse } from '../../../core/order/order.model';
 
 @Component({
   selector: 'app-delivery-history',
-  imports: [DatePipe],
+  imports: [DatePipe, FormsModule],
   templateUrl: './delivery-history.html',
   styleUrl: './delivery-history.scss',
 })
@@ -15,6 +16,18 @@ export class DeliveryHistory {
 
   readonly orders = signal<AdminOrderResponse[]>([]);
   readonly loading = signal(true);
+  readonly searchQuery = signal('');
+
+  readonly filteredOrders = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    if (!q) return this.orders();
+    return this.orders().filter(
+      (o) =>
+        o.orderNumber.toLowerCase().includes(q) ||
+        o.buyerFullName.toLowerCase().includes(q) ||
+        o.items.some((i) => i.productName.toLowerCase().includes(q)),
+    );
+  });
 
   constructor() {
     this.livreurService.listMyDeliveryHistory().subscribe({

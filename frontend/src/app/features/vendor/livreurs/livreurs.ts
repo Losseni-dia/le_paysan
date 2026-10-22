@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -18,6 +18,18 @@ export class Livreurs {
   readonly livreurs = signal<LivreurResponse[]>([]);
   readonly loading = signal(true);
   readonly showForm = signal(false);
+  readonly searchQuery = signal('');
+
+  readonly filteredLivreurs = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    if (!q) return this.livreurs();
+    return this.livreurs().filter(
+      (l) =>
+        `${l.firstName} ${l.lastName}`.toLowerCase().includes(q) ||
+        l.username.toLowerCase().includes(q) ||
+        (l.city ?? '').toLowerCase().includes(q),
+    );
+  });
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
 
