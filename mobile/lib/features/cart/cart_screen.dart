@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/cart/cart.dart';
 import '../../core/cart/cart_service.dart';
 import '../../core/product/product_service.dart';
+import '../checkout/checkout_screen.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -143,10 +144,15 @@ class _CartScreenState extends State<CartScreen> {
           SizedBox(
             height: 52,
             child: FilledButton(
-              // Paiement/commande : chantier a venir, pas encore construit cote mobile.
-              onPressed: null,
+              onPressed: cart.items.every((i) => i.available)
+                  ? () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => CheckoutScreen(cart: cart),
+                      ),
+                    )
+                  : null,
               child: const Text(
-                'Commander (bientôt disponible)',
+                'Commander',
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
             ),

@@ -43,6 +43,8 @@ dependencies:
   provider: ^6.1.2
   # Selfie en direct (camera), cf. recuperation de compte sans email (UC-01b).
   image_picker: ^1.1.2
+  # Ouverture du paiement Fedapay dans le navigateur externe (checkout).
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:

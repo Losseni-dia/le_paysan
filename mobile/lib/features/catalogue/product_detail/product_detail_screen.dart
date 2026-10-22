@@ -25,6 +25,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Product? _product;
   bool _loading = true;
   bool _notFound = false;
+  String? _loadError;
 
   int _activeImage = 0;
   int _quantity = 1;
@@ -32,7 +33,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   CiCity? _deliveryCity;
 
   bool _addingToCart = false;
-  bool _addedToCart = false;
   String? _cartError;
 
   @override
@@ -57,9 +57,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           _deliveryMode = product.deliveryOptions.first.mode;
         }
       });
+    } on DioException catch (e) {
+      setState(() {
+        // 404 => vraiment introuvable ; toute autre erreur (reseau, serveur indisponible...)
+        // affiche un message distinct pour ne pas induire l'utilisateur en erreur.
+        _notFound = e.response?.statusCode == 404;
+        _loadError = _notFound
+            ? null
+            : "Impossible de charger ce produit. Vérifiez votre connexion.";
+        _loading = false;
+      });
     } catch (_) {
       setState(() {
-        _notFound = true;
+        _loadError =
+            "Impossible de charger ce produit. Vérifiez votre connexion.";
         _loading = false;
       });
     }
@@ -91,7 +102,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     setState(() {
       _addingToCart = true;
-      _addedToCart = false;
       _cartError = null;
     });
 
@@ -105,7 +115,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         deliveryCityLat: _needsAddress ? _deliveryCity!.lat : null,
         deliveryCityLng: _needsAddress ? _deliveryCity!.lng : null,
       );
-      if (mounted) setState(() => _addedToCart = true);
+      if (mounted) Navigator.of(context).pop();
     } on DioException catch (e) {
       setState(() {
         _cartError = (e.response?.data is Map)
@@ -130,8 +140,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_notFound || _product == null) {
+    if (_notFound) {
       return const Center(child: Text('Produit introuvable.'));
+    }
+    if (_loadError != null || _product == null) {
+      return Center(child: Text(_loadError ?? 'Une erreur est survenue.'));
     }
 
     final product = _product!;
@@ -280,20 +293,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             child: Text(
               _cartError!,
               style: const TextStyle(color: Color(0xFFB3261E)),
-            ),
-          ),
-          const SizedBox(height: 16),
-        ],
-        if (_addedToCart) ...[
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFD7ECDF),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Text(
-              'Produit ajouté au panier.',
-              style: TextStyle(color: Color(0xFF0B3D1E)),
             ),
           ),
           const SizedBox(height: 16),
