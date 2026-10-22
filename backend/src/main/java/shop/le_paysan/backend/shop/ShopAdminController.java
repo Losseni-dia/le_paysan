@@ -51,7 +51,12 @@ public class ShopAdminController {
     }
 
     @PostMapping("/{id}/suspend")
-    public ShopResponse suspend(@PathVariable Long id) {
-        return service.suspend(id);
+    public ShopResponse suspend(@PathVariable Long id, @Valid @RequestBody RejectRequest request) {
+        return service.suspend(id, request.reason());
+    }
+
+    @PostMapping("/{id}/restore")
+    public ShopResponse restore(@PathVariable Long id) {
+        return service.restore(id);
     }
 }

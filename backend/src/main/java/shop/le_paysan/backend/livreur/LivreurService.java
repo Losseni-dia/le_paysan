@@ -254,6 +254,48 @@ public class LivreurService {
         return LivreurAdminResponse.from(link);
     }
 
+    /** Suspension par l'admin (independante du toggle vendeur, qui ne peut agir que sur ses propres livreurs). */
+    @Transactional
+    public LivreurAdminResponse suspendByAdmin(Long livreurUserId, String reason) {
+        ShopLivreur link = shopLivreurRepository
+                .findByLivreurId(livreurUserId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Livreur introuvable"));
+        User livreur = link.getLivreur();
+        livreur.setEnabled(false);
+        userRepository.save(livreur);
+
+        notificationService.notify(
+                livreur,
+                "LIVREUR_SUSPENDED",
+                "Compte suspendu",
+                "Votre compte livreur a été suspendu par l'administration. Motif : " + reason,
+                "/livreur/parametres");
+
+        return LivreurAdminResponse.from(link);
+    }
+
+    @Transactional
+    public LivreurAdminResponse restoreByAdmin(Long livreurUserId) {
+        ShopLivreur link = shopLivreurRepository
+                .findByLivreurId(livreurUserId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Livreur introuvable"));
+        User livreur = link.getLivreur();
+        if (livreur.isEnabled()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ce livreur n'est pas suspendu");
+        }
+        livreur.setEnabled(true);
+        userRepository.save(livreur);
+
+        notificationService.notify(
+                livreur,
+                "LIVREUR_RESTORED",
+                "Compte réactivé",
+                "Votre compte livreur a été réactivé par l'administration.",
+                "/livreur/parametres");
+
+        return LivreurAdminResponse.from(link);
+    }
+
     /** Verifie que le livreur assigne a une commande appartient bien a la boutique en cours. */
     @Transactional(readOnly = true)
     public User requireBelongsToShop(Shop shop, Long livreurUserId) {

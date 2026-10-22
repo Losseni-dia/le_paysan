@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import shop.le_paysan.backend.auth.SecurityUser;
 import shop.le_paysan.backend.livreur.dto.LivreurAdminResponse;
 import shop.le_paysan.backend.livreur.dto.RejectLivreurKycRequest;
+import shop.le_paysan.backend.shop.dto.RejectRequest;
 
 @RestController
 @RequestMapping("/api/v1/admin/livreurs")
@@ -49,5 +50,15 @@ public class LivreurAdminController {
             @AuthenticationPrincipal SecurityUser admin,
             @Valid @RequestBody RejectLivreurKycRequest request) {
         return service.rejectKyc(id, admin.getUser(), request.reason());
+    }
+
+    @PostMapping("/{id}/suspend")
+    public LivreurAdminResponse suspend(@PathVariable Long id, @Valid @RequestBody RejectRequest request) {
+        return service.suspendByAdmin(id, request.reason());
+    }
+
+    @PostMapping("/{id}/restore")
+    public LivreurAdminResponse restore(@PathVariable Long id) {
+        return service.restoreByAdmin(id);
     }
 }

@@ -316,7 +316,7 @@ public class ShopService {
     }
 
     @Transactional
-    public ShopResponse suspend(Long id) {
+    public ShopResponse suspend(Long id, String reason) {
         Shop shop = findOrThrow(id);
         shop.setStatus(Shop.STATUS_SUSPENDUE);
         shop.setUpdatedAt(LocalDateTime.now());
@@ -336,7 +336,33 @@ public class ShopService {
                 shop.getOwner(),
                 "SHOP_SUSPENDED",
                 "Boutique suspendue",
-                "Votre boutique \"" + shop.getName() + "\" a été suspendue par l'administration. Ses produits ont été retirés du catalogue.",
+                "Votre boutique \"" + shop.getName() + "\" a été suspendue par l'administration. Motif : " + reason
+                        + ". Ses produits ont été retirés du catalogue.",
+                "/vendeur/ma-boutique");
+
+        return ShopResponse.from(shop);
+    }
+
+    /**
+     * Cf. demande admin : pouvoir lever une suspension. Les produits dépubliés lors de la
+     * suspension restent dépubliés (le vendeur les republie lui-meme via "Mes produits") :
+     * on ne peut pas distinguer ceux deja dépubliés manuellement avant la suspension.
+     */
+    @Transactional
+    public ShopResponse restore(Long id) {
+        Shop shop = findOrThrow(id);
+        if (!Shop.STATUS_SUSPENDUE.equals(shop.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Cette boutique n'est pas suspendue");
+        }
+        shop.setStatus(Shop.STATUS_VALIDEE);
+        shop.setUpdatedAt(LocalDateTime.now());
+        shopRepository.save(shop);
+
+        notificationService.notify(
+                shop.getOwner(),
+                "SHOP_RESTORED",
+                "Boutique réactivée",
+                "Votre boutique \"" + shop.getName() + "\" a été réactivée par l'administration.",
                 "/vendeur/ma-boutique");
 
         return ShopResponse.from(shop);
