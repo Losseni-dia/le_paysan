@@ -19,4 +19,16 @@ class OrderService {
     final response = await _dio.get('/orders/$id');
     return Order.fromJson(response.data as Map<String, dynamic>);
   }
+
+  Future<List<Order>> listMine() async {
+    final response = await _dio.get('/orders');
+    return (response.data as List<dynamic>)
+        .map((e) => Order.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<Order> confirmReception(int id) async {
+    final response = await _dio.post('/orders/$id/confirmer-reception');
+    return Order.fromJson(response.data as Map<String, dynamic>);
+  }
 }

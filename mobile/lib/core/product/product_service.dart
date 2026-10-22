@@ -7,11 +7,20 @@ import 'product.dart';
 class ProductService {
   final Dio _dio = ApiClient.instance.dio;
 
-  Future<ProductPage> listPublic({String? search, int page = 0}) async {
+  Future<ProductPage> listPublic({
+    String? search,
+    int page = 0,
+    double? refLat,
+    double? refLng,
+    String? refCity,
+  }) async {
     final response = await _dio.get(
       '/products',
       queryParameters: {
         if (search != null && search.isNotEmpty) 'search': search,
+        'refLat': ?refLat,
+        'refLng': ?refLng,
+        'refCity': ?refCity,
         'page': page,
       },
     );

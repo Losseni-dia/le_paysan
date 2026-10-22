@@ -2,18 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/order/order.dart';
 import '../../core/order/order_service.dart';
-
-const _statusLabels = {
-  'EN_ATTENTE_PAIEMENT': 'En attente de paiement',
-  'PAYEE': 'Payée',
-  'EN_PREPARATION': 'En préparation',
-  'PRETE': 'Prête',
-  'EXPEDIEE': 'Expédiée',
-  'RECUPEREE': 'Récupérée',
-  'EN_ROUTE': 'En route',
-  'LIVREE': 'Livrée',
-  'ANNULEE': 'Annulée',
-};
+import '../../core/order/order_status_labels.dart';
 
 /// Affiche apres l'ouverture du paiement Fedapay dans le navigateur externe.
 /// Le paiement est confirme cote serveur par le webhook Fedapay (source de
@@ -130,7 +119,7 @@ class _PaymentPendingScreenState extends State<PaymentPendingScreen>
                           'Commande ${order.orderNumber}',
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        Text(_statusLabels[order.status] ?? order.status),
+                        Text(orderStatusLabel(order.status)),
                       ],
                     ),
                     const SizedBox(height: 4),

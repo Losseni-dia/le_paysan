@@ -40,6 +40,7 @@ class Order {
   final double deliveryAmount;
   final double totalAmount;
   final List<OrderItem> items;
+  final DateTime? createdAt;
 
   Order({
     required this.id,
@@ -51,6 +52,7 @@ class Order {
     required this.deliveryAmount,
     required this.totalAmount,
     required this.items,
+    this.createdAt,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
@@ -66,6 +68,9 @@ class Order {
       items: (json['items'] as List<dynamic>)
           .map((e) => OrderItem.fromJson(e as Map<String, dynamic>))
           .toList(),
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'] as String)
+          : null,
     );
   }
 }

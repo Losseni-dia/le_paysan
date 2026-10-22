@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'core/auth/auth_service.dart';
 import 'core/cart/cart_service.dart';
-import 'features/catalogue/catalogue_screen.dart';
+import 'features/home/main_shell.dart';
 
 void main() {
   runApp(const LeePaysanApp());
@@ -24,7 +24,7 @@ class LeePaysanApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Le Paysan',
         theme: _buildTheme(),
-        home: const CatalogueScreen(),
+        home: const MainShell(),
       ),
     );
   }

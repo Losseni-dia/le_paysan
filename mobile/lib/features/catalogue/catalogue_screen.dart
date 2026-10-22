@@ -1,12 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'dart:async';
 
-import '../../core/auth/auth_service.dart';
-import '../../core/cart/cart_service.dart';
+import 'package:flutter/material.dart';
+
+import '../../core/catalogue/ci_cities.dart';
 import '../../core/product/product.dart';
 import '../../core/product/product_service.dart';
-import '../auth/login/login_screen.dart';
-import '../cart/cart_screen.dart';
 import 'product_detail/product_detail_screen.dart';
 
 class CatalogueScreen extends StatefulWidget {
@@ -23,6 +21,8 @@ class _CatalogueScreenState extends State<CatalogueScreen> {
   List<Product> _products = [];
   bool _loading = true;
   String? _errorMessage;
+  CiCity? _city;
+  Timer? _searchDebounce;
 
   @override
   void initState() {
@@ -32,8 +32,14 @@ class _CatalogueScreenState extends State<CatalogueScreen> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged(String _) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 400), _load);
   }
 
   Future<void> _load() async {
@@ -44,6 +50,9 @@ class _CatalogueScreenState extends State<CatalogueScreen> {
     try {
       final page = await _productService.listPublic(
         search: _searchController.text.trim(),
+        refLat: _city?.lat,
+        refLng: _city?.lng,
+        refCity: _city?.name,
       );
       setState(() => _products = page.content);
     } catch (_) {
@@ -58,89 +67,56 @@ class _CatalogueScreenState extends State<CatalogueScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthService>();
-    final cart = context.watch<CartService>();
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Le Paysan'),
-        actions: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.shopping_cart_outlined),
-                onPressed: () {
-                  if (auth.isAuthenticated) {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const CartScreen()),
-                    );
-                  } else {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
-                    );
-                  }
-                },
-              ),
-              if (cart.itemCount > 0)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.all(3),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFB3261E),
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: Text(
-                      '${cart.itemCount}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          IconButton(
-            icon: Icon(
-              auth.isAuthenticated ? Icons.account_circle : Icons.login,
-            ),
-            onPressed: () {
-              if (auth.isAuthenticated) {
-                context.read<AuthService>().logout();
-                context.read<CartService>().clear();
-              } else {
-                Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
-              }
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Le Paysan')),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Rechercher un produit...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.arrow_forward),
-                  onPressed: _load,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: const InputDecoration(
+                      hintText: 'Rechercher...',
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                    onChanged: _onSearchChanged,
+                    onSubmitted: (_) => _load(),
+                  ),
                 ),
-              ),
-              onSubmitted: (_) => _load(),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: DropdownButtonFormField<CiCity?>(
+                    initialValue: _city,
+                    isExpanded: true,
+                    decoration: const InputDecoration(labelText: 'Ville'),
+                    items: [
+                      const DropdownMenuItem(
+                        value: null,
+                        child: Text(
+                          'Toutes',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      ...ciCities.map(
+                        (c) => DropdownMenuItem(
+                          value: c,
+                          child: Text(c.name, overflow: TextOverflow.ellipsis),
+                        ),
+                      ),
+                    ],
+                    onChanged: (c) {
+                      setState(() => _city = c);
+                      _load();
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
           Expanded(child: _buildBody()),
