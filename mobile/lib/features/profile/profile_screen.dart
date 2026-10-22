@@ -6,6 +6,9 @@ import '../../core/auth/user.dart';
 import '../../core/cart/cart_service.dart';
 import '../admin/admin_livreurs_kyc_screen.dart';
 import '../admin/admin_orders_screen.dart';
+import '../admin/admin_categories_screen.dart';
+import '../admin/admin_commission_screen.dart';
+import '../admin/admin_payouts_screen.dart';
 import '../admin/admin_products_screen.dart';
 import '../admin/admin_reviews_screen.dart';
 import '../admin/admin_shop_requests_screen.dart';
@@ -165,6 +168,33 @@ class ProfileScreen extends StatelessWidget {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const AdminReviewsScreen()),
+                  ),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.category_outlined),
+                  title: const Text('Catégories'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AdminCategoriesScreen()),
+                  ),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.account_balance_wallet_outlined),
+                  title: const Text('Reversements'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AdminPayoutsScreen()),
+                  ),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.percent_outlined),
+                  title: const Text('Commission'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AdminCommissionScreen()),
                   ),
                 ),
               ],
