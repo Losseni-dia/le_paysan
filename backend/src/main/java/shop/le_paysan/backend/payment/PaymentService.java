@@ -48,6 +48,7 @@ public class PaymentService {
     private final ObjectMapper objectMapper;
     private final String frontendUrl;
     private final String mobileDeeplinkScheme;
+    private final String backendPublicUrl;
     private final String webhookSecret;
 
     public PaymentService(
@@ -60,6 +61,7 @@ public class PaymentService {
             ObjectMapper objectMapper,
             @Value("${app.frontend-url}") String frontendUrl,
             @Value("${app.mobile-deeplink-scheme:}") String mobileDeeplinkScheme,
+            @Value("${app.backend-public-url:}") String backendPublicUrl,
             @Value("${app.fedapay.webhook-secret}") String webhookSecret) {
         this.transactionRepository = transactionRepository;
         this.orderRepository = orderRepository;
@@ -70,6 +72,7 @@ public class PaymentService {
         this.objectMapper = objectMapper;
         this.frontendUrl = frontendUrl;
         this.mobileDeeplinkScheme = mobileDeeplinkScheme;
+        this.backendPublicUrl = backendPublicUrl;
         this.webhookSecret = webhookSecret;
     }
 
@@ -99,8 +102,9 @@ public class PaymentService {
         FedapayClient.CustomerInfo customer =
                 new FedapayClient.CustomerInfo(buyer.getFirstName(), buyer.getLastName(), buyer.getPhone());
 
+        String resolvedReturnUrl = resolveReturnUrl(requestedReturnUrl);
         FedapayClient.CreatedTransaction created =
-                fedapayClient.createTransaction(description, total, resolveReturnUrl(requestedReturnUrl), customer);
+                fedapayClient.createTransaction(description, total, fedapayCallbackUrl(resolvedReturnUrl), customer);
         String paymentUrl = fedapayClient.generatePaymentUrl(created.id());
 
         PaymentTransaction transaction = new PaymentTransaction();
@@ -138,6 +142,27 @@ public class PaymentService {
             return requestedReturnUrl;
         }
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "URL de retour non autorisée");
+    }
+
+    /**
+     * L'API Fedapay exige une URL http(s) valide pour callback_url (refuse un schema personnalise
+     * du type "lepaysan://..." avec une 400). Pour un retour mobile, on fournit donc a Fedapay
+     * l'URL publique (ngrok en dev, domaine reel en prod) d'une page de redirection HTML servie par
+     * ce backend (cf. PaymentController.mobileReturnRedirect), qui se charge elle-meme de rediriger
+     * le navigateur du telephone vers le deep link une fois chargee.
+     */
+    private String fedapayCallbackUrl(String resolvedReturnUrl) {
+        boolean isMobileDeeplink =
+                !mobileDeeplinkScheme.isBlank() && resolvedReturnUrl.startsWith(mobileDeeplinkScheme);
+        if (!isMobileDeeplink) {
+            return resolvedReturnUrl;
+        }
+        if (backendPublicUrl.isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    "Paiement mobile indisponible : app.backend-public-url non configuré (URL publique du backend, ex. ngrok en dev).");
+        }
+        return backendPublicUrl + "/api/payments/mobile-return";
     }
 
     @Transactional

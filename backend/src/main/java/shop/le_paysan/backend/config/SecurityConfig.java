@@ -83,6 +83,10 @@ public class SecurityConfig {
                         // pas par JWT (cf. PaymentService.verifySignature). Volontairement hors /api/v1,
                         // cf. commentaire sur PaymentController.webhook().
                         .requestMatchers("/api/payments/fedapay/webhook").permitAll()
+                        // Page de redirection pour le retour de paiement mobile, cf.
+                        // PaymentController.mobileReturnRedirect() - meme logique que le webhook ci-dessus.
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/payments/mobile-return")
+                        .permitAll()
                         // Photos produit et logo/couverture boutique : publiques (catalogue et fiches
                         // boutique visibles sans connexion). Documents KYC (shop-kyc, account-recovery,
                         // security-selfies) restent authentifies.

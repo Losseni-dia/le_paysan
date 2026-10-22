@@ -40,6 +40,10 @@ app:
     base-dir: ${UPLOADS_BASE_DIR:./uploads}
   frontend-url: ${FRONTEND_URL:http://localhost:4200}
   mobile-deeplink-scheme: ${MOBILE_DEEPLINK_SCHEME:lepaysan://}
+  # URL publique du backend (ex. tunnel ngrok "https://xxxx.ngrok-free.app") a renseigner pour
+  # tester le paiement mobile : Fedapay doit pouvoir charger la page de retour depuis le
+  # navigateur du telephone, donc "localhost" ne convient pas (cf. PaymentService.fedapayCallbackUrl).
+  backend-public-url: ${BACKEND_PUBLIC_URL:}
 
 logging:
   level:

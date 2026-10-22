@@ -1,8 +1,10 @@
 package shop.le_paysan.backend.payment;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -40,5 +42,25 @@ public class PaymentController {
             @RequestBody String rawBody, @RequestHeader(value = "X-FEDAPAY-SIGNATURE", required = false) String signature) {
         service.handleWebhook(rawBody, signature);
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    /**
+     * Page de redirection servie au navigateur du mobile juste apres le paiement Fedapay (cf.
+     * PaymentService.fedapayCallbackUrl : Fedapay exige une URL http(s), pas un deep link
+     * personnalise). Redirige immediatement vers le deep link de l'app, qu'Android/iOS intercepte
+     * via son intent-filter / universal link pour ramener l'app au premier plan.
+     */
+    @GetMapping(value = "/api/payments/mobile-return", produces = MediaType.TEXT_HTML_VALUE)
+    public String mobileReturnRedirect() {
+        return """
+                <!DOCTYPE html>
+                <html><head><meta charset="utf-8">
+                <meta http-equiv="refresh" content="0;url=lepaysan://paiement-retour">
+                <script>window.location.replace('lepaysan://paiement-retour');</script>
+                </head><body>
+                <p>Paiement effectué. Retour à l'application Le Paysan...</p>
+                <p><a href="lepaysan://paiement-retour">Cliquez ici si la redirection ne se fait pas automatiquement.</a></p>
+                </body></html>
+                """;
     }
 }
