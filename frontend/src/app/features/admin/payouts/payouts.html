@@ -15,10 +15,20 @@
     }
   </div>
 
+  <input
+    type="search"
+    class="form-input search-input"
+    placeholder="Rechercher (n° commande, boutique)..."
+    [ngModel]="searchQuery()"
+    (ngModelChange)="searchQuery.set($event)"
+  />
+
   @if (loading()) {
     <p>Chargement...</p>
   } @else if (payouts().length === 0) {
     <p class="form-hint">Aucun reversement avec ce statut.</p>
+  } @else if (filteredPayouts().length === 0) {
+    <p class="form-hint">Aucun résultat pour cette recherche.</p>
   } @else {
     <table class="payouts-table">
       <thead>
@@ -32,7 +42,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (p of payouts(); track p.id) {
+        @for (p of filteredPayouts(); track p.id) {
           <tr>
             <td>{{ p.orderNumber }}</td>
             <td>{{ p.shopName }}</td>

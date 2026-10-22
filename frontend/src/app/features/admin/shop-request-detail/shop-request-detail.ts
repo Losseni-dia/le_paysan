@@ -27,8 +27,13 @@ export class ShopRequestDetail {
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly showRejectForm = signal(false);
+  readonly showSuspendForm = signal(false);
 
   readonly rejectForm = this.fb.nonNullable.group({
+    reason: ['', [Validators.required]],
+  });
+
+  readonly suspendForm = this.fb.nonNullable.group({
     reason: ['', [Validators.required]],
   });
 
@@ -63,11 +68,20 @@ export class ShopRequestDetail {
   }
 
   suspend(): void {
-    if (!confirm('Suspendre cette boutique ? Ses produits deviendront invisibles du catalogue.')) {
+    if (this.suspendForm.invalid) {
+      this.suspendForm.markAllAsTouched();
       return;
     }
     this.saving.set(true);
-    this.shopService.suspend(this.id).subscribe({
+    this.shopService.suspend(this.id, this.suspendForm.getRawValue().reason).subscribe({
+      next: () => this.router.navigateByUrl('/admin/demandes-boutiques'),
+      error: () => this.saving.set(false),
+    });
+  }
+
+  restore(): void {
+    this.saving.set(true);
+    this.shopService.restore(this.id).subscribe({
       next: () => this.router.navigateByUrl('/admin/demandes-boutiques'),
       error: () => this.saving.set(false),
     });

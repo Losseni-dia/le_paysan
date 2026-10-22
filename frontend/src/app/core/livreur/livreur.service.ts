@@ -116,4 +116,12 @@ export class LivreurService {
   rejectKyc(id: number, reason: string): Observable<LivreurAdminResponse> {
     return this.http.post<LivreurAdminResponse>(`${this.adminUrl}/${id}/rejeter-kyc`, { reason });
   }
+
+  suspendByAdmin(id: number, reason: string): Observable<LivreurAdminResponse> {
+    return this.http.post<LivreurAdminResponse>(`${this.adminUrl}/${id}/suspend`, { reason });
+  }
+
+  restoreByAdmin(id: number): Observable<LivreurAdminResponse> {
+    return this.http.post<LivreurAdminResponse>(`${this.adminUrl}/${id}/restore`, {});
+  }
 }

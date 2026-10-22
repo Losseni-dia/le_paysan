@@ -15,10 +15,20 @@
     }
   </div>
 
+  <input
+    type="search"
+    class="form-input search-input"
+    placeholder="Rechercher (n° commande, acheteur, boutique, produit)..."
+    [ngModel]="searchQuery()"
+    (ngModelChange)="searchQuery.set($event)"
+  />
+
   @if (loading()) {
     <p>Chargement...</p>
   } @else if (orders().length === 0) {
     <p class="form-hint">Aucune commande avec ce statut.</p>
+  } @else if (filteredOrders().length === 0) {
+    <p class="form-hint">Aucun résultat pour cette recherche.</p>
   } @else {
     <table class="requests-table">
       <thead>
@@ -33,7 +43,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (o of orders(); track o.id) {
+        @for (o of filteredOrders(); track o.id) {
           <tr>
             <td>{{ o.orderNumber }}</td>
             <td>{{ o.buyerFullName }}</td>

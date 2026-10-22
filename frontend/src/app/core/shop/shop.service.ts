@@ -116,7 +116,11 @@ export class ShopService {
     return this.http.post<ShopResponse>(`${this.adminUrl}/${id}/reject`, { reason });
   }
 
-  suspend(id: number): Observable<ShopResponse> {
-    return this.http.post<ShopResponse>(`${this.adminUrl}/${id}/suspend`, {});
+  suspend(id: number, reason: string): Observable<ShopResponse> {
+    return this.http.post<ShopResponse>(`${this.adminUrl}/${id}/suspend`, { reason });
+  }
+
+  restore(id: number): Observable<ShopResponse> {
+    return this.http.post<ShopResponse>(`${this.adminUrl}/${id}/restore`, {});
   }
 }

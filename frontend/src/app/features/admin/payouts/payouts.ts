@@ -1,5 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 import { PayoutService } from '../../../core/payout/payout.service';
 import { VendorPayoutResponse } from '../../../core/payout/payout.model';
@@ -12,7 +13,7 @@ const STATUS_FILTERS = [
 
 @Component({
   selector: 'app-payouts',
-  imports: [DatePipe],
+  imports: [DatePipe, FormsModule],
   templateUrl: './payouts.html',
   styleUrl: './payouts.scss',
 })
@@ -24,6 +25,15 @@ export class Payouts {
   readonly payouts = signal<VendorPayoutResponse[]>([]);
   readonly loading = signal(true);
   readonly retryingId = signal<number | null>(null);
+  readonly searchQuery = signal('');
+
+  readonly filteredPayouts = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    if (!q) return this.payouts();
+    return this.payouts().filter(
+      (p) => p.orderNumber.toLowerCase().includes(q) || p.shopName.toLowerCase().includes(q),
+    );
+  });
 
   constructor() {
     this.load();

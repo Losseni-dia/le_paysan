@@ -1,5 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
 
 import { PageResponse } from '../../../core/shop/shop.model';
@@ -12,7 +13,7 @@ type ReviewItem = ProductReviewResponse | ShopReviewResponse;
 
 @Component({
   selector: 'app-admin-reviews',
-  imports: [DatePipe, StarRating],
+  imports: [DatePipe, StarRating, FormsModule],
   templateUrl: './reviews.html',
   styleUrl: './reviews.scss',
 })
@@ -23,6 +24,20 @@ export class Reviews {
   readonly statusFilter = signal<string>('');
   readonly reviews = signal<ReviewItem[]>([]);
   readonly loading = signal(true);
+  readonly searchQuery = signal('');
+
+  readonly filteredReviews = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    if (!q) return this.reviews();
+    return this.reviews().filter((r) => {
+      const subject = this.isProductReview(r) ? r.productName : r.shopName;
+      return (
+        subject.toLowerCase().includes(q) ||
+        r.buyerFullName.toLowerCase().includes(q) ||
+        (r.comment ?? '').toLowerCase().includes(q)
+      );
+    });
+  });
 
   constructor() {
     this.load();

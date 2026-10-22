@@ -1,6 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
 import { ShopService } from '../../../core/shop/shop.service';
 import { ShopAdminDetailResponse } from '../../../core/shop/shop.model';
@@ -14,7 +15,7 @@ const STATUS_FILTERS = [
 
 @Component({
   selector: 'app-shop-requests-list',
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, FormsModule],
   templateUrl: './shop-requests-list.html',
   styleUrl: './shop-requests-list.scss',
 })
@@ -25,6 +26,18 @@ export class ShopRequestsList {
   readonly selectedStatus = signal<string>('EN_ATTENTE');
   readonly requests = signal<ShopAdminDetailResponse[]>([]);
   readonly loading = signal(true);
+  readonly searchQuery = signal('');
+
+  readonly filteredRequests = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    if (!q) return this.requests();
+    return this.requests().filter(
+      (r) =>
+        r.shop.name.toLowerCase().includes(q) ||
+        r.ownerUsername.toLowerCase().includes(q) ||
+        (r.shop.addressCity ?? '').toLowerCase().includes(q),
+    );
+  });
 
   constructor() {
     this.load();

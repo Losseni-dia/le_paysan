@@ -56,6 +56,12 @@
   border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
+  background: var(--color-primary);
+  color: #fff;
+
+  &.disabled {
+    background: var(--color-text-muted);
+  }
 }
 
 .status-EN_ATTENTE {
@@ -76,4 +82,11 @@
 .status-NON_SOUMIS {
   background: var(--color-bg-alt);
   color: var(--color-text-muted);
+}
+
+.search-input {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  margin-bottom: 16px;
 }

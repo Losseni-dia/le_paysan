@@ -74,3 +74,10 @@
   background: #fdecea;
   color: var(--color-danger);
 }
+
+.search-input {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  margin-bottom: 16px;
+}

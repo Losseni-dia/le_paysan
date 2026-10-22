@@ -16,10 +16,20 @@
     </button>
   </div>
 
+  <input
+    type="search"
+    class="form-input search-input"
+    placeholder="Rechercher (produit/boutique, auteur, commentaire)..."
+    [ngModel]="searchQuery()"
+    (ngModelChange)="searchQuery.set($event)"
+  />
+
   @if (loading()) {
     <p>Chargement...</p>
   } @else if (reviews().length === 0) {
     <p class="form-hint">Aucun avis.</p>
+  } @else if (filteredReviews().length === 0) {
+    <p class="form-hint">Aucun résultat pour cette recherche.</p>
   } @else {
     <table class="requests-table">
       <thead>
@@ -34,7 +44,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (r of reviews(); track r.id) {
+        @for (r of filteredReviews(); track r.id) {
           <tr>
             <td>{{ isProductReview(r) ? r.productName : r.shopName }}</td>
             <td>{{ r.buyerFullName }}</td>

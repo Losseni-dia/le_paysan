@@ -27,8 +27,13 @@ export class LivreursKycDetail {
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
   readonly showRejectForm = signal(false);
+  readonly showSuspendForm = signal(false);
 
   readonly rejectForm = this.fb.nonNullable.group({
+    reason: ['', [Validators.required]],
+  });
+
+  readonly suspendForm = this.fb.nonNullable.group({
     reason: ['', [Validators.required]],
   });
 
@@ -66,6 +71,34 @@ export class LivreursKycDetail {
       error: (err: HttpErrorResponse) => {
         this.saving.set(false);
         this.error.set(err.error?.message ?? 'Impossible de rejeter ce livreur.');
+      },
+    });
+  }
+
+  suspend(): void {
+    if (this.suspendForm.invalid) {
+      this.suspendForm.markAllAsTouched();
+      return;
+    }
+    this.saving.set(true);
+    this.error.set(null);
+    this.livreurService.suspendByAdmin(this.id, this.suspendForm.getRawValue().reason).subscribe({
+      next: () => this.router.navigateByUrl('/admin/livreurs-kyc'),
+      error: (err: HttpErrorResponse) => {
+        this.saving.set(false);
+        this.error.set(err.error?.message ?? 'Impossible de suspendre ce livreur.');
+      },
+    });
+  }
+
+  restore(): void {
+    this.saving.set(true);
+    this.error.set(null);
+    this.livreurService.restoreByAdmin(this.id).subscribe({
+      next: () => this.router.navigateByUrl('/admin/livreurs-kyc'),
+      error: (err: HttpErrorResponse) => {
+        this.saving.set(false);
+        this.error.set(err.error?.message ?? 'Impossible de réactiver ce livreur.');
       },
     });
   }

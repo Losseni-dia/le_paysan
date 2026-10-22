@@ -77,3 +77,10 @@
   background: var(--color-bg-alt);
   color: var(--color-text-muted);
 }
+
+.search-input {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  margin-bottom: 16px;
+}

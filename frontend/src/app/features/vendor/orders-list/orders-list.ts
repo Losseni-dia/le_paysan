@@ -29,7 +29,7 @@ export class OrdersList {
   private readonly livreurService = inject(LivreurService);
 
   readonly statusFilters = STATUS_FILTERS;
-  readonly selectedStatus = signal('');
+  readonly selectedStatus = signal('PAYEE');
   readonly orders = signal<AdminOrderResponse[]>([]);
   readonly loading = signal(true);
   readonly searchQuery = signal('');

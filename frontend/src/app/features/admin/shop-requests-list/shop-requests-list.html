@@ -17,10 +17,20 @@
     }
   </div>
 
+  <input
+    type="search"
+    class="form-input search-input"
+    placeholder="Rechercher (boutique, vendeur, ville)..."
+    [ngModel]="searchQuery()"
+    (ngModelChange)="searchQuery.set($event)"
+  />
+
   @if (loading()) {
     <p>Chargement...</p>
   } @else if (requests().length === 0) {
     <p class="form-hint">Aucune boutique avec ce statut.</p>
+  } @else if (filteredRequests().length === 0) {
+    <p class="form-hint">Aucun résultat pour cette recherche.</p>
   } @else {
     <table class="requests-table">
       <thead>
@@ -35,7 +45,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (r of requests(); track r.shop.id) {
+        @for (r of filteredRequests(); track r.shop.id) {
           <tr>
             <td>{{ r.shop.name }}</td>
             <td>{{ r.shop.ownerType }}</td>

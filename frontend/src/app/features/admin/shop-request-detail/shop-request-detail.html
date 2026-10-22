@@ -86,7 +86,28 @@
 
     @if (detail()!.shop.status === 'VALIDEE') {
       <section class="actions">
-        <button type="button" class="btn-reject" [disabled]="saving()" (click)="suspend()">Suspendre la boutique</button>
+        <button type="button" class="btn-reject" (click)="showSuspendForm.set(!showSuspendForm())">
+          Suspendre la boutique
+        </button>
+
+        @if (showSuspendForm()) {
+          <form [formGroup]="suspendForm" (ngSubmit)="suspend()" class="reject-form">
+            <div class="form-field">
+              <label class="form-label" for="suspendReason">Motif de la suspension</label>
+              <textarea id="suspendReason" class="form-textarea" formControlName="reason" rows="3"></textarea>
+              <app-field-error [control]="suspendForm.controls.reason" />
+            </div>
+            <button type="submit" class="btn-reject" [disabled]="saving()">Confirmer la suspension</button>
+          </form>
+        }
+      </section>
+    }
+
+    @if (detail()!.shop.status === 'SUSPENDUE') {
+      <section class="actions">
+        <button type="button" class="btn-validate" [disabled]="saving()" (click)="restore()">
+          Réactiver la boutique
+        </button>
       </section>
     }
   }

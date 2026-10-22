@@ -1,5 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, computed, inject, signal } from '@angular/core';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { CategoryService } from '../../../core/category/category.service';
@@ -8,7 +8,7 @@ import { FieldError } from '../../../shared/ui/field-error/field-error';
 
 @Component({
   selector: 'app-categories',
-  imports: [ReactiveFormsModule, FieldError],
+  imports: [ReactiveFormsModule, FieldError, FormsModule],
   templateUrl: './categories.html',
   styleUrl: './categories.scss',
 })
@@ -20,6 +20,13 @@ export class Categories {
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly serverError = signal<string | null>(null);
+  readonly searchQuery = signal('');
+
+  readonly filteredCategories = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    if (!q) return this.categories();
+    return this.categories().filter((c) => c.name.toLowerCase().includes(q));
+  });
 
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required]],

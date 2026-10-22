@@ -15,10 +15,20 @@
     }
   </div>
 
+  <input
+    type="search"
+    class="form-input search-input"
+    placeholder="Rechercher (produit, boutique)..."
+    [ngModel]="searchQuery()"
+    (ngModelChange)="searchQuery.set($event)"
+  />
+
   @if (loading()) {
     <p>Chargement...</p>
   } @else if (products().length === 0) {
     <p class="form-hint">Aucun produit avec ce statut.</p>
+  } @else if (filteredProducts().length === 0) {
+    <p class="form-hint">Aucun résultat pour cette recherche.</p>
   } @else {
     <table class="requests-table">
       <thead>
@@ -33,7 +43,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (p of products(); track p.id) {
+        @for (p of filteredProducts(); track p.id) {
           <tr>
             <td>{{ p.name }}</td>
             <td>{{ p.shopName }}</td>

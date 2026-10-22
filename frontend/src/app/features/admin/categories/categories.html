@@ -17,11 +17,21 @@
     </button>
   </form>
 
+  <input
+    type="search"
+    class="form-input search-input"
+    placeholder="Rechercher une catégorie..."
+    [ngModel]="searchQuery()"
+    (ngModelChange)="searchQuery.set($event)"
+  />
+
   @if (loading()) {
     <p>Chargement...</p>
+  } @else if (filteredCategories().length === 0) {
+    <p class="form-hint">Aucun résultat pour cette recherche.</p>
   } @else {
     <ul class="categories-list">
-      @for (c of categories(); track c.id) {
+      @for (c of filteredCategories(); track c.id) {
         <li>
           <span>{{ c.name }} <span class="slug">({{ c.slug }})</span></span>
           @if (c.status === 'EN_ATTENTE') {
