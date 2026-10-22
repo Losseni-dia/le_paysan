@@ -170,15 +170,23 @@ class _LivreurOrdersTab extends StatefulWidget {
 
 class _LivreurOrdersTabState extends State<_LivreurOrdersTab> {
   final LivreurService _livreurService = LivreurService();
+  final TextEditingController _searchController = TextEditingController();
 
   List<LivreurOrder> _orders = [];
   bool _loading = true;
   String? _errorMessage;
+  String _query = '';
 
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -209,41 +217,65 @@ class _LivreurOrdersTabState extends State<_LivreurOrdersTab> {
         ),
       );
     }
-    if (_orders.isEmpty) {
-      return RefreshIndicator(
-        onRefresh: _load,
-        child: ListView(
-          children: const [
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 48),
-              child: Center(child: Text('Aucune livraison pour le moment.')),
-            ),
-          ],
-        ),
-      );
-    }
 
-    return RefreshIndicator(
-      onRefresh: _load,
-      child: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: _orders.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 12),
-        itemBuilder: (context, index) {
-          final order = _orders[index];
-          return _LivreurOrderCard(
-            order: order,
-            onTap: () async {
-              await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => LivreurOrderDetailScreen(orderId: order.id),
+    final filtered = _orders.where((o) => o.matchesSearch(_query)).toList();
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: TextField(
+            controller: _searchController,
+            decoration: const InputDecoration(
+              hintText: 'Rechercher (n° commande, client, produit)...',
+              prefixIcon: Icon(Icons.search),
+            ),
+            onChanged: (value) => setState(() => _query = value),
+          ),
+        ),
+        Expanded(
+          child: filtered.isEmpty
+              ? RefreshIndicator(
+                  onRefresh: _load,
+                  child: ListView(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 48),
+                        child: Center(
+                          child: Text(
+                            _orders.isEmpty
+                                ? 'Aucune livraison pour le moment.'
+                                : 'Aucun résultat pour cette recherche.',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _load,
+                  child: ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: filtered.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final order = filtered[index];
+                      return _LivreurOrderCard(
+                        order: order,
+                        onTap: () async {
+                          await Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => LivreurOrderDetailScreen(orderId: order.id),
+                            ),
+                          );
+                          _load();
+                        },
+                      );
+                    },
+                  ),
                 ),
-              );
-              _load();
-            },
-          );
-        },
-      ),
+        ),
+      ],
     );
   }
 }
@@ -285,6 +317,13 @@ class _LivreurOrderCard extends StatelessWidget {
               Text(order.shopName, style: const TextStyle(fontSize: 12, color: Colors.black54)),
               const SizedBox(height: 4),
               Text('Client : ${order.buyerFullName}', style: const TextStyle(fontSize: 13)),
+              if (order.deliveryProof?.changedAt != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  'Livré le ${formatDateTime(order.deliveryProof!.changedAt!)}',
+                  style: const TextStyle(fontSize: 12, color: Colors.black54),
+                ),
+              ],
             ],
           ),
         ),

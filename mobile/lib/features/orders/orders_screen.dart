@@ -5,6 +5,9 @@ import '../../core/order/order_service.dart';
 import '../../core/order/order_status_labels.dart';
 import 'order_detail_screen.dart';
 
+const _terminalStatuses = {'LIVREE', 'ANNULEE'};
+const _historyVisibilityDays = 3;
+
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
 
@@ -48,36 +51,73 @@ class _OrdersScreenState extends State<OrdersScreen> {
     }
   }
 
+  /// Une commande livree disparait de l'historique 3 jours apres la livraison
+  /// (reste archivee cote serveur, simplement plus affichee ici).
+  bool _visibleInHistory(Order order) {
+    if (order.status == 'ANNULEE') return true;
+    if (order.status != 'LIVREE') return false;
+    final deliveredAt = order.deliveredAt;
+    if (deliveredAt == null) return true;
+    return DateTime.now().difference(deliveredAt).inDays < _historyVisibilityDays;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Mes commandes')),
-      body: _buildBody(),
+    final ongoing = _orders.where((o) => !_terminalStatuses.contains(o.status)).toList();
+    final history = _orders.where((o) => _terminalStatuses.contains(o.status) && _visibleInHistory(o)).toList();
+
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Mes commandes'),
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'En cours'),
+              Tab(text: 'Historique'),
+            ],
+          ),
+        ),
+        body: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : _errorMessage != null
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(_errorMessage!),
+                ),
+              )
+            : TabBarView(
+                children: [
+                  _buildList(ongoing, "Vous n'avez pas de commande en cours."),
+                  _buildList(history, "Aucune commande dans l'historique."),
+                ],
+              ),
+      ),
     );
   }
 
-  Widget _buildBody() {
-    if (_loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_errorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(_errorMessage!),
+  Widget _buildList(List<Order> orders, String emptyMessage) {
+    if (orders.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: _load,
+        child: ListView(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 48),
+              child: Center(child: Text(emptyMessage)),
+            ),
+          ],
         ),
       );
-    }
-    if (_orders.isEmpty) {
-      return const Center(child: Text("Vous n'avez pas encore de commande."));
     }
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
-        itemCount: _orders.length,
+        itemCount: orders.length,
         separatorBuilder: (_, _) => const SizedBox(height: 12),
-        itemBuilder: (context, index) => _OrderCard(order: _orders[index]),
+        itemBuilder: (context, index) => _OrderCard(order: orders[index]),
       ),
     );
   }

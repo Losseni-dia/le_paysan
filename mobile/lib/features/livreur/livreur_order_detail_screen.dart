@@ -1,9 +1,14 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/livreur/livreur_order.dart';
 import '../../core/livreur/livreur_service.dart';
 import '../../core/order/order_status_labels.dart';
+import '../../core/product/product_service.dart';
+import '../../shared/widgets/authenticated_image.dart';
+import '../../shared/widgets/signature_pad.dart';
 
 class LivreurOrderDetailScreen extends StatefulWidget {
   final int orderId;
@@ -17,16 +22,25 @@ class LivreurOrderDetailScreen extends StatefulWidget {
 class _LivreurOrderDetailScreenState extends State<LivreurOrderDetailScreen> {
   final LivreurService _livreurService = LivreurService();
   final ImagePicker _imagePicker = ImagePicker();
+  final SignaturePadController _signatureController = SignaturePadController();
 
   LivreurOrder? _order;
   bool _loading = true;
   bool _actionInProgress = false;
   String? _errorMessage;
+  String _proofMode = 'SIGNATURE';
+  XFile? _proofPhoto;
 
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _signatureController.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -68,12 +82,38 @@ class _LivreurOrderDetailScreenState extends State<LivreurOrderDetailScreen> {
     }
   }
 
-  Future<void> _confirmDelivery() async {
+  Future<void> _pickProofPhoto() async {
     final photo = await _imagePicker.pickImage(source: ImageSource.camera);
-    if (photo == null) return;
+    if (photo != null) setState(() => _proofPhoto = photo);
+  }
+
+  Future<void> _confirmDelivery() async {
+    Uint8List proofBytes;
+    String filename;
+    if (_proofMode == 'SIGNATURE') {
+      if (!_signatureController.hasSignature) {
+        _showError('Faites signer le client avant de valider.');
+        return;
+      }
+      proofBytes = await _signatureController.toPngBytes();
+      filename = 'signature.png';
+    } else {
+      if (_proofPhoto == null) {
+        _showError('Prenez une photo du colis avant de valider.');
+        return;
+      }
+      proofBytes = await _proofPhoto!.readAsBytes();
+      filename = 'photo.jpg';
+    }
+
     setState(() => _actionInProgress = true);
     try {
-      final order = await _livreurService.confirmDelivery(widget.orderId, photo);
+      final order = await _livreurService.confirmDelivery(
+        widget.orderId,
+        proofType: _proofMode,
+        proofBytes: proofBytes,
+        filename: filename,
+      );
       setState(() => _order = order);
     } catch (_) {
       _showError('Impossible de confirmer la remise.');
@@ -157,33 +197,102 @@ class _LivreurOrderDetailScreenState extends State<LivreurOrderDetailScreen> {
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         const SizedBox(height: 24),
-        _buildActionButton(order.status),
+        ..._buildActionSection(order.status),
+        if (order.deliveryProof != null) ..._buildProofSection(order.deliveryProof!),
       ],
     );
   }
 
-  Widget _buildActionButton(String status) {
-    String? label;
-    VoidCallback? action;
+  List<Widget> _buildActionSection(String status) {
     if (status == 'EXPEDIEE') {
-      label = 'Marquer comme récupéré';
-      action = _markPickedUp;
-    } else if (status == 'RECUPEREE') {
-      label = 'Marquer en route';
-      action = _markEnRoute;
-    } else if (status == 'EN_ROUTE') {
-      label = 'Confirmer la remise (photo)';
-      action = _confirmDelivery;
+      return [_actionButton('Marquer comme récupéré', _markPickedUp)];
     }
-
-    if (label == null) {
-      return const SizedBox.shrink();
+    if (status == 'RECUPEREE') {
+      return [_actionButton('Marquer en route', _markEnRoute)];
     }
+    if (status == 'EN_ROUTE') {
+      return [
+        const Text('Preuve de remise', style: TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: ChoiceChip(
+                label: const Text('Signature'),
+                selected: _proofMode == 'SIGNATURE',
+                onSelected: (_) => setState(() => _proofMode = 'SIGNATURE'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: ChoiceChip(
+                label: const Text('Photo'),
+                selected: _proofMode == 'PHOTO',
+                onSelected: (_) => setState(() => _proofMode = 'PHOTO'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (_proofMode == 'SIGNATURE') ...[
+          const Text(
+            "Faites signer l'acheteur directement sur cet écran.",
+            style: TextStyle(fontSize: 12, color: Colors.black54),
+          ),
+          const SizedBox(height: 8),
+          SignaturePad(controller: _signatureController),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () => setState(_signatureController.clear),
+              child: const Text('Effacer'),
+            ),
+          ),
+        ] else ...[
+          OutlinedButton.icon(
+            onPressed: _pickProofPhoto,
+            icon: const Icon(Icons.camera_alt_outlined),
+            label: Text(_proofPhoto == null ? 'Prendre une photo' : 'Reprendre la photo'),
+          ),
+        ],
+        const SizedBox(height: 16),
+        _actionButton('Confirmer la remise', _confirmDelivery),
+      ];
+    }
+    return [];
+  }
 
+  List<Widget> _buildProofSection(OrderStatusHistoryEntry proof) {
+    return [
+      const Divider(height: 24),
+      Text(
+        proof.proofType == 'SIGNATURE' ? 'Signature de remise' : 'Photo de remise',
+        style: const TextStyle(fontWeight: FontWeight.w600),
+      ),
+      if (proof.changedAt != null) ...[
+        const SizedBox(height: 4),
+        Text(
+          'Remise le ${formatDateTime(proof.changedAt!)}',
+          style: const TextStyle(fontSize: 12, color: Colors.black54),
+        ),
+      ],
+      const SizedBox(height: 8),
+      ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: AuthenticatedImage(
+          url: ProductService.imageUrl(proof.proofUrl!),
+          height: 200,
+          fit: BoxFit.contain,
+        ),
+      ),
+    ];
+  }
+
+  Widget _actionButton(String label, VoidCallback onPressed) {
     return SizedBox(
       height: 52,
       child: FilledButton(
-        onPressed: _actionInProgress ? null : action,
+        onPressed: _actionInProgress ? null : onPressed,
         child: _actionInProgress
             ? const SizedBox(
                 width: 22,

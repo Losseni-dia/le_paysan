@@ -6,6 +6,10 @@ import '../../core/auth/user.dart';
 import '../../core/cart/cart_service.dart';
 import '../auth/login/login_screen.dart';
 import '../livreur/livreur_home_screen.dart';
+import '../orders/orders_screen.dart';
+import '../vendor/vendor_livreurs_screen.dart';
+import '../vendor/vendor_orders_screen.dart';
+import '../vendor/vendor_products_screen.dart';
 import 'change_password_screen.dart';
 import 'edit_profile_screen.dart';
 
@@ -46,6 +50,7 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _buildLoggedIn(BuildContext context, AppUser user) {
     final isLivreur = user.hasRole('ROLE_LIVREUR');
+    final isVendeur = user.hasRole('ROLE_VENDEUR');
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -76,7 +81,23 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
         ),
-        if (isLivreur) ...[
+        const SizedBox(height: 20),
+        const Text(
+          'Mon espace',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black54),
+        ),
+        const SizedBox(height: 8),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.receipt_long_outlined),
+            title: const Text('Mes commandes'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const OrdersScreen()),
+            ),
+          ),
+        ),
+        if (isLivreur || isVendeur) ...[
           const SizedBox(height: 20),
           const Text(
             'Mes espaces',
@@ -84,13 +105,47 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Card(
-            child: ListTile(
-              leading: const Icon(Icons.delivery_dining_outlined),
-              title: const Text('Espace livreur'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const LivreurHomeScreen()),
-              ),
+            child: Column(
+              children: [
+                if (isVendeur) ...[
+                  ListTile(
+                    leading: const Icon(Icons.receipt_long_outlined),
+                    title: const Text('Ma boutique - Commandes'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const VendorOrdersScreen()),
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.inventory_2_outlined),
+                    title: const Text('Ma boutique - Produits'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const VendorProductsScreen()),
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.badge_outlined),
+                    title: const Text('Ma boutique - Livreurs'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const VendorLivreursScreen()),
+                    ),
+                  ),
+                ],
+                if (isVendeur && isLivreur) const Divider(height: 1),
+                if (isLivreur)
+                  ListTile(
+                    leading: const Icon(Icons.delivery_dining_outlined),
+                    title: const Text('Espace livreur'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const LivreurHomeScreen()),
+                    ),
+                  ),
+              ],
             ),
           ),
         ],

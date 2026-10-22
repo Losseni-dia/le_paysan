@@ -30,6 +30,22 @@ class OrderItem {
   }
 }
 
+class OrderStatusHistoryEntry {
+  final String status;
+  final DateTime? changedAt;
+
+  OrderStatusHistoryEntry({required this.status, required this.changedAt});
+
+  factory OrderStatusHistoryEntry.fromJson(Map<String, dynamic> json) {
+    return OrderStatusHistoryEntry(
+      status: json['status'] as String,
+      changedAt: json['changedAt'] != null
+          ? DateTime.tryParse(json['changedAt'] as String)
+          : null,
+    );
+  }
+}
+
 class Order {
   final int id;
   final String orderNumber;
@@ -40,6 +56,7 @@ class Order {
   final double deliveryAmount;
   final double totalAmount;
   final List<OrderItem> items;
+  final List<OrderStatusHistoryEntry> historique;
   final DateTime? createdAt;
 
   Order({
@@ -52,8 +69,17 @@ class Order {
     required this.deliveryAmount,
     required this.totalAmount,
     required this.items,
+    this.historique = const [],
     this.createdAt,
   });
+
+  /// Date de livraison (derniere entree d'historique au statut LIVREE), si connue.
+  DateTime? get deliveredAt {
+    for (final entry in historique.reversed) {
+      if (entry.status == 'LIVREE') return entry.changedAt;
+    }
+    return null;
+  }
 
   factory Order.fromJson(Map<String, dynamic> json) {
     return Order(
@@ -67,6 +93,9 @@ class Order {
       totalAmount: (json['totalAmount'] as num).toDouble(),
       items: (json['items'] as List<dynamic>)
           .map((e) => OrderItem.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      historique: (json['historique'] as List<dynamic>? ?? [])
+          .map((e) => OrderStatusHistoryEntry.fromJson(e as Map<String, dynamic>))
           .toList(),
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'] as String)

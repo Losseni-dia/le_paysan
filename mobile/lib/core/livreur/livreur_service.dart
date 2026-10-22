@@ -1,5 +1,6 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../api/api_client.dart';
 import 'livreur_order.dart';
@@ -47,13 +48,15 @@ class LivreurService {
     return LivreurOrder.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<LivreurOrder> confirmDelivery(int id, XFile proofPhoto) async {
+  Future<LivreurOrder> confirmDelivery(
+    int id, {
+    required String proofType,
+    required Uint8List proofBytes,
+    required String filename,
+  }) async {
     final formData = FormData.fromMap({
-      'proofType': 'PHOTO',
-      'proof': await MultipartFile.fromFile(
-        proofPhoto.path,
-        filename: 'preuve.jpg',
-      ),
+      'proofType': proofType,
+      'proof': MultipartFile.fromBytes(proofBytes, filename: filename),
     });
     final response = await _dio.post(
       '/livreur/orders/$id/confirmer-remise',
