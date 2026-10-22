@@ -22,9 +22,14 @@ class AuthService extends ChangeNotifier {
   Future<void> tryRestoreSession() async {
     final token = await _tokenStorage.readAccessToken();
     if (token == null) return;
-    // Pas d'endpoint "/me" dedie cote backend actuellement : on attend le
-    // premier appel authentifie (ex. panier) pour confirmer la validite du
-    // token ; sinon le refresh automatique de l'ApiClient prend le relai.
+    try {
+      final response = await _dio.get('/users/me');
+      _currentUser = AppUser.fromJson(response.data as Map<String, dynamic>);
+      notifyListeners();
+    } catch (_) {
+      // Token invalide/expire : le refresh automatique de l'ApiClient prendra
+      // le relai au prochain appel authentifie, sinon l'utilisateur devra se reconnecter.
+    }
   }
 
   Future<void> login(String username, String password) async {
@@ -103,6 +108,35 @@ class AuthService extends ChangeNotifier {
     );
     _currentUser = AppUser.fromJson(response.data as Map<String, dynamic>);
     notifyListeners();
+  }
+
+  Future<void> updateProfile({
+    required String firstName,
+    required String lastName,
+    String? email,
+    String? phone,
+  }) async {
+    final response = await _dio.put(
+      '/users/me',
+      data: {
+        'firstName': firstName,
+        'lastName': lastName,
+        if (email != null && email.isNotEmpty) 'email': email,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
+      },
+    );
+    _currentUser = AppUser.fromJson(response.data as Map<String, dynamic>);
+    notifyListeners();
+  }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _dio.put(
+      '/users/me/password',
+      data: {'currentPassword': currentPassword, 'newPassword': newPassword},
+    );
   }
 
   Future<void> logout() async {

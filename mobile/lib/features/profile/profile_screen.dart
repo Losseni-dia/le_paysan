@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/auth/auth_service.dart';
+import '../../core/auth/user.dart';
 import '../../core/cart/cart_service.dart';
 import '../auth/login/login_screen.dart';
+import '../livreur/livreur_home_screen.dart';
+import 'change_password_screen.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -15,9 +19,7 @@ class ProfileScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Profil')),
-      body: user == null
-          ? _buildLoggedOut(context)
-          : _buildLoggedIn(context, user.firstName, user.lastName, user),
+      body: user == null ? _buildLoggedOut(context) : _buildLoggedIn(context, user),
     );
   }
 
@@ -42,12 +44,9 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLoggedIn(
-    BuildContext context,
-    String firstName,
-    String lastName,
-    dynamic user,
-  ) {
+  Widget _buildLoggedIn(BuildContext context, AppUser user) {
+    final isLivreur = user.hasRole('ROLE_LIVREUR');
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -58,7 +57,7 @@ class ProfileScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '$firstName $lastName',
+                  '${user.firstName} ${user.lastName}',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -70,11 +69,58 @@ class ProfileScreen extends StatelessWidget {
                   style: const TextStyle(fontSize: 13, color: Colors.black54),
                 ),
                 const Divider(height: 24),
-                if (user.email != null) _infoRow('Email', user.email),
-                if (user.phone != null) _infoRow('Téléphone', user.phone),
-                if (user.city != null) _infoRow('Localité', user.city),
+                if (user.email != null) _infoRow('Email', user.email!),
+                if (user.phone != null) _infoRow('Téléphone', user.phone!),
+                if (user.city != null) _infoRow('Localité', user.city!),
               ],
             ),
+          ),
+        ),
+        if (isLivreur) ...[
+          const SizedBox(height: 20),
+          const Text(
+            'Mes espaces',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black54),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.delivery_dining_outlined),
+              title: const Text('Espace livreur'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const LivreurHomeScreen()),
+              ),
+            ),
+          ),
+        ],
+        const SizedBox(height: 20),
+        const Text(
+          'Paramètres du compte',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black54),
+        ),
+        const SizedBox(height: 8),
+        Card(
+          child: Column(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.person_outline),
+                title: const Text('Modifier mon profil'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+                ),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.lock_outline),
+                title: const Text('Changer mon mot de passe'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 20),
