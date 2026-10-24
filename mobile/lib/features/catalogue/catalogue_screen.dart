@@ -1,10 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../core/auth/auth_service.dart';
 import '../../core/catalogue/ci_cities.dart';
 import '../../core/product/product.dart';
 import '../../core/product/product_service.dart';
+import '../../shared/widgets/notification_bell.dart';
 import 'product_detail/product_detail_screen.dart';
 
 class CatalogueScreen extends StatefulWidget {
@@ -67,8 +70,12 @@ class _CatalogueScreenState extends State<CatalogueScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAuthenticated = context.watch<AuthService>().isAuthenticated;
     return Scaffold(
-      appBar: AppBar(title: const Text('Le Paysan')),
+      appBar: AppBar(
+        title: const Text('Le Paysan'),
+        actions: isAuthenticated ? const [NotificationBell()] : null,
+      ),
       body: Column(
         children: [
           Padding(

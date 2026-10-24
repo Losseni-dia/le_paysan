@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/cart/cart.dart';
 import '../../core/cart/cart_service.dart';
 import '../../core/product/product_service.dart';
+import '../../shared/widgets/notification_bell.dart';
 import '../checkout/checkout_screen.dart';
 
 class CartScreen extends StatefulWidget {
@@ -82,7 +83,7 @@ class _CartScreenState extends State<CartScreen> {
     final cart = context.watch<CartService>().cart;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mon panier')),
+      appBar: AppBar(title: const Text('Mon panier'), actions: const [NotificationBell()]),
       body: _buildBody(cart),
     );
   }

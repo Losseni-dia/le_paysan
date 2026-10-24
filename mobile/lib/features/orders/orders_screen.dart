@@ -6,6 +6,7 @@ import '../../core/order/order.dart';
 import '../../core/order/order_service.dart';
 import '../../core/order/order_status_labels.dart';
 import '../../core/payment/payment_service.dart';
+import '../../shared/widgets/notification_bell.dart';
 import '../checkout/payment_pending_screen.dart';
 import 'order_detail_screen.dart';
 
@@ -75,6 +76,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Mes commandes'),
+          actions: const [NotificationBell()],
           bottom: const TabBar(
             tabs: [
               Tab(text: 'En cours'),
