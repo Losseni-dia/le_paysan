@@ -50,6 +50,10 @@ public class Shop {
     @Column(nullable = false, unique = true, length = 150)
     private String name;
 
+    /** Genere une fois a la creation (slugify(nom)) : stable, jamais regenere. */
+    @Column(nullable = false, length = 170, unique = true)
+    private String slug;
+
     @Column
     private String description;
 

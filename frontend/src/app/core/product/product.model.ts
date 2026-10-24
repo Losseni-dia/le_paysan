@@ -9,7 +9,9 @@ export interface ProductDeliveryOptionResponse {
 
 export interface ProductResponse {
   id: number;
+  slug: string;
   shopId: number;
+  shopSlug: string;
   shopName: string;
   shopCity: string | null;
   shopLatitude: number | null;

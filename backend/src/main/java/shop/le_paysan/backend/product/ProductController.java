@@ -41,9 +41,13 @@ public class ProductController {
         return service.listPublic(categoryId, shopId, deliveryMode, search, refLat, refLng, refCity, pageable);
     }
 
-    @GetMapping("/api/v1/products/{id}")
-    public ProductResponse getPublic(@PathVariable Long id) {
-        return service.getPublic(id);
+    /**
+     * Accepte un slug ("tomates-bio-12") ou, pour compatibilite avec les anciens liens,
+     * un id numerique brut (cf. backlog "URLs produit avec slug").
+     */
+    @GetMapping("/api/v1/products/{slugOrId}")
+    public ProductResponse getPublic(@PathVariable String slugOrId) {
+        return service.getPublic(slugOrId);
     }
 
     @PostMapping(value = "/api/v1/vendor/products", consumes = "multipart/form-data")

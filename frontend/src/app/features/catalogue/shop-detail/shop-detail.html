@@ -35,7 +35,7 @@
       } @else {
         <div class="products-grid">
           @for (p of products(); track p.id) {
-            <a [routerLink]="['/produits', p.id]" class="product-card">
+            <a [routerLink]="['/produits', p.slug]" class="product-card">
               @if (p.imageUrls.length > 0) {
                 <img [src]="apiFilesBase + p.imageUrls[0]" alt="{{ p.name }}" class="product-thumb" />
               }

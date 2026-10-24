@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import shop.le_paysan.backend.common.FileStorageService;
+import shop.le_paysan.backend.common.SlugUtils;
 import shop.le_paysan.backend.common.notification.NotificationService;
 import shop.le_paysan.backend.product.Product;
 import shop.le_paysan.backend.product.ProductRepository;
@@ -90,6 +91,7 @@ public class ShopService {
         shop.setOwner(user);
         shop.setOwnerType(form.getOwnerType());
         shop.setName(form.getName());
+        shop.setSlug(generateUniqueSlug(form.getName()));
         shop.setDescription(form.getDescription());
         shop.setCategory(form.getCategory());
         shop.setAddressCity(form.getAddressCity());
@@ -122,6 +124,21 @@ public class ShopService {
                 "/vendeur/ma-boutique");
 
         return ShopResponse.from(shop);
+    }
+
+    /** Pas d'id numerique visible dans l'URL (cf. demande utilisateur) : suffixe -2, -3... en cas de collision. */
+    private String generateUniqueSlug(String name) {
+        String base = SlugUtils.slugify(name);
+        if (base.isEmpty()) {
+            base = "boutique";
+        }
+        String slug = base;
+        int suffix = 2;
+        while (shopRepository.existsBySlug(slug)) {
+            slug = base + "-" + suffix;
+            suffix++;
+        }
+        return slug;
     }
 
     private ShopIndividualProfile buildIndividualProfile(Shop shop, ShopRequestForm form) {
@@ -229,10 +246,15 @@ public class ShopService {
         return ShopResponse.from(shopRepository.save(shop));
     }
 
+    /**
+     * Accepte un slug ou, pour compatibilite avec les anciens liens, un id numerique brut
+     * (cf. backlog "URLs produit avec slug", applique aussi aux boutiques).
+     */
     @Transactional(readOnly = true)
-    public ShopResponse getPublic(Long id) {
+    public ShopResponse getPublic(String slugOrId) {
         Shop shop = shopRepository
-                .findById(id)
+                .findBySlug(slugOrId)
+                .or(() -> slugOrId.matches("\\d+") ? shopRepository.findById(Long.parseLong(slugOrId)) : java.util.Optional.empty())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         if (!Shop.STATUS_VALIDEE.equals(shop.getStatus())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);

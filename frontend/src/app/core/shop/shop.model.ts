@@ -2,6 +2,7 @@ export type OwnerType = 'PHYSIQUE' | 'ENTREPRENANT' | 'MORALE';
 
 export interface ShopResponse {
   id: number;
+  slug: string;
   ownerType: OwnerType;
   name: string;
   description: string | null;

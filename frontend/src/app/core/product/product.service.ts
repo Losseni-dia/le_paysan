@@ -39,8 +39,8 @@ export class ProductService {
     return this.http.get<PageResponse<ProductResponse>>(this.publicUrl, { params });
   }
 
-  getPublic(id: number): Observable<ProductResponse> {
-    return this.http.get<ProductResponse>(`${this.publicUrl}/${id}`);
+  getPublic(slugOrId: string): Observable<ProductResponse> {
+    return this.http.get<ProductResponse>(`${this.publicUrl}/${slugOrId}`);
   }
 
   // --- Vendeur ---

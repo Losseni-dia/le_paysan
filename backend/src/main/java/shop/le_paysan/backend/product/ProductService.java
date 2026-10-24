@@ -1,6 +1,7 @@
 package shop.le_paysan.backend.product;
 
 import shop.le_paysan.backend.common.GeoUtils;
+import shop.le_paysan.backend.common.SlugUtils;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -83,6 +84,7 @@ public class ProductService {
 
         Product product = new Product();
         product.setShop(shop);
+        product.setSlug(generateUniqueSlug(form.getName(), shop.getName()));
         applyCommonFields(product, form);
         applyDeliveryOptions(product, form, shop);
 
@@ -111,6 +113,18 @@ public class ProductService {
                 "/vendeur/produits/" + product.getId() + "/modifier");
 
         return ProductResponse.from(product);
+    }
+
+    /** Pas d'id numerique visible dans l'URL (cf. demande utilisateur) : suffixe -2, -3... en cas de collision. */
+    private String generateUniqueSlug(String name, String shopName) {
+        String base = SlugUtils.productSlugBase(name, shopName);
+        String slug = base;
+        int suffix = 2;
+        while (productRepository.existsBySlug(slug)) {
+            slug = base + "-" + suffix;
+            suffix++;
+        }
+        return slug;
     }
 
     @Transactional
@@ -188,11 +202,15 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public ProductResponse getPublic(Long id) {
-        Product product = productRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    public ProductResponse getPublic(String slugOrId) {
+        Product product = productRepository
+                .findBySlug(slugOrId)
+                .or(() -> slugOrId.matches("\\d+") ? productRepository.findById(Long.parseLong(slugOrId)) : java.util.Optional.empty())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         if (!Product.STATUS_VALIDE.equals(product.getStatus()) || !Shop.STATUS_VALIDEE.equals(product.getShop().getStatus())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
+        Long id = product.getId();
         Double average = productReviewRepository.averageRating(id);
         long count = productReviewRepository.countByProductIdAndStatus(id, "VISIBLE");
         return ProductResponse.from(product).withRating(average, count);

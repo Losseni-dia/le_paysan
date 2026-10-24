@@ -61,9 +61,9 @@ public class ShopController {
         return service.upsertPayoutAccount(principal.getUser().getId(), request);
     }
 
-    @GetMapping("/{id}")
-    public ShopResponse getPublic(@PathVariable Long id) {
-        return service.getPublic(id);
+    @GetMapping("/{slugOrId}")
+    public ShopResponse getPublic(@PathVariable String slugOrId) {
+        return service.getPublic(slugOrId);
     }
 
     @GetMapping

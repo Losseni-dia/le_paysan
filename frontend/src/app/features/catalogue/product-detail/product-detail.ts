@@ -51,8 +51,8 @@ export class ProductDetail {
   });
 
   constructor() {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.productService.getPublic(id).subscribe({
+    const slug = this.route.snapshot.paramMap.get('slug') ?? '';
+    this.productService.getPublic(slug).subscribe({
       next: (p) => {
         this.product.set(p);
         this.loading.set(false);

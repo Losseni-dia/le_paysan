@@ -111,9 +111,13 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.GET,
                                 "/api/v1/products/**", "/api/v1/categories/**")
                         .permitAll()
-                        // Uniquement les routes de lecture publique de /api/shops (liste + fiche par id) :
-                        // /api/shops/me* reste authentifie (ne doit pas matcher ici).
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/shops", "/api/v1/shops/{id:[0-9]+}")
+                        // Uniquement les routes de lecture publique de /api/shops (liste + fiche par slug ou
+                        // id numerique, cf. backlog slug) : negative lookahead sur "me" pour ne jamais
+                        // matcher /api/shops/me* (doit rester authentifie).
+                        .requestMatchers(
+                                org.springframework.http.HttpMethod.GET,
+                                "/api/v1/shops",
+                                "/api/v1/shops/{slugOrId:(?!me$)[a-z0-9-]+}")
                         .permitAll()
                         // Avis publics (note moyenne + liste) : lecture ouverte, soumission authentifiee
                         // (verification achat livre faite dans ReviewService).

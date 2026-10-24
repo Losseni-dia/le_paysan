@@ -7,6 +7,7 @@ import shop.le_paysan.backend.shop.Shop;
 
 public record ShopResponse(
         Long id,
+        String slug,
         String ownerType,
         String name,
         String description,
@@ -24,6 +25,7 @@ public record ShopResponse(
     public static ShopResponse from(Shop shop) {
         return new ShopResponse(
                 shop.getId(),
+                shop.getSlug(),
                 shop.getOwnerType(),
                 shop.getName(),
                 shop.getDescription(),

@@ -27,12 +27,12 @@ export class ShopDetail {
   readonly apiFilesBase = `${environment.apiBaseUrl}/files/`;
 
   constructor() {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.shopService.getPublicShop(id).subscribe({
+    const slug = this.route.snapshot.paramMap.get('slug') ?? '';
+    this.shopService.getPublicShop(slug).subscribe({
       next: (shop) => {
         this.shop.set(shop);
         this.loading.set(false);
-        this.productService.listPublic({ shopId: id }).subscribe((page) => this.products.set(page.content));
+        this.productService.listPublic({ shopId: shop.id }).subscribe((page) => this.products.set(page.content));
       },
       error: () => {
         this.notFound.set(true);

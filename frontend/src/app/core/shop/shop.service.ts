@@ -52,8 +52,8 @@ export class ShopService {
     return this.http.put<PayoutAccountResponse>(`${this.baseUrl}/me/payout-account`, payload);
   }
 
-  getPublicShop(id: number): Observable<ShopResponse> {
-    return this.http.get<ShopResponse>(`${this.baseUrl}/${id}`);
+  getPublicShop(slugOrId: string): Observable<ShopResponse> {
+    return this.http.get<ShopResponse>(`${this.baseUrl}/${slugOrId}`);
   }
 
   listPublicShops(search?: string): Observable<PageResponse<ShopResponse>> {

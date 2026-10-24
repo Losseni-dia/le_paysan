@@ -52,6 +52,10 @@ public class Product {
     @Column(nullable = false, length = 150)
     private String name;
 
+    /** Genere une fois a la creation (slugify(nom) + "-" + id) : stable, jamais regenere. */
+    @Column(nullable = false, length = 180, unique = true)
+    private String slug;
+
     @Column
     private String description;
 

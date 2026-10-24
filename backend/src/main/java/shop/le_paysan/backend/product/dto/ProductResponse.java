@@ -10,7 +10,9 @@ import shop.le_paysan.backend.product.ProductImage;
 
 public record ProductResponse(
         Long id,
+        String slug,
         Long shopId,
+        String shopSlug,
         String shopName,
         String shopCity,
         Double shopLatitude,
@@ -33,7 +35,9 @@ public record ProductResponse(
     public ProductResponse withRating(Double ratingAverage, Long ratingCount) {
         return new ProductResponse(
                 id,
+                slug,
                 shopId,
+                shopSlug,
                 shopName,
                 shopCity,
                 shopLatitude,
@@ -71,7 +75,9 @@ public record ProductResponse(
     public static ProductResponse from(Product p, Double distanceKm, Double ratingAverage, Long ratingCount) {
         return new ProductResponse(
                 p.getId(),
+                p.getSlug(),
                 p.getShop().getId(),
+                p.getShop().getSlug(),
                 p.getShop().getName(),
                 p.getShop().getAddressCity(),
                 p.getShop().getLatitude() != null ? p.getShop().getLatitude().doubleValue() : null,
