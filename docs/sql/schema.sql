@@ -7,6 +7,9 @@ CREATE TABLE users (
     username        VARCHAR(30) NOT NULL UNIQUE,
     email           VARCHAR(255) UNIQUE,
     password_hash   VARCHAR(255),
+    -- Tout JWT emis avant cette date est rejete (cf. audit securite) : mis a jour au
+    -- changement de mot de passe, volontaire ou via reinitialisation.
+    token_valid_from TIMESTAMP,
     first_name      VARCHAR(100) NOT NULL,
     last_name       VARCHAR(100) NOT NULL,
     phone           VARCHAR(30),
@@ -145,6 +148,8 @@ CREATE TABLE products (
     stock_quantity  INTEGER NOT NULL CHECK (stock_quantity >= 0),
     status          VARCHAR(20) NOT NULL DEFAULT 'EN_ATTENTE'
                      CHECK (status IN ('EN_ATTENTE','VALIDE','REJETE','DEPUBLIE')),
+    -- Verrou optimiste : evite la survente en cas de paiements concurrents (cf. audit securite).
+    version         BIGINT NOT NULL DEFAULT 0,
     created_at      TIMESTAMP NOT NULL DEFAULT now(),
     updated_at      TIMESTAMP NOT NULL DEFAULT now()
 );

@@ -86,4 +86,16 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             ORDER BY SUM(o.totalAmount) DESC
             """)
     List<Object[]> topShopsByRevenue(Pageable pageable);
+
+    /** Cf. FileAccessService : une preuve de livraison n'est visible que par l'acheteur, le
+     * vendeur ou le livreur de la commande concernee. */
+    @Query(
+            value = "SELECT EXISTS ("
+                    + "SELECT 1 FROM order_status_history h "
+                    + "JOIN orders o ON o.id = h.order_id "
+                    + "JOIN shops s ON s.id = o.shop_id "
+                    + "WHERE h.proof_url = :path "
+                    + "AND (o.buyer_user_id = :userId OR s.owner_user_id = :userId OR o.assigned_livreur_id = :userId))",
+            nativeQuery = true)
+    boolean existsDeliveryProofAccessibleBy(@Param("path") String path, @Param("userId") Long userId);
 }

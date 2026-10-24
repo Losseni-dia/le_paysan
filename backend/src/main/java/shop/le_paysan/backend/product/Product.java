@@ -17,6 +17,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -52,7 +53,8 @@ public class Product {
     @Column(nullable = false, length = 150)
     private String name;
 
-    /** Genere une fois a la creation (slugify(nom) + "-" + id) : stable, jamais regenere. */
+    /** Genere une fois a la creation (slugify(nom) + "-" + slugify(nom boutique)) : stable,
+     * jamais regenere si le nom change ensuite. */
     @Column(nullable = false, length = 180, unique = true)
     private String slug;
 
@@ -76,6 +78,12 @@ public class Product {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    /** Verrou optimiste : evite la survente en cas de paiements concurrents sur le meme produit
+     * (cf. audit securite, decrementation du stock dans PaymentService.onPaymentApproved). */
+    @Version
+    @Column(nullable = false)
+    private Long version = 0L;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("position ASC")

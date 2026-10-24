@@ -46,6 +46,11 @@ public class User {
     @Column(name = "password_hash")
     private String passwordHash;
 
+    /** Tout token JWT emis avant cette date est rejete (cf. JwtAuthFilter, AuthService.refresh).
+     * Mis a jour au changement de mot de passe (volontaire ou via reinitialisation). */
+    @Column(name = "token_valid_from")
+    private LocalDateTime tokenValidFrom;
+
     @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
 

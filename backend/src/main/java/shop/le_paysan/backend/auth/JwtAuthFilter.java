@@ -45,11 +45,25 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 && SecurityContextHolder.getContext().getAuthentication() == null) {
             String username = jwtService.extractUsername(token);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            var authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+            if (!isRevoked(token, userDetails)) {
+                var authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    /** Rejette les tokens emis avant le dernier changement de mot de passe (cf. User.tokenValidFrom). */
+    private boolean isRevoked(String token, UserDetails userDetails) {
+        if (!(userDetails instanceof SecurityUser securityUser)) {
+            return false;
+        }
+        var tokenValidFrom = securityUser.getUser().getTokenValidFrom();
+        if (tokenValidFrom == null) {
+            return false;
+        }
+        return jwtService.extractIssuedAt(token).isBefore(tokenValidFrom);
     }
 }

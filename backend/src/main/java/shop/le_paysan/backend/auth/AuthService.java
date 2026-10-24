@@ -193,6 +193,11 @@ public class AuthService {
                 .findByUsername(username)
                 .orElseThrow(() -> new ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED));
 
+        if (user.getTokenValidFrom() != null
+                && jwtService.extractIssuedAt(refreshToken).isBefore(user.getTokenValidFrom())) {
+            throw new ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Refresh token invalide");
+        }
+
         return buildAuthResponse(user);
     }
 
@@ -220,8 +225,11 @@ public class AuthService {
                 .findByUsername(username)
                 .orElseThrow(() -> new ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED));
 
+        LocalDateTime now = LocalDateTime.now();
         user.setPasswordHash(passwordEncoder.encode(newPassword));
-        user.setUpdatedAt(LocalDateTime.now());
+        // Tronque a la seconde : cf. UserController.changePassword pour le detail.
+        user.setTokenValidFrom(now.truncatedTo(java.time.temporal.ChronoUnit.SECONDS));
+        user.setUpdatedAt(now);
         userRepository.save(user);
     }
 

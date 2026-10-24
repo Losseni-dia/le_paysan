@@ -84,6 +84,13 @@ public class JwtService {
         return parseClaims(token).getSubject();
     }
 
+    /** Date d'emission du token (claim "iat"), utilisee pour la revocation au changement
+     * de mot de passe (cf. User.tokenValidFrom). */
+    public java.time.LocalDateTime extractIssuedAt(String token) {
+        Date issuedAt = parseClaims(token).getIssuedAt();
+        return java.time.LocalDateTime.ofInstant(issuedAt.toInstant(), java.time.ZoneId.systemDefault());
+    }
+
     public boolean isRefreshToken(String token) {
         return TYPE_REFRESH.equals(parseClaims(token).get(CLAIM_TYPE, String.class));
     }

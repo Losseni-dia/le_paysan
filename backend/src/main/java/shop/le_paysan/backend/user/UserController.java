@@ -78,8 +78,12 @@ public class UserController {
             throw new ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Mot de passe actuel incorrect");
         }
 
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
-        user.setUpdatedAt(java.time.LocalDateTime.now());
+        // Tronque a la seconde : le claim JWT "iat" (norme JWT) perd la precision sous-seconde,
+        // un token regenere dans la meme seconde paraitrait sinon "emis avant" ce timestamp.
+        user.setTokenValidFrom(now.truncatedTo(java.time.temporal.ChronoUnit.SECONDS));
+        user.setUpdatedAt(now);
         userRepository.save(user);
     }
 

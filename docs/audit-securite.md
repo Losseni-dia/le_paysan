@@ -8,10 +8,10 @@ Aucun. Pas de secret exposé dans le dépôt, pas de CORS wildcard, pas de JWT h
 
 ## 🟠 Haute
 
-- **Pas de révocation JWT** (`JwtService.java`) : refresh token valide 7 jours même après changement de mot de passe. MVP stateless assumé, mais à corriger avant une vraie mise en prod (table de révocation ou invalidation au changement de mdp).
-- **Race condition sur le stock produit** (`OrderService`/`PaymentService`) : décrémentation du stock sans verrou (`@Version` absent sur `Product`) → survente possible si deux paiements concurrents pour le même produit.
-- **Accès fichiers privés sans vérification de propriété** (`FileController.java`, TODO explicite dans le code) : un utilisateur authentifié qui obtient une URL de document KYC d'un autre (UUID) peut la charger. Protection actuelle = UUID difficile à deviner, pas un vrai contrôle d'accès.
-- **Trafic mobile en HTTP non-HTTPS** : bloquant pour un build release tant que le backend n'est pas servi en HTTPS (Android bloque le cleartext par défaut). *Pas une fuite active, mais empêche toute distribution réelle.*
+- [x] **Révocation JWT — corrigé le 2026-10-24.** `User.tokenValidFrom`, mis à jour au changement de mot de passe (volontaire ou réinitialisation), vérifié dans `JwtAuthFilter` et `AuthService.refresh` contre le claim `iat` du token. Testé en live : ancien token → 401 après changement, nouveau token → 200.
+- [x] **Race condition sur le stock produit — corrigé le 2026-10-24.** `@Version` sur `Product` (verrou optimiste général) + verrou pessimiste (`ProductRepository.findByIdForUpdate`, `SELECT ... FOR UPDATE`) dans `PaymentService.onPaymentApproved`, le chemin concret de décrémentation. *(Non testé en situation de concurrence réelle, revue de code uniquement.)*
+- [x] **Accès fichiers privés sans vérification de propriété — corrigé le 2026-10-24.** `FileAccessService` vérifie que l'appelant est propriétaire (ou admin) du fichier précis demandé, pour chaque catégorie privée (`shop-kyc`, `security-selfies`, `livreur-kyc`/`livreur-photos`, `account-recovery`, `delivery-proofs`) via requêtes croisées sur les tables propriétaires. Catégorie inconnue → refusée par défaut. Testé en live : fichier d'un autre compte → 403, fichier public → 200 sans auth.
+- [ ] **Trafic mobile en HTTP non-HTTPS** : bloquant pour un build release tant que le backend n'est pas servi en HTTPS (Android bloque le cleartext par défaut). *Pas une fuite active, mais empêche toute distribution réelle. Décision d'hébergement, pas de code.*
 
 ## 🟡 Moyenne
 
@@ -37,8 +37,8 @@ Aucun. Pas de secret exposé dans le dépôt, pas de CORS wildcard, pas de JWT h
 
 ## Priorité de remédiation recommandée
 
-1. HTTPS backend (bloque toute distribution mobile réelle)
-2. Contrôle d'accès fin sur `FileController` (fichiers KYC)
-3. Verrou optimiste (`@Version`) sur `Product.stockQuantity`
-4. Révocation JWT au changement de mot de passe
+1. ~~Contrôle d'accès fin sur `FileController` (fichiers KYC)~~ — fait le 2026-10-24.
+2. ~~Verrou sur `Product.stockQuantity`~~ — fait le 2026-10-24.
+3. ~~Révocation JWT au changement de mot de passe~~ — fait le 2026-10-24.
+4. **HTTPS backend** (bloque toute distribution mobile réelle) — dernier point haut restant, décision d'hébergement.
 5. Le reste (CSP, verrouillage compte, chiffrement idDocumentNumber, fenêtre replay webhook) — amélioration continue, pas bloquant.

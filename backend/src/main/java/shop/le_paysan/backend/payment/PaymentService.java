@@ -220,7 +220,11 @@ public class PaymentService {
             orderService.recordHistory(order, Order.STATUS_PAYEE, OrderStatusHistory.CHANGED_BY_SYSTEME, "Paiement confirmé par Fedapay");
 
             for (OrderItem item : order.getItems()) {
-                Product product = item.getProduct();
+                // Verrou pessimiste : deux paiements concurrents sur le meme produit ne doivent
+                // jamais aboutir a une survente (cf. audit securite).
+                Product product = productRepository
+                        .findByIdForUpdate(item.getProduct().getId())
+                        .orElseThrow(() -> new IllegalStateException("Produit introuvable id=" + item.getProduct().getId()));
                 int remaining = Math.max(0, product.getStockQuantity() - item.getQuantity());
                 product.setStockQuantity(remaining);
                 productRepository.save(product);
