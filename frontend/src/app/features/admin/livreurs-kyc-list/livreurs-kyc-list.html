@@ -33,7 +33,6 @@
         <tr>
           <th>Photo</th>
           <th>Livreur</th>
-          <th>Boutique</th>
           <th>Ville</th>
           <th>Statut KYC</th>
           <th>Compte</th>
@@ -46,7 +45,6 @@
           <tr>
             <td><app-avatar-thumb [path]="l.photoUrl" [alt]="l.firstName" /></td>
             <td>{{ l.firstName }} {{ l.lastName }}</td>
-            <td>{{ l.shopName }}</td>
             <td>{{ l.city ?? '—' }}</td>
             <td>
               @if (l.kycStatus) {

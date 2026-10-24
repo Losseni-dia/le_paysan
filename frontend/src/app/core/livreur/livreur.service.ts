@@ -5,60 +5,24 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { PageResponse } from '../shop/shop.model';
 import { AdminOrderResponse } from '../order/order.model';
-import { CreateLivreurRequest, LivreurAdminResponse, LivreurResponse, UpdateLivreurRequest } from './livreur.model';
+import {
+  DeliveryRequestResponse,
+  EligibleLivreurResponse,
+  LivreurAdminResponse,
+  LivreurResponse,
+  UploadLivreurDocumentsRequest,
+} from './livreur.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LivreurService {
   private readonly http = inject(HttpClient);
-  private readonly vendorUrl = `${environment.apiBaseUrl}/vendor/livreurs`;
   private readonly livreurOrdersUrl = `${environment.apiBaseUrl}/livreur/orders`;
   private readonly adminUrl = `${environment.apiBaseUrl}/admin/livreurs`;
+  private readonly vendorOrdersUrl = `${environment.apiBaseUrl}/vendor/orders`;
 
-  // --- Vendeur ---
-
-  listForShop(): Observable<LivreurResponse[]> {
-    return this.http.get<LivreurResponse[]>(this.vendorUrl);
-  }
-
-  create(request: CreateLivreurRequest): Observable<LivreurResponse> {
-    const formData = new FormData();
-    formData.append('username', request.username);
-    formData.append('password', request.password);
-    formData.append('firstName', request.firstName);
-    formData.append('lastName', request.lastName);
-    if (request.phone) formData.append('phone', request.phone);
-    if (request.city) formData.append('city', request.city);
-    if (request.photo) formData.append('photo', request.photo);
-    if (request.idDocumentFront) formData.append('idDocumentFront', request.idDocumentFront);
-    if (request.idDocumentBack) formData.append('idDocumentBack', request.idDocumentBack);
-    if (request.selfieWithId) formData.append('selfieWithId', request.selfieWithId);
-    return this.http.post<LivreurResponse>(this.vendorUrl, formData);
-  }
-
-  update(id: number, request: UpdateLivreurRequest): Observable<LivreurResponse> {
-    const formData = new FormData();
-    formData.append('firstName', request.firstName);
-    formData.append('lastName', request.lastName);
-    if (request.phone) formData.append('phone', request.phone);
-    if (request.city) formData.append('city', request.city);
-    if (request.photo) formData.append('photo', request.photo);
-    if (request.idDocumentFront) formData.append('idDocumentFront', request.idDocumentFront);
-    if (request.idDocumentBack) formData.append('idDocumentBack', request.idDocumentBack);
-    if (request.selfieWithId) formData.append('selfieWithId', request.selfieWithId);
-    return this.http.patch<LivreurResponse>(`${this.vendorUrl}/${id}`, formData);
-  }
-
-  setEnabled(id: number, enabled: boolean): Observable<LivreurResponse> {
-    return this.http.patch<LivreurResponse>(`${this.vendorUrl}/${id}/enabled`, { enabled });
-  }
-
-  resetPassword(id: number, password: string): Observable<LivreurResponse> {
-    return this.http.patch<LivreurResponse>(`${this.vendorUrl}/${id}/mot-de-passe`, { password });
-  }
-
-  // --- Livreur ---
+  // --- Livreur (auto-service) ---
 
   listMyDeliveries(page = 0): Observable<PageResponse<AdminOrderResponse>> {
     return this.http.get<PageResponse<AdminOrderResponse>>(this.livreurOrdersUrl, { params: { page } });
@@ -95,6 +59,35 @@ export class LivreurService {
 
   setAvailability(available: boolean): Observable<LivreurResponse> {
     return this.http.patch<LivreurResponse>(`${environment.apiBaseUrl}/livreur/disponibilite`, { available });
+  }
+
+  uploadDocuments(request: UploadLivreurDocumentsRequest): Observable<LivreurResponse> {
+    const formData = new FormData();
+    if (request.photo) formData.append('photo', request.photo);
+    if (request.idDocumentFront) formData.append('idDocumentFront', request.idDocumentFront);
+    if (request.idDocumentBack) formData.append('idDocumentBack', request.idDocumentBack);
+    if (request.selfieWithId) formData.append('selfieWithId', request.selfieWithId);
+    return this.http.put<LivreurResponse>(`${environment.apiBaseUrl}/livreur/documents`, formData);
+  }
+
+  // --- Demandes de livraison (diffusion) ---
+
+  listDeliveryRequests(): Observable<DeliveryRequestResponse[]> {
+    return this.http.get<DeliveryRequestResponse[]>(`${environment.apiBaseUrl}/livreur/demandes`);
+  }
+
+  acceptDeliveryRequest(requestId: number): Observable<DeliveryRequestResponse> {
+    return this.http.post<DeliveryRequestResponse>(`${environment.apiBaseUrl}/livreur/demandes/${requestId}/accepter`, {});
+  }
+
+  // --- Vendeur : diffusion aux livreurs disponibles a proximite ---
+
+  listEligibleLivreurs(orderId: number): Observable<EligibleLivreurResponse[]> {
+    return this.http.get<EligibleLivreurResponse[]>(`${this.vendorOrdersUrl}/${orderId}/livreurs-eligibles`);
+  }
+
+  broadcastDeliveryRequest(orderId: number, livreurIds: number[]): Observable<DeliveryRequestResponse[]> {
+    return this.http.post<DeliveryRequestResponse[]>(`${this.vendorOrdersUrl}/${orderId}/diffuser`, { livreurIds });
   }
 
   // --- Admin ---

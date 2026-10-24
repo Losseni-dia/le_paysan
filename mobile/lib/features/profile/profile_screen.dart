@@ -17,11 +17,13 @@ import '../admin/admin_users_screen.dart';
 import '../auth/login/login_screen.dart';
 import '../livreur/livreur_home_screen.dart';
 import '../orders/orders_screen.dart';
-import '../vendor/vendor_livreurs_screen.dart';
 import '../vendor/vendor_orders_screen.dart';
 import '../vendor/vendor_products_screen.dart';
+import 'become_livreur_screen.dart';
 import 'change_password_screen.dart';
 import 'edit_profile_screen.dart';
+import 'shop_request_screen.dart';
+import '../../shared/widgets/notification_bell.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -32,7 +34,10 @@ class ProfileScreen extends StatelessWidget {
     final user = auth.currentUser;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profil')),
+      appBar: AppBar(
+        title: const Text('Profil'),
+        actions: user != null ? const [NotificationBell()] : null,
+      ),
       body: user == null ? _buildLoggedOut(context) : _buildLoggedIn(context, user),
     );
   }
@@ -239,15 +244,6 @@ class ProfileScreen extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => const VendorProductsScreen()),
                     ),
                   ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.badge_outlined),
-                    title: const Text('Ma boutique - Livreurs'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const VendorLivreursScreen()),
-                    ),
-                  ),
                 ],
                 if (isVendeur && isLivreur) const Divider(height: 1),
                 if (isLivreur)
@@ -257,6 +253,45 @@ class ProfileScreen extends StatelessWidget {
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const LivreurHomeScreen()),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+        if (!isVendeur || !isLivreur) ...[
+          const SizedBox(height: 20),
+          const Text(
+            'Rejoindre Le Paysan',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black54),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: Column(
+              children: [
+                if (!isVendeur)
+                  ListTile(
+                    leading: const Icon(Icons.storefront_outlined, color: Color(0xFF1B5E3A)),
+                    title: const Text(
+                      'Devenir vendeur',
+                      style: TextStyle(color: Color(0xFF1B5E3A), fontWeight: FontWeight.w600),
+                    ),
+                    trailing: const Icon(Icons.chevron_right, color: Color(0xFF1B5E3A)),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const ShopRequestScreen()),
+                    ),
+                  ),
+                if (!isVendeur && !isLivreur) const Divider(height: 1),
+                if (!isLivreur)
+                  ListTile(
+                    leading: const Icon(Icons.delivery_dining_outlined, color: Color(0xFF1B5E3A)),
+                    title: const Text(
+                      'Devenir livreur',
+                      style: TextStyle(color: Color(0xFF1B5E3A), fontWeight: FontWeight.w600),
+                    ),
+                    trailing: const Icon(Icons.chevron_right, color: Color(0xFF1B5E3A)),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const BecomeLivreurScreen()),
                     ),
                   ),
               ],

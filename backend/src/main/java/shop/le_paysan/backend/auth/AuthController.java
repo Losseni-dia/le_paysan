@@ -30,6 +30,13 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
     }
 
+    /** Inscription volontaire livreur (independante de toute boutique) : cf. demande utilisateur. */
+    @PostMapping("/register-livreur")
+    public ResponseEntity<AuthResponse> registerLivreur(
+            @Valid @RequestBody shop.le_paysan.backend.auth.dto.RegisterLivreurRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerLivreur(request));
+    }
+
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);

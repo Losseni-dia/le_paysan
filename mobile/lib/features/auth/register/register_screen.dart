@@ -5,10 +5,16 @@ import 'package:provider/provider.dart';
 import '../../../core/auth/auth_service.dart';
 import '../../../core/cart/cart_service.dart';
 import '../../../shared/widgets/auth_card_scaffold.dart';
+import '../../profile/shop_request_screen.dart';
 import '../security_selfie/security_selfie_setup_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  /// Si vrai, enchaine vers le formulaire de demande de boutique apres l'inscription
+  /// (raccourci "Devenir vendeur" depuis l'ecran de connexion : il faut un compte avant
+  /// de pouvoir soumettre une demande de boutique).
+  final bool redirectToShopRequest;
+
+  const RegisterScreen({super.key, this.redirectToShopRequest = false});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -78,6 +84,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) return;
       await context.read<CartService>().fetch().catchError((_) {});
       if (mounted) {
+        if (widget.redirectToShopRequest) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const ShopRequestScreen()),
+          );
+          return;
+        }
         final emailProvided = _emailController.text.trim().isNotEmpty;
         if (emailProvided) {
           Navigator.of(context).popUntil((route) => route.isFirst);

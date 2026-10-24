@@ -8,8 +8,11 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import shop.le_paysan.backend.user.User;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
@@ -68,6 +71,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT o.status, COUNT(o) FROM Order o GROUP BY o.status")
     List<Object[]> countGroupByStatus();
+
+    /** Cf. diffusion de livraison : assignation atomique, gagne la course entre livreurs qui
+     * acceptent simultanement la meme commande (0 ligne affectee = deja prise par un autre). */
+    @Modifying
+    @Query("UPDATE Order o SET o.assignedLivreur = :livreur, o.updatedAt = CURRENT_TIMESTAMP "
+            + "WHERE o.id = :orderId AND o.assignedLivreur IS NULL")
+    int assignLivreurIfUnassigned(@Param("orderId") Long orderId, @Param("livreur") User livreur);
 
     @Query("""
             SELECT o.shop.name, SUM(o.totalAmount) FROM Order o

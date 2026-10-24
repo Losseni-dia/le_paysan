@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../api/api_client.dart';
 import 'livreur_order.dart';
@@ -19,6 +20,26 @@ class LivreurService {
       '/livreur/disponibilite',
       data: {'available': available},
     );
+    return LivreurProfile.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Soumission/remplacement des documents KYC par le livreur lui-meme (inscription volontaire).
+  Future<LivreurProfile> uploadDocuments({
+    XFile? photo,
+    XFile? idDocumentFront,
+    XFile? idDocumentBack,
+    XFile? selfieWithId,
+  }) async {
+    final formData = FormData.fromMap({
+      if (photo != null) 'photo': await MultipartFile.fromFile(photo.path, filename: 'photo.jpg'),
+      if (idDocumentFront != null)
+        'idDocumentFront': await MultipartFile.fromFile(idDocumentFront.path, filename: 'recto.jpg'),
+      if (idDocumentBack != null)
+        'idDocumentBack': await MultipartFile.fromFile(idDocumentBack.path, filename: 'verso.jpg'),
+      if (selfieWithId != null)
+        'selfieWithId': await MultipartFile.fromFile(selfieWithId.path, filename: 'selfie.jpg'),
+    });
+    final response = await _dio.put('/livreur/documents', data: formData);
     return LivreurProfile.fromJson(response.data as Map<String, dynamic>);
   }
 

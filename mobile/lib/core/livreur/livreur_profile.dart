@@ -5,6 +5,10 @@ class LivreurProfile {
   final String lastName;
   final String? phone;
   final String? city;
+  final String? photoUrl;
+  final String? idDocumentFrontUrl;
+  final String? idDocumentBackUrl;
+  final String? selfieWithIdUrl;
   final String kycStatus;
   final bool enabled;
   final bool available;
@@ -17,11 +21,18 @@ class LivreurProfile {
     required this.lastName,
     required this.phone,
     required this.city,
+    this.photoUrl,
+    this.idDocumentFrontUrl,
+    this.idDocumentBackUrl,
+    this.selfieWithIdUrl,
     required this.kycStatus,
     required this.enabled,
     required this.available,
     required this.deliveryCount,
   });
+
+  bool get hasAllDocuments =>
+      photoUrl != null && idDocumentFrontUrl != null && idDocumentBackUrl != null && selfieWithIdUrl != null;
 
   factory LivreurProfile.fromJson(Map<String, dynamic> json) {
     return LivreurProfile(
@@ -31,6 +42,10 @@ class LivreurProfile {
       lastName: json['lastName'] as String,
       phone: json['phone'] as String?,
       city: json['city'] as String?,
+      photoUrl: json['photoUrl'] as String?,
+      idDocumentFrontUrl: json['idDocumentFrontUrl'] as String?,
+      idDocumentBackUrl: json['idDocumentBackUrl'] as String?,
+      selfieWithIdUrl: json['selfieWithIdUrl'] as String?,
       kycStatus: json['kycStatus'] as String,
       enabled: json['enabled'] as bool,
       available: json['available'] as bool,

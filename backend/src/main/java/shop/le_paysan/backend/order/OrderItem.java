@@ -54,4 +54,15 @@ public class OrderItem {
 
     @Column(name = "delivery_address")
     private String deliveryAddress;
+
+    /** Copie des coordonnees du panier (cart_items) : necessaire pour matcher les livreurs
+     * disponibles a proximite lors de la diffusion de la demande de livraison. */
+    @Column(name = "delivery_city_name")
+    private String deliveryCityName;
+
+    @Column(name = "delivery_city_lat")
+    private BigDecimal deliveryCityLat;
+
+    @Column(name = "delivery_city_lng")
+    private BigDecimal deliveryCityLng;
 }

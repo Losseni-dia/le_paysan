@@ -3,6 +3,7 @@ package shop.le_paysan.backend.user;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,8 +13,11 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.validation.Valid;
+import shop.le_paysan.backend.auth.AuthService;
 import shop.le_paysan.backend.auth.SecurityUser;
+import shop.le_paysan.backend.auth.dto.AuthResponse;
 import shop.le_paysan.backend.common.FileStorageService;
+import shop.le_paysan.backend.user.dto.BecomeLivreurRequest;
 import shop.le_paysan.backend.user.dto.ChangePasswordRequest;
 import shop.le_paysan.backend.user.dto.UpdateProfileRequest;
 import shop.le_paysan.backend.user.dto.UserResponse;
@@ -25,11 +29,17 @@ public class UserController {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
-    public UserController(UserRepository userRepository, FileStorageService fileStorageService, PasswordEncoder passwordEncoder) {
+    public UserController(
+            UserRepository userRepository,
+            FileStorageService fileStorageService,
+            PasswordEncoder passwordEncoder,
+            AuthService authService) {
         this.userRepository = userRepository;
         this.fileStorageService = fileStorageService;
         this.passwordEncoder = passwordEncoder;
+        this.authService = authService;
     }
 
     @GetMapping("/me")
@@ -71,6 +81,16 @@ public class UserController {
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         user.setUpdatedAt(java.time.LocalDateTime.now());
         userRepository.save(user);
+    }
+
+    /**
+     * Passage du compte connecte au role livreur (bouton "Devenir livreur" du profil) : pas de
+     * nouvelle inscription, pas de resaisie du nom/prenom (cf. demande utilisateur).
+     */
+    @PostMapping("/me/devenir-livreur")
+    public AuthResponse becomeLivreur(
+            @AuthenticationPrincipal SecurityUser principal, @Valid @RequestBody BecomeLivreurRequest request) {
+        return authService.becomeLivreur(principal.getUser(), request);
     }
 
     @PutMapping(value = "/me/security-selfie", consumes = "multipart/form-data")

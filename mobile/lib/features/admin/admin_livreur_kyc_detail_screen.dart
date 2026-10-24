@@ -180,7 +180,6 @@ class _AdminLivreurKycDetailScreenState extends State<AdminLivreurKycDetailScree
         _infoRow('Identifiant', '@${livreur.username}'),
         if (livreur.phone != null) _infoRow('Téléphone', livreur.phone!),
         if (livreur.city != null) _infoRow('Ville', livreur.city!),
-        if (livreur.shopName != null) _infoRow('Boutique', livreur.shopName!),
         const Divider(height: 24),
         const Text('Documents', style: TextStyle(fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),

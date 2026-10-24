@@ -21,9 +21,7 @@ import shop.le_paysan.backend.cart.CartItemRepository;
 import shop.le_paysan.backend.cart.CartRepository;
 import shop.le_paysan.backend.commission.CommissionSettingsRepository;
 import shop.le_paysan.backend.common.notification.NotificationService;
-import shop.le_paysan.backend.livreur.LivreurService;
 import shop.le_paysan.backend.order.dto.AdminOrderResponse;
-import shop.le_paysan.backend.order.dto.BulkAssignLivreurResult;
 import shop.le_paysan.backend.order.dto.OrderResponse;
 import shop.le_paysan.backend.order.dto.OrderStatusHistoryResponse;
 import shop.le_paysan.backend.product.Product;
@@ -43,7 +41,6 @@ public class OrderService {
     private final OrderStatusHistoryRepository historyRepository;
     private final CommissionSettingsRepository commissionSettingsRepository;
     private final NotificationService notificationService;
-    private final LivreurService livreurService;
     private final ShopDeliveryTierService deliveryTierService;
     private final Random random = new Random();
 
@@ -54,7 +51,6 @@ public class OrderService {
             OrderStatusHistoryRepository historyRepository,
             CommissionSettingsRepository commissionSettingsRepository,
             NotificationService notificationService,
-            LivreurService livreurService,
             ShopDeliveryTierService deliveryTierService) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
@@ -62,7 +58,6 @@ public class OrderService {
         this.historyRepository = historyRepository;
         this.commissionSettingsRepository = commissionSettingsRepository;
         this.notificationService = notificationService;
-        this.livreurService = livreurService;
         this.deliveryTierService = deliveryTierService;
     }
 
@@ -138,6 +133,9 @@ public class OrderService {
                 orderItem.setDeliveryMode(cartItem.getDeliveryMode());
                 orderItem.setDeliveryPrice(deliveryPrice);
                 orderItem.setDeliveryAddress(fullDeliveryAddress(cartItem));
+                orderItem.setDeliveryCityName(cartItem.getDeliveryCityName());
+                orderItem.setDeliveryCityLat(cartItem.getDeliveryCityLat());
+                orderItem.setDeliveryCityLng(cartItem.getDeliveryCityLng());
                 order.getItems().add(orderItem);
             }
 
@@ -299,8 +297,7 @@ public class OrderService {
     }
 
     @Transactional
-    public AdminOrderResponse markNextStatusForVendor(
-            Shop shop, Long orderId, Long livreurId, String proofType, String proofUrl) {
+    public AdminOrderResponse markNextStatusForVendor(Shop shop, Long orderId, String proofType, String proofUrl) {
         Order order = findOwnedByShop(shop, orderId);
         String newStatus = computeNextStatus(order);
         if (newStatus == null) {
@@ -310,19 +307,8 @@ public class OrderService {
         order.setStatus(newStatus);
         order.setUpdatedAt(LocalDateTime.now());
 
-        // Cf. remarque utilisateur (plan Phase 2) : seules les commandes confirmees EXPEDIEE
-        // (livraison a domicile) peuvent etre assignees a un livreur, pas le retrait boutique.
-        if (Order.STATUS_EXPEDIEE.equals(newStatus) && livreurId != null) {
-            User livreur = livreurService.requireBelongsToShop(shop, livreurId);
-            order.setAssignedLivreur(livreur);
-            notificationService.notify(
-                    livreur,
-                    "DELIVERY_ASSIGNED",
-                    "Nouvelle livraison",
-                    "La commande " + order.getOrderNumber() + " vous a été assignée.",
-                    "/livreur/livraisons");
-        }
-
+        // Cf. demande utilisateur : l'assignation d'un livreur se fait desormais par diffusion
+        // (DeliveryRequestService) a plusieurs livreurs disponibles a proximite, pas ici.
         orderRepository.save(order);
 
         // Cf. remarque utilisateur : le vendeur peut livrer lui-meme (pas de livreur assigne) et
@@ -373,38 +359,6 @@ public class OrderService {
             case Order.STATUS_ANNULEE -> prefix + "a été annulée.";
             default -> prefix + "a été mise à jour.";
         };
-    }
-
-    /** Assigne un livreur a plusieurs commandes deja Expediees en une seule action. */
-    @Transactional
-    public List<BulkAssignLivreurResult> bulkAssignLivreur(Shop shop, List<Long> orderIds, Long livreurId) {
-        User livreur = livreurService.requireBelongsToShop(shop, livreurId);
-        List<BulkAssignLivreurResult> results = new java.util.ArrayList<>();
-        for (Long orderId : orderIds) {
-            Order order;
-            try {
-                order = findOwnedByShop(shop, orderId);
-            } catch (ResponseStatusException e) {
-                results.add(new BulkAssignLivreurResult(orderId, null, false, "Commande introuvable"));
-                continue;
-            }
-            if (!Order.STATUS_EXPEDIEE.equals(order.getStatus())) {
-                results.add(new BulkAssignLivreurResult(
-                        orderId, order.getOrderNumber(), false, "La commande n'est pas au statut Expédiée"));
-                continue;
-            }
-            order.setAssignedLivreur(livreur);
-            order.setUpdatedAt(LocalDateTime.now());
-            orderRepository.save(order);
-            notificationService.notify(
-                    livreur,
-                    "DELIVERY_ASSIGNED",
-                    "Nouvelle livraison",
-                    "La commande " + order.getOrderNumber() + " vous a été assignée.",
-                    "/livreur/livraisons");
-            results.add(new BulkAssignLivreurResult(orderId, order.getOrderNumber(), true, "Livreur assigné"));
-        }
-        return results;
     }
 
     private static final List<String> LIVREUR_ACTIVE_STATUSES =

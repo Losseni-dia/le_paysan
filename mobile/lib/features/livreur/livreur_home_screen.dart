@@ -4,6 +4,8 @@ import '../../core/livreur/livreur_order.dart';
 import '../../core/livreur/livreur_profile.dart';
 import '../../core/livreur/livreur_service.dart';
 import '../../core/order/order_status_labels.dart';
+import 'livreur_demandes_screen.dart';
+import 'livreur_documents_screen.dart';
 import 'livreur_order_detail_screen.dart';
 
 class LivreurHomeScreen extends StatefulWidget {
@@ -58,15 +60,25 @@ class _LivreurHomeScreenState extends State<LivreurHomeScreen> {
     }
   }
 
+  Future<void> _openDocuments() async {
+    final profile = _profile;
+    if (profile == null) return;
+    final updated = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => LivreurDocumentsScreen(profile: profile)),
+    );
+    if (updated == true) _loadProfile();
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Espace livreur'),
           bottom: const TabBar(
             tabs: [
+              Tab(text: 'Demandes'),
               Tab(text: 'Mes livraisons'),
               Tab(text: 'Historique'),
             ],
@@ -78,6 +90,7 @@ class _LivreurHomeScreenState extends State<LivreurHomeScreen> {
             const Expanded(
               child: TabBarView(
                 children: [
+                  LivreurDemandesScreen(),
                   _LivreurOrdersTab(status: null),
                   _LivreurOrdersTab(status: 'LIVREE'),
                 ],
@@ -116,11 +129,23 @@ class _LivreurHomeScreenState extends State<LivreurHomeScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               width: double.infinity,
-              child: Text(
-                profile.kycStatus == 'REJETE'
-                    ? "Votre dossier n'a pas été validé. Contactez le support."
-                    : 'Votre dossier est en cours de vérification.',
-                style: const TextStyle(color: Color(0xFF8A5A00)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    !profile.hasAllDocuments
+                        ? 'Soumettez vos documents pour faire valider votre dossier.'
+                        : profile.kycStatus == 'REJETE'
+                        ? "Votre dossier n'a pas été validé. Contactez le support."
+                        : 'Votre dossier est en cours de vérification.',
+                    style: const TextStyle(color: Color(0xFF8A5A00)),
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton(
+                    onPressed: _openDocuments,
+                    child: Text(profile.hasAllDocuments ? 'Mettre à jour mes documents' : 'Soumettre mes documents'),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 12),
@@ -324,6 +349,14 @@ class _LivreurOrderCard extends StatelessWidget {
                   style: const TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ],
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerRight,
+                child: OutlinedButton(
+                  onPressed: onTap,
+                  child: const Text('Voir'),
+                ),
+              ),
             ],
           ),
         ),

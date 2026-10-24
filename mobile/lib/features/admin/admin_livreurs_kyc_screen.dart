@@ -161,7 +161,7 @@ class _AdminLivreursKycScreenState extends State<AdminLivreursKycScreen> {
                     ),
                 ],
               ),
-              subtitle: Text(livreur.shopName ?? 'Boutique inconnue'),
+              subtitle: Text(livreur.city ?? 'Ville inconnue'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () async {
                 await Navigator.of(context).push(

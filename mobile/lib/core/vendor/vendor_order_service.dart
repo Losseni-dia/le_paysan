@@ -4,7 +4,6 @@ import 'package:dio/dio.dart';
 
 import '../api/api_client.dart';
 import '../livreur/livreur_order.dart';
-import '../livreur/livreur_profile.dart';
 
 class VendorOrderService {
   final Dio _dio = ApiClient.instance.dio;
@@ -22,22 +21,13 @@ class VendorOrderService {
     return LivreurOrder.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<List<LivreurProfile>> listLivreurs() async {
-    final response = await _dio.get('/vendor/livreurs');
-    return (response.data as List<dynamic>)
-        .map((e) => LivreurProfile.fromJson(e as Map<String, dynamic>))
-        .toList();
-  }
-
   Future<LivreurOrder> advanceStatus(
     int id, {
-    int? livreurId,
     String? proofType,
     Uint8List? proofBytes,
     String? proofFilename,
   }) async {
     final formData = FormData.fromMap({
-      'livreurId': ?livreurId,
       if (proofType != null && proofBytes != null) ...{
         'proofType': proofType,
         'proof': MultipartFile.fromBytes(proofBytes, filename: proofFilename ?? 'preuve'),

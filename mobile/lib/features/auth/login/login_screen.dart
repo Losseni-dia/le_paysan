@@ -7,6 +7,7 @@ import '../../../core/cart/cart_service.dart';
 import '../../../shared/widgets/auth_card_scaffold.dart';
 import '../password_recovery/password_recovery_screen.dart';
 import '../register/register_screen.dart';
+import '../register_livreur/register_livreur_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -145,6 +146,31 @@ class _LoginScreenState extends State<LoginScreen> {
                 context,
               ).push(MaterialPageRoute(builder: (_) => const RegisterScreen())),
               child: const Text("Pas encore de compte ? S'inscrire"),
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(backgroundColor: authPrimary),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const RegisterScreen(redirectToShopRequest: true),
+                      ),
+                    ),
+                    child: const Text('Devenir vendeur'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(backgroundColor: authPrimary),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const RegisterLivreurScreen()),
+                    ),
+                    child: const Text('Devenir livreur'),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

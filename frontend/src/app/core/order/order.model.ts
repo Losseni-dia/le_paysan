@@ -67,10 +67,3 @@ export interface AdminOrderResponse {
   assignedLivreurName: string | null;
   createdAt: string;
 }
-
-export interface BulkAssignLivreurResult {
-  orderId: number;
-  orderNumber: string | null;
-  success: boolean;
-  message: string;
-}

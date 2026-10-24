@@ -58,6 +58,18 @@ public class User {
     @Column(length = 100)
     private String city;
 
+    /** Coordonnees de la localite du livreur (inscription volontaire), pour le matching
+     * proximite aux commandes a livrer. Non pertinent pour les autres roles. */
+    @Column(name = "city_lat")
+    private java.math.BigDecimal cityLat;
+
+    @Column(name = "city_lng")
+    private java.math.BigDecimal cityLng;
+
+    /** Disponibilite declaree par le livreur lui-meme (independant de toute boutique). */
+    @Column(nullable = false)
+    private boolean available = true;
+
     @Column(name = "photo_url")
     private String photoUrl;
 

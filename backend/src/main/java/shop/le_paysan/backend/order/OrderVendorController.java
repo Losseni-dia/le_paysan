@@ -21,9 +21,11 @@ import org.springframework.web.server.ResponseStatusException;
 import jakarta.validation.Valid;
 import shop.le_paysan.backend.auth.SecurityUser;
 import shop.le_paysan.backend.common.FileStorageService;
+import shop.le_paysan.backend.delivery.DeliveryRequestService;
+import shop.le_paysan.backend.delivery.dto.BroadcastDeliveryRequest;
+import shop.le_paysan.backend.delivery.dto.DeliveryRequestResponse;
+import shop.le_paysan.backend.delivery.dto.EligibleLivreurResponse;
 import shop.le_paysan.backend.order.dto.AdminOrderResponse;
-import shop.le_paysan.backend.order.dto.BulkAssignLivreurRequest;
-import shop.le_paysan.backend.order.dto.BulkAssignLivreurResult;
 import shop.le_paysan.backend.shop.Shop;
 import shop.le_paysan.backend.shop.ShopRepository;
 
@@ -35,11 +37,17 @@ public class OrderVendorController {
     private final OrderService service;
     private final ShopRepository shopRepository;
     private final FileStorageService fileStorageService;
+    private final DeliveryRequestService deliveryRequestService;
 
-    public OrderVendorController(OrderService service, ShopRepository shopRepository, FileStorageService fileStorageService) {
+    public OrderVendorController(
+            OrderService service,
+            ShopRepository shopRepository,
+            FileStorageService fileStorageService,
+            DeliveryRequestService deliveryRequestService) {
         this.service = service;
         this.shopRepository = shopRepository;
         this.fileStorageService = fileStorageService;
+        this.deliveryRequestService = deliveryRequestService;
     }
 
     @GetMapping
@@ -65,7 +73,6 @@ public class OrderVendorController {
     public AdminOrderResponse markNextStatus(
             @AuthenticationPrincipal SecurityUser principal,
             @PathVariable Long id,
-            @RequestParam(required = false) Long livreurId,
             @RequestParam(required = false) String proofType,
             @RequestParam(required = false) MultipartFile proof) {
         String proofUrl = null;
@@ -77,13 +84,23 @@ public class OrderVendorController {
         } else {
             proofType = OrderStatusHistory.PROOF_NONE;
         }
-        return service.markNextStatusForVendor(shopOf(principal), id, livreurId, proofType, proofUrl);
+        return service.markNextStatusForVendor(shopOf(principal), id, proofType, proofUrl);
     }
 
-    @PostMapping("/assigner-livreur")
-    public List<BulkAssignLivreurResult> bulkAssignLivreur(
-            @AuthenticationPrincipal SecurityUser principal, @Valid @RequestBody BulkAssignLivreurRequest request) {
-        return service.bulkAssignLivreur(shopOf(principal), request.orderIds(), request.livreurId());
+    /** Livreurs disponibles a proximite de la livraison de cette commande (cf. diffusion). */
+    @GetMapping("/{id}/livreurs-eligibles")
+    public List<EligibleLivreurResponse> eligibleLivreurs(
+            @AuthenticationPrincipal SecurityUser principal, @PathVariable Long id) {
+        return deliveryRequestService.listEligibleLivreurs(shopOf(principal), id);
+    }
+
+    /** Diffuse la demande de livraison a plusieurs livreurs : le premier a accepter l'emporte. */
+    @PostMapping("/{id}/diffuser")
+    public List<DeliveryRequestResponse> broadcast(
+            @AuthenticationPrincipal SecurityUser principal,
+            @PathVariable Long id,
+            @Valid @RequestBody BroadcastDeliveryRequest request) {
+        return deliveryRequestService.broadcast(shopOf(principal), id, request.livreurIds());
     }
 
     private Shop shopOf(SecurityUser principal) {

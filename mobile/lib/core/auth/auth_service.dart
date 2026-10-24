@@ -70,6 +70,64 @@ class AuthService extends ChangeNotifier {
     await _applyAuthResponse(response.data as Map<String, dynamic>);
   }
 
+  /// Inscription volontaire livreur (independante de toute boutique) : cf. demande utilisateur.
+  Future<void> registerLivreur({
+    required String username,
+    required String password,
+    required String firstName,
+    required String lastName,
+    String? phone,
+    required String city,
+    required double cityLat,
+    required double cityLng,
+    required bool acceptCgu,
+    required bool acceptCgv,
+    required bool acceptPrivacy,
+  }) async {
+    final response = await _dio.post(
+      '/auth/register-livreur',
+      data: {
+        'username': username,
+        'password': password,
+        'firstName': firstName,
+        'lastName': lastName,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
+        'city': city,
+        'cityLat': cityLat,
+        'cityLng': cityLng,
+        'acceptCgu': acceptCgu,
+        'acceptCgv': acceptCgv,
+        'acceptPrivacy': acceptPrivacy,
+      },
+    );
+    await _applyAuthResponse(response.data as Map<String, dynamic>);
+  }
+
+  /// Passage du compte connecte au role livreur (bouton "Devenir livreur" du profil) : pas de
+  /// nouvelle inscription, pas de resaisie du nom/prenom (cf. demande utilisateur - eviter le
+  /// chevauchement d'informations entre les deux comptes).
+  Future<void> becomeLivreur({
+    required String city,
+    required double cityLat,
+    required double cityLng,
+    required bool acceptCgu,
+    required bool acceptCgv,
+    required bool acceptPrivacy,
+  }) async {
+    final response = await _dio.post(
+      '/users/me/devenir-livreur',
+      data: {
+        'city': city,
+        'cityLat': cityLat,
+        'cityLng': cityLng,
+        'acceptCgu': acceptCgu,
+        'acceptCgv': acceptCgv,
+        'acceptPrivacy': acceptPrivacy,
+      },
+    );
+    await _applyAuthResponse(response.data as Map<String, dynamic>);
+  }
+
   /// Flux email classique (cf. docs UC-01) : lien de reinitialisation envoye par email.
   /// Reserve aux comptes ayant un email renseigne - cf. [accountRecoveryRequest] sinon.
   Future<void> forgotPassword(String email) async {

@@ -15,11 +15,13 @@ import org.springframework.web.server.ResponseStatusException;
 
 import shop.le_paysan.backend.auth.dto.AuthResponse;
 import shop.le_paysan.backend.auth.dto.LoginRequest;
+import shop.le_paysan.backend.auth.dto.RegisterLivreurRequest;
 import shop.le_paysan.backend.auth.dto.RegisterRequest;
 import shop.le_paysan.backend.user.Role;
 import shop.le_paysan.backend.user.RoleRepository;
 import shop.le_paysan.backend.user.User;
 import shop.le_paysan.backend.user.UserRepository;
+import shop.le_paysan.backend.user.dto.BecomeLivreurRequest;
 import shop.le_paysan.backend.user.dto.UserResponse;
 
 @Service
@@ -86,6 +88,80 @@ public class AuthService {
                 .findByName(Role.USER)
                 .orElseThrow(() -> new IllegalStateException("Role ROLE_USER manquant en base (cf. sql/schema.sql)"));
         user.getRoles().add(userRole);
+
+        user = userRepository.save(user);
+
+        return buildAuthResponse(user);
+    }
+
+    /** Inscription volontaire livreur (independante de toute boutique) : cf. demande utilisateur. */
+    @Transactional
+    public AuthResponse registerLivreur(RegisterLivreurRequest request) {
+        if (userRepository.existsByUsername(request.username())) {
+            throw new ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "Ce login est deja utilise");
+        }
+
+        User user = new User();
+        user.setUsername(request.username());
+        user.setPasswordHash(passwordEncoder.encode(request.password()));
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setPhone(blankToNull(request.phone()));
+        user.setCity(request.city());
+        user.setCityLat(request.cityLat());
+        user.setCityLng(request.cityLng());
+        user.setAvailable(true);
+        user.setKycStatus(User.KYC_STATUS_EN_ATTENTE);
+        user.setAuthProvider(User.PROVIDER_LOCAL);
+
+        LocalDateTime now = LocalDateTime.now();
+        user.setCguAcceptedAt(now);
+        user.setCguVersion(LEGAL_DOCS_VERSION);
+        user.setCgvAcceptedAt(now);
+        user.setCgvVersion(LEGAL_DOCS_VERSION);
+        user.setPrivacyAcceptedAt(now);
+        user.setPrivacyVersion(LEGAL_DOCS_VERSION);
+
+        Role livreurRole = roleRepository
+                .findByName(Role.LIVREUR)
+                .orElseThrow(() -> new IllegalStateException("Role ROLE_LIVREUR manquant en base (cf. sql/schema.sql)"));
+        user.getRoles().add(livreurRole);
+
+        user = userRepository.save(user);
+
+        return buildAuthResponse(user);
+    }
+
+    /**
+     * Passage d'un compte deja existant (acheteur/vendeur) au role livreur : pas de nouvelle
+     * inscription, pas de resaisie du nom/prenom/telephone (cf. demande utilisateur - eviter le
+     * chevauchement d'informations entre les deux comptes).
+     */
+    @Transactional
+    public AuthResponse becomeLivreur(User user, BecomeLivreurRequest request) {
+        boolean alreadyLivreur = user.getRoles().stream().anyMatch(r -> Role.LIVREUR.equals(r.getName()));
+        if (alreadyLivreur) {
+            throw new ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "Vous êtes déjà livreur");
+        }
+
+        user.setCity(request.city());
+        user.setCityLat(request.cityLat());
+        user.setCityLng(request.cityLng());
+        user.setAvailable(true);
+        user.setKycStatus(User.KYC_STATUS_EN_ATTENTE);
+
+        LocalDateTime now = LocalDateTime.now();
+        user.setCguAcceptedAt(now);
+        user.setCguVersion(LEGAL_DOCS_VERSION);
+        user.setCgvAcceptedAt(now);
+        user.setCgvVersion(LEGAL_DOCS_VERSION);
+        user.setPrivacyAcceptedAt(now);
+        user.setPrivacyVersion(LEGAL_DOCS_VERSION);
+
+        Role livreurRole = roleRepository
+                .findByName(Role.LIVREUR)
+                .orElseThrow(() -> new IllegalStateException("Role ROLE_LIVREUR manquant en base (cf. sql/schema.sql)"));
+        user.getRoles().add(livreurRole);
 
         user = userRepository.save(user);
 

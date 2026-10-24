@@ -3,8 +3,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/delivery/delivery_request_service.dart';
+import '../../core/delivery/eligible_livreur.dart';
 import '../../core/livreur/livreur_order.dart';
-import '../../core/livreur/livreur_profile.dart';
 import '../../core/order/order_status_labels.dart';
 import '../../core/product/product_service.dart';
 import '../../core/vendor/vendor_order_service.dart';
@@ -22,12 +23,16 @@ class VendorOrderDetailScreen extends StatefulWidget {
 
 class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
   final VendorOrderService _vendorOrderService = VendorOrderService();
+  final DeliveryRequestService _deliveryRequestService = DeliveryRequestService();
   final ImagePicker _imagePicker = ImagePicker();
   final SignaturePadController _signatureController = SignaturePadController();
 
   LivreurOrder? _order;
-  List<LivreurProfile> _livreurs = [];
-  LivreurProfile? _selectedLivreur;
+  List<EligibleLivreur> _eligibleLivreurs = [];
+  final Set<int> _selectedLivreurIds = {};
+  bool _loadingEligible = false;
+  bool _broadcasting = false;
+  bool _broadcastSent = false;
   String? _proofMode;
   XFile? _proofPhoto;
   bool _loading = true;
@@ -53,18 +58,30 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
     });
     try {
       final order = await _vendorOrderService.getOrder(widget.orderId);
-      List<LivreurProfile> livreurs = [];
-      if (order.status == 'EN_PREPARATION') {
-        livreurs = await _vendorOrderService.listLivreurs();
+      setState(() => _order = order);
+      if (_canBroadcast(order)) {
+        await _loadEligibleLivreurs();
       }
-      setState(() {
-        _order = order;
-        _livreurs = livreurs;
-      });
     } catch (_) {
       setState(() => _errorMessage = 'Impossible de charger cette commande.');
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  bool _canBroadcast(LivreurOrder order) {
+    return order.status == 'EXPEDIEE' && order.assignedLivreurId == null;
+  }
+
+  Future<void> _loadEligibleLivreurs() async {
+    setState(() => _loadingEligible = true);
+    try {
+      final livreurs = await _deliveryRequestService.listEligibleLivreurs(widget.orderId);
+      setState(() => _eligibleLivreurs = livreurs);
+    } catch (_) {
+      // Pas bloquant : la section affichera simplement une liste vide.
+    } finally {
+      if (mounted) setState(() => _loadingEligible = false);
     }
   }
 
@@ -88,23 +105,19 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
     try {
       final order = await _vendorOrderService.advanceStatus(
         widget.orderId,
-        livreurId: _selectedLivreur?.id,
         proofType: proofBytes != null ? _proofMode : null,
         proofBytes: proofBytes,
         proofFilename: filename,
       );
-      List<LivreurProfile> livreurs = _livreurs;
-      if (order.status == 'EN_PREPARATION') {
-        livreurs = await _vendorOrderService.listLivreurs();
-      }
       setState(() {
         _order = order;
-        _livreurs = livreurs;
-        _selectedLivreur = null;
         _proofMode = null;
         _proofPhoto = null;
         _signatureController.clear();
       });
+      if (_canBroadcast(order)) {
+        await _loadEligibleLivreurs();
+      }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -113,6 +126,37 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
       }
     } finally {
       if (mounted) setState(() => _actionInProgress = false);
+    }
+  }
+
+  void _toggleLivreurSelection(int id) {
+    setState(() {
+      if (_selectedLivreurIds.contains(id)) {
+        _selectedLivreurIds.remove(id);
+      } else {
+        _selectedLivreurIds.add(id);
+      }
+    });
+  }
+
+  Future<void> _confirmBroadcast() async {
+    if (_selectedLivreurIds.isEmpty) return;
+    setState(() => _broadcasting = true);
+    try {
+      await _deliveryRequestService.broadcast(widget.orderId, _selectedLivreurIds.toList());
+      setState(() {
+        _broadcastSent = true;
+        _selectedLivreurIds.clear();
+      });
+      await _loadEligibleLivreurs();
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Impossible de diffuser cette demande.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _broadcasting = false);
     }
   }
 
@@ -160,6 +204,13 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
             ),
           ],
         ),
+        if (order.assignedLivreurName != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Livreur assigné : ${order.assignedLivreurName}',
+            style: const TextStyle(fontSize: 13, color: Colors.black54),
+          ),
+        ],
         const Divider(height: 24),
         const Text('Articles', style: TextStyle(fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
@@ -186,6 +237,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
         ),
         const SizedBox(height: 24),
         ..._buildActionSection(order.status),
+        if (_canBroadcast(order)) ..._buildBroadcastSection(),
         if (order.deliveryProof != null) ..._buildProofSection(order.deliveryProof!),
       ],
     );
@@ -201,22 +253,9 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
         return [_actionButton('Marquer comme prête', _advanceStatus)];
       }
       return [
-        const Text('Assigner un livreur (optionnel)', style: TextStyle(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<LivreurProfile?>(
-          initialValue: _selectedLivreur,
-          isExpanded: true,
-          decoration: const InputDecoration(labelText: 'Livreur'),
-          items: [
-            const DropdownMenuItem(value: null, child: Text('Aucun')),
-            ..._livreurs.map(
-              (l) => DropdownMenuItem(
-                value: l,
-                child: Text('${l.firstName} ${l.lastName}${l.available ? '' : ' (indisponible)'}'),
-              ),
-            ),
-          ],
-          onChanged: (l) => setState(() => _selectedLivreur = l),
+        const Text(
+          'Vous pourrez diffuser la demande aux livreurs disponibles juste après ce changement de statut.',
+          style: TextStyle(fontSize: 12, color: Colors.black54),
         ),
         const SizedBox(height: 16),
         _actionButton('Marquer comme expédiée', _advanceStatus),
@@ -276,6 +315,57 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
     return [];
   }
 
+  List<Widget> _buildBroadcastSection() {
+    return [
+      const Divider(height: 24),
+      const Text(
+        'Diffuser aux livreurs disponibles',
+        style: TextStyle(fontWeight: FontWeight.w600),
+      ),
+      const SizedBox(height: 4),
+      const Text(
+        'Sélectionnez un ou plusieurs livreurs disponibles à proximité de la livraison. '
+        "Le premier qui accepte devient le livreur assigné.",
+        style: TextStyle(fontSize: 12, color: Colors.black54),
+      ),
+      const SizedBox(height: 12),
+      if (_broadcastSent) ...[
+        const Text('Demande diffusée.', style: TextStyle(color: Color(0xFF1B5E3A))),
+        const SizedBox(height: 8),
+      ],
+      if (_loadingEligible)
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 12),
+          child: Center(child: CircularProgressIndicator()),
+        )
+      else if (_eligibleLivreurs.isEmpty)
+        const Text(
+          'Aucun livreur disponible à proximité pour le moment.',
+          style: TextStyle(fontSize: 13, color: Colors.black54),
+        )
+      else ...[
+        for (final livreur in _eligibleLivreurs)
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            value: _selectedLivreurIds.contains(livreur.id),
+            onChanged: (_) => _toggleLivreurSelection(livreur.id),
+            title: Text('${livreur.firstName} ${livreur.lastName}'),
+            subtitle: Text(
+              [
+                if (livreur.city != null) livreur.city!,
+                if (livreur.distanceKm != null) '${livreur.distanceKm!.toStringAsFixed(1)} km',
+              ].join(' — '),
+            ),
+          ),
+        const SizedBox(height: 8),
+        _actionButton(
+          _broadcasting ? 'Diffusion...' : 'Diffuser',
+          _selectedLivreurIds.isEmpty || _broadcasting ? null : _confirmBroadcast,
+        ),
+      ],
+    ];
+  }
+
   List<Widget> _buildProofSection(OrderStatusHistoryEntry proof) {
     return [
       const Divider(height: 24),
@@ -302,7 +392,7 @@ class _VendorOrderDetailScreenState extends State<VendorOrderDetailScreen> {
     ];
   }
 
-  Widget _actionButton(String label, VoidCallback onPressed) {
+  Widget _actionButton(String label, VoidCallback? onPressed) {
     return SizedBox(
       height: 52,
       child: FilledButton(

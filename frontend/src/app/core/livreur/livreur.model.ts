@@ -17,30 +17,6 @@ export interface LivreurResponse {
   deliveryCount: number;
 }
 
-export interface CreateLivreurRequest {
-  username: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  phone?: string;
-  city?: string;
-  photo?: File | null;
-  idDocumentFront?: File | null;
-  idDocumentBack?: File | null;
-  selfieWithId?: File | null;
-}
-
-export interface UpdateLivreurRequest {
-  firstName: string;
-  lastName: string;
-  phone?: string;
-  city?: string;
-  photo?: File | null;
-  idDocumentFront?: File | null;
-  idDocumentBack?: File | null;
-  selfieWithId?: File | null;
-}
-
 export interface LivreurAdminResponse {
   id: number;
   username: string;
@@ -55,7 +31,51 @@ export interface LivreurAdminResponse {
   kycStatus: LivreurKycStatus | null;
   enabled: boolean;
   available: boolean;
-  shopId: number;
+  createdAt: string;
+}
+
+export interface RegisterLivreurRequest {
+  username: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  city: string;
+  cityLat: number;
+  cityLng: number;
+  acceptCgu: boolean;
+  acceptCgv: boolean;
+  acceptPrivacy: boolean;
+}
+
+export interface UploadLivreurDocumentsRequest {
+  photo?: File | null;
+  idDocumentFront?: File | null;
+  idDocumentBack?: File | null;
+  selfieWithId?: File | null;
+}
+
+export interface EligibleLivreurResponse {
+  id: number;
+  firstName: string;
+  lastName: string;
+  phone: string | null;
+  city: string | null;
+  distanceKm: number | null;
+}
+
+export type DeliveryRequestStatus = 'EN_ATTENTE' | 'ACCEPTEE' | 'EXPIREE';
+
+export interface DeliveryRequestResponse {
+  id: number;
+  orderId: number;
+  orderNumber: string;
+  status: DeliveryRequestStatus;
   shopName: string;
+  pickupCity: string | null;
+  pickupAddress: string | null;
+  buyerFullName: string;
+  deliveryAddress: string | null;
+  totalAmount: number;
   createdAt: string;
 }

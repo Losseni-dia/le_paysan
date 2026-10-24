@@ -12,8 +12,6 @@ class AdminLivreur {
   final String kycStatus;
   final bool enabled;
   final bool available;
-  final int? shopId;
-  final String? shopName;
   final DateTime? createdAt;
 
   AdminLivreur({
@@ -30,8 +28,6 @@ class AdminLivreur {
     required this.kycStatus,
     required this.enabled,
     required this.available,
-    required this.shopId,
-    required this.shopName,
     required this.createdAt,
   });
 
@@ -40,7 +36,6 @@ class AdminLivreur {
     if (q.isEmpty) return true;
     if ('$firstName $lastName'.toLowerCase().contains(q)) return true;
     if (username.toLowerCase().contains(q)) return true;
-    if ((shopName ?? '').toLowerCase().contains(q)) return true;
     return (city ?? '').toLowerCase().contains(q);
   }
 
@@ -59,8 +54,6 @@ class AdminLivreur {
       kycStatus: json['kycStatus'] as String,
       enabled: json['enabled'] as bool,
       available: json['available'] as bool,
-      shopId: json['shopId'] as int?,
-      shopName: json['shopName'] as String?,
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'] as String)
           : null,

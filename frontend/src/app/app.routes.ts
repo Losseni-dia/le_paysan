@@ -16,11 +16,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/catalogue/catalogue-list/catalogue-list').then((m) => m.CatalogueList),
       },
       {
-        path: 'produits/:id',
+        path: 'produits/:slug',
         loadComponent: () => import('./features/catalogue/product-detail/product-detail').then((m) => m.ProductDetail),
       },
       {
-        path: 'boutiques/:id',
+        path: 'boutiques/:slug',
         loadComponent: () => import('./features/catalogue/shop-detail/shop-detail').then((m) => m.ShopDetail),
       },
       {
@@ -46,6 +46,11 @@ export const routes: Routes = [
       {
         path: 'inscription',
         loadComponent: () => import('./features/auth/register/register').then((m) => m.Register),
+      },
+      {
+        path: 'inscription-livreur',
+        loadComponent: () =>
+          import('./features/auth/register-livreur/register-livreur').then((m) => m.RegisterLivreur),
       },
       {
         path: 'mot-de-passe-oublie',
@@ -138,10 +143,6 @@ export const routes: Routes = [
         loadComponent: () => import('./features/vendor/statistiques/statistiques').then((m) => m.Statistiques),
       },
       {
-        path: 'livreurs',
-        loadComponent: () => import('./features/vendor/livreurs/livreurs').then((m) => m.Livreurs),
-      },
-      {
         path: 'parametres',
         loadComponent: () => import('./features/account/account-settings/account-settings').then((m) => m.AccountSettings),
       },
@@ -152,7 +153,12 @@ export const routes: Routes = [
     loadComponent: () => import('./layout/livreur-layout/livreur-layout').then((m) => m.LivreurLayout),
     canActivate: [roleGuard('ROLE_LIVREUR')],
     children: [
-      { path: '', redirectTo: 'livraisons', pathMatch: 'full' },
+      { path: '', redirectTo: 'demandes', pathMatch: 'full' },
+      {
+        path: 'demandes',
+        loadComponent: () =>
+          import('./features/livreur/delivery-requests/delivery-requests').then((m) => m.DeliveryRequests),
+      },
       {
         path: 'livraisons',
         loadComponent: () => import('./features/livreur/my-deliveries/my-deliveries').then((m) => m.MyDeliveries),

@@ -65,34 +65,50 @@
       <p class="form-hint">Livreur assigné : {{ order()!.assignedLivreurName }}</p>
     }
 
-    @if (canAssignLivreur() && livreurs().length > 0) {
+    @if (canBroadcast()) {
       <div class="reassign-livreur-section">
-        <h2>{{ order()!.assignedLivreurName ? 'Réassigner un livreur' : 'Assigner un livreur' }}</h2>
-        @if (reassignError()) {
-          <p class="form-error-banner">{{ reassignError() }}</p>
+        <h2>Diffuser aux livreurs disponibles</h2>
+        <p class="form-hint">
+          Sélectionnez un ou plusieurs livreurs disponibles à proximité de la livraison. Le premier qui accepte
+          devient le livreur assigné.
+        </p>
+        @if (broadcastError()) {
+          <p class="form-error-banner">{{ broadcastError() }}</p>
         }
-        <div class="status-actions">
-          <select
-            class="form-input livreur-select"
-            [ngModel]="reassignLivreurId()"
-            (ngModelChange)="reassignLivreurId.set($event)"
-          >
-            <option [ngValue]="null">-- Choisir un livreur --</option>
-            @for (l of livreurs(); track l.id) {
-              <option [ngValue]="l.id">
-                {{ l.firstName }} {{ l.lastName }} {{ l.available ? '(disponible)' : '(indisponible)' }}
-              </option>
+        @if (broadcastSent()) {
+          <p class="form-success-banner">Demande diffusée.</p>
+        }
+        @if (loadingEligible()) {
+          <p>Recherche des livreurs disponibles...</p>
+        } @else if (eligibleLivreurs().length === 0) {
+          <p class="form-hint">Aucun livreur disponible à proximité pour le moment.</p>
+        } @else {
+          <ul class="eligible-livreurs-list">
+            @for (l of eligibleLivreurs(); track l.id) {
+              <li>
+                <label class="form-check">
+                  <input type="checkbox" [checked]="isLivreurSelected(l.id)" (change)="toggleLivreurSelection(l.id)" />
+                  <span>
+                    {{ l.firstName }} {{ l.lastName }} — {{ l.city }}
+                    @if (l.distanceKm !== null) {
+                      ({{ l.distanceKm | number: '1.0-1' }} km)
+                    }
+                  </span>
+                </label>
+              </li>
             }
-          </select>
-          <button
-            type="button"
-            class="btn-primary"
-            [disabled]="!reassignLivreurId() || reassigning()"
-            (click)="confirmAssignLivreur()"
-          >
-            {{ reassigning() ? 'Validation...' : 'Valider' }}
-          </button>
-        </div>
+          </ul>
+          <div class="status-actions">
+            <button
+              type="button"
+              class="btn-primary"
+              [disabled]="selectedLivreurIds().size === 0 || broadcasting()"
+              (click)="confirmBroadcast()"
+            >
+              {{ broadcasting() ? 'Diffusion...' : 'Diffuser' }}
+            </button>
+          </div>
+        }
       </div>
     }
 

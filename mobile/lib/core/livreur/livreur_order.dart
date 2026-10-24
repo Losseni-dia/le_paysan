@@ -67,6 +67,7 @@ class LivreurOrder {
   final double totalAmount;
   final List<LivreurOrderItem> items;
   final List<OrderStatusHistoryEntry> historique;
+  final int? assignedLivreurId;
   final String? assignedLivreurName;
   final DateTime? createdAt;
 
@@ -79,6 +80,7 @@ class LivreurOrder {
     required this.totalAmount,
     required this.items,
     this.historique = const [],
+    this.assignedLivreurId,
     this.assignedLivreurName,
     this.createdAt,
   });
@@ -114,6 +116,7 @@ class LivreurOrder {
       historique: (json['historique'] as List<dynamic>? ?? [])
           .map((e) => OrderStatusHistoryEntry.fromJson(e as Map<String, dynamic>))
           .toList(),
+      assignedLivreurId: json['assignedLivreurId'] as int?,
       assignedLivreurName: json['assignedLivreurName'] as String?,
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'] as String)

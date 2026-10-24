@@ -1,13 +1,13 @@
 import { Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { OrderService } from '../../../core/order/order.service';
 import { AdminOrderResponse } from '../../../core/order/order.model';
 import { LivreurService } from '../../../core/livreur/livreur.service';
-import { LivreurResponse } from '../../../core/livreur/livreur.model';
+import { EligibleLivreurResponse } from '../../../core/livreur/livreur.model';
 import { OrderTimeline } from '../../../shared/ui/order-timeline/order-timeline';
 import { SignaturePad } from '../../../shared/ui/signature-pad/signature-pad';
 
@@ -15,7 +15,7 @@ type ProofMode = 'NONE' | 'SIGNATURE' | 'PHOTO';
 
 @Component({
   selector: 'app-vendor-order-detail',
-  imports: [RouterLink, DatePipe, FormsModule, OrderTimeline, SignaturePad],
+  imports: [RouterLink, DatePipe, DecimalPipe, FormsModule, OrderTimeline, SignaturePad],
   templateUrl: './order-detail.html',
   styleUrl: './order-detail.scss',
 })
@@ -31,16 +31,20 @@ export class OrderDetail {
   readonly loading = signal(true);
   readonly updating = signal(false);
   readonly error = signal<string | null>(null);
-  readonly livreurs = signal<LivreurResponse[]>([]);
   readonly proofMode = signal<ProofMode>('NONE');
   readonly photoFile = signal<File | null>(null);
   readonly photoPreviewUrl = signal<string | null>(null);
 
-  readonly reassignLivreurId = signal<number | null>(null);
-  readonly reassigning = signal(false);
-  readonly reassignError = signal<string | null>(null);
+  readonly eligibleLivreurs = signal<EligibleLivreurResponse[]>([]);
+  readonly selectedLivreurIds = signal<Set<number>>(new Set());
+  readonly loadingEligible = signal(false);
+  readonly broadcasting = signal(false);
+  readonly broadcastError = signal<string | null>(null);
+  readonly broadcastSent = signal(false);
 
-  readonly canAssignLivreur = computed(() => this.order()?.status === 'EXPEDIEE');
+  readonly canBroadcast = computed(
+    () => this.order()?.status === 'EXPEDIEE' && !this.order()?.assignedLivreurId,
+  );
 
   readonly willBeExpediee = computed(() => {
     const order = this.order();
@@ -71,7 +75,6 @@ export class OrderDetail {
 
   constructor() {
     this.load();
-    this.livreurService.listForShop().subscribe({ next: (livreurs) => this.livreurs.set(livreurs) });
   }
 
   setProofMode(mode: ProofMode): void {
@@ -119,6 +122,9 @@ export class OrderDetail {
           this.photoFile.set(null);
           this.photoPreviewUrl.set(null);
           this.updating.set(false);
+          if (updated.status === 'EXPEDIEE') {
+            this.loadEligibleLivreurs(updated.id);
+          }
         },
         error: (err: HttpErrorResponse) => {
           this.updating.set(false);
@@ -127,28 +133,49 @@ export class OrderDetail {
       });
   }
 
-  confirmAssignLivreur(): void {
-    const order = this.order();
-    const livreurId = this.reassignLivreurId();
-    if (!order || !livreurId) return;
+  toggleLivreurSelection(id: number): void {
+    const next = new Set(this.selectedLivreurIds());
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    this.selectedLivreurIds.set(next);
+  }
 
-    this.reassigning.set(true);
-    this.reassignError.set(null);
-    this.orderService.bulkAssignLivreur([order.id], livreurId).subscribe({
-      next: (results) => {
-        this.reassigning.set(false);
-        const result = results[0];
-        if (!result?.success) {
-          this.reassignError.set(result?.message ?? "Impossible d'assigner ce livreur.");
-          return;
-        }
-        this.reassignLivreurId.set(null);
-        this.load();
+  isLivreurSelected(id: number): boolean {
+    return this.selectedLivreurIds().has(id);
+  }
+
+  confirmBroadcast(): void {
+    const order = this.order();
+    const livreurIds = [...this.selectedLivreurIds()];
+    if (!order || livreurIds.length === 0) return;
+
+    this.broadcasting.set(true);
+    this.broadcastError.set(null);
+    this.livreurService.broadcastDeliveryRequest(order.id, livreurIds).subscribe({
+      next: () => {
+        this.broadcasting.set(false);
+        this.broadcastSent.set(true);
+        this.selectedLivreurIds.set(new Set());
+        this.loadEligibleLivreurs(order.id);
       },
-      error: () => {
-        this.reassigning.set(false);
-        this.reassignError.set("Impossible d'assigner ce livreur.");
+      error: (err: HttpErrorResponse) => {
+        this.broadcasting.set(false);
+        this.broadcastError.set(err.error?.message ?? 'Impossible de diffuser cette demande.');
       },
+    });
+  }
+
+  private loadEligibleLivreurs(orderId: number): void {
+    this.loadingEligible.set(true);
+    this.livreurService.listEligibleLivreurs(orderId).subscribe({
+      next: (livreurs) => {
+        this.eligibleLivreurs.set(livreurs);
+        this.loadingEligible.set(false);
+      },
+      error: () => this.loadingEligible.set(false),
     });
   }
 
@@ -158,6 +185,9 @@ export class OrderDetail {
       next: (order) => {
         this.order.set(order);
         this.loading.set(false);
+        if (order.status === 'EXPEDIEE' && !order.assignedLivreurId) {
+          this.loadEligibleLivreurs(order.id);
+        }
       },
       error: () => this.loading.set(false),
     });

@@ -4,6 +4,7 @@ import { Observable, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { AuthResponse, LoginRequest, RegisterRequest, UserResponse } from './auth.model';
+import { RegisterLivreurRequest } from '../livreur/livreur.model';
 
 const REFRESH_TOKEN_KEY = 'le_paysan_refresh_token';
 
@@ -24,6 +25,13 @@ export class AuthService {
 
   register(request: RegisterRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.baseUrl}/register`, request).pipe(tap((res) => this.setSession(res)));
+  }
+
+  /** Inscription volontaire livreur (independante de toute boutique). */
+  registerLivreur(request: RegisterLivreurRequest): Observable<AuthResponse> {
+    return this.http
+      .post<AuthResponse>(`${this.baseUrl}/register-livreur`, request)
+      .pipe(tap((res) => this.setSession(res)));
   }
 
   login(request: LoginRequest): Observable<AuthResponse> {

@@ -40,7 +40,6 @@ export class LivreursKycList {
       (l) =>
         `${l.firstName} ${l.lastName}`.toLowerCase().includes(q) ||
         l.username.toLowerCase().includes(q) ||
-        (l.shopName ?? '').toLowerCase().includes(q) ||
         (l.city ?? '').toLowerCase().includes(q),
     );
   });

@@ -11,6 +11,13 @@ CREATE TABLE users (
     last_name       VARCHAR(100) NOT NULL,
     phone           VARCHAR(30),
     city            VARCHAR(100),
+    -- Localite du livreur (cf. inscription volontaire livreur) : coordonnees choisies parmi
+    -- les grandes villes de Cote d'Ivoire, utilisees pour le matching proximite aux commandes.
+    city_lat        NUMERIC(10,7),
+    city_lng        NUMERIC(10,7),
+    -- Disponibilite du livreur (anciennement sur shop_livreurs, le livreur est desormais
+    -- independant de toute boutique).
+    available       BOOLEAN NOT NULL DEFAULT TRUE,
     photo_url       VARCHAR(500),
     id_document_front_url VARCHAR(500),
     id_document_back_url  VARCHAR(500),
@@ -49,6 +56,7 @@ CREATE TABLE shops (
     owner_user_id   BIGINT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
     owner_type      VARCHAR(15) NOT NULL CHECK (owner_type IN ('PHYSIQUE','ENTREPRENANT','MORALE')),
     name            VARCHAR(150) NOT NULL UNIQUE,
+    slug            VARCHAR(170) NOT NULL UNIQUE,
     description     TEXT,
     category        VARCHAR(100),
     address_city    VARCHAR(100) NOT NULL,
@@ -130,6 +138,7 @@ CREATE TABLE products (
     shop_id         BIGINT NOT NULL REFERENCES shops(id) ON DELETE CASCADE,
     category_id     BIGINT NOT NULL REFERENCES categories(id),
     name            VARCHAR(150) NOT NULL,
+    slug            VARCHAR(180) NOT NULL UNIQUE,
     description     TEXT,
     unit            VARCHAR(20) NOT NULL,
     unit_price      NUMERIC(12,2) NOT NULL CHECK (unit_price > 0),
@@ -256,13 +265,22 @@ CREATE TABLE orders (
     updated_at              TIMESTAMP NOT NULL DEFAULT now()
 );
 
-CREATE TABLE shop_livreurs (
+-- Diffusion d'une commande a livrer vers plusieurs livreurs disponibles a proximite : le
+-- premier qui accepte devient le livreur assigne (orders.assigned_livreur_id), les demandes
+-- des autres livreurs pour cette meme commande passent a EXPIREE.
+CREATE TABLE delivery_requests (
     id              BIGSERIAL PRIMARY KEY,
-    shop_id         BIGINT NOT NULL REFERENCES shops(id) ON DELETE CASCADE,
-    livreur_user_id BIGINT NOT NULL UNIQUE REFERENCES users(id),
-    available       BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at      TIMESTAMP NOT NULL DEFAULT now()
+    order_id        BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    livreur_user_id BIGINT NOT NULL REFERENCES users(id),
+    status          VARCHAR(20) NOT NULL DEFAULT 'EN_ATTENTE'
+                    CHECK (status IN ('EN_ATTENTE','ACCEPTEE','EXPIREE')),
+    created_at      TIMESTAMP NOT NULL DEFAULT now(),
+    responded_at    TIMESTAMP,
+    UNIQUE (order_id, livreur_user_id)
 );
+
+CREATE INDEX idx_delivery_requests_livreur_status ON delivery_requests(livreur_user_id, status);
+CREATE INDEX idx_delivery_requests_order ON delivery_requests(order_id);
 
 CREATE TABLE livreur_kyc_validations (
     id              BIGSERIAL PRIMARY KEY,
@@ -294,7 +312,12 @@ CREATE TABLE order_items (
     quantity                INTEGER NOT NULL CHECK (quantity > 0),
     delivery_mode           VARCHAR(20) NOT NULL CHECK (delivery_mode IN ('RETRAIT_BOUTIQUE','LIVRAISON_DOMICILE')),
     delivery_price          NUMERIC(12,2) NOT NULL DEFAULT 0,
-    delivery_address        TEXT
+    delivery_address        TEXT,
+    -- Copie des coordonnees choisies dans le panier (cart_items) : necessaire pour matcher les
+    -- livreurs disponibles a proximite de la livraison (cf. delivery_requests).
+    delivery_city_name      VARCHAR(100),
+    delivery_city_lat       NUMERIC(10,7),
+    delivery_city_lng       NUMERIC(10,7)
 );
 
 CREATE TABLE commission_settings (

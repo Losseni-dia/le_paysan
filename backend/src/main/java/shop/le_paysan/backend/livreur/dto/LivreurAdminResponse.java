@@ -2,7 +2,7 @@ package shop.le_paysan.backend.livreur.dto;
 
 import java.time.LocalDateTime;
 
-import shop.le_paysan.backend.livreur.ShopLivreur;
+import shop.le_paysan.backend.user.User;
 
 public record LivreurAdminResponse(
         Long id,
@@ -18,12 +18,9 @@ public record LivreurAdminResponse(
         String kycStatus,
         boolean enabled,
         boolean available,
-        Long shopId,
-        String shopName,
         LocalDateTime createdAt) {
 
-    public static LivreurAdminResponse from(ShopLivreur link) {
-        var user = link.getLivreur();
+    public static LivreurAdminResponse from(User user) {
         return new LivreurAdminResponse(
                 user.getId(),
                 user.getUsername(),
@@ -37,9 +34,7 @@ public record LivreurAdminResponse(
                 user.getSelfieWithIdUrl(),
                 user.getKycStatus(),
                 user.isEnabled(),
-                link.isAvailable(),
-                link.getShop().getId(),
-                link.getShop().getName(),
-                link.getCreatedAt());
+                user.isAvailable(),
+                user.getCreatedAt());
     }
 }

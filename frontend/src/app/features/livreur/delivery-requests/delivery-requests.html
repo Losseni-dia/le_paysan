@@ -1,0 +1,43 @@
+<div class="delivery-requests-page">
+  <h1>Demandes de livraison</h1>
+  <p class="form-hint">
+    Commandes proposées par des vendeurs proches de votre localité. Le premier qui accepte devient le livreur
+    assigné.
+  </p>
+
+  @if (error()) {
+    <p class="form-error-banner">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else if (requests().length === 0) {
+    <p class="form-hint">Aucune demande en attente pour le moment.</p>
+  } @else {
+    @for (r of requests(); track r.id) {
+      <section class="order-card">
+        <div class="order-header">
+          <h2>N° {{ r.orderNumber }}</h2>
+          <span class="order-total">{{ r.totalAmount }} FCFA</span>
+        </div>
+        <p>Boutique : {{ r.shopName }}</p>
+        @if (r.pickupAddress) {
+          <p>📍 Récupération : {{ r.pickupAddress }}</p>
+        }
+        <p>Acheteur : {{ r.buyerFullName }}</p>
+        @if (r.deliveryAddress) {
+          <p class="address">🚚 Livraison : {{ r.deliveryAddress }}</p>
+        }
+        <p class="delivered-at">Reçue le {{ r.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</p>
+        <button
+          type="button"
+          class="btn-primary"
+          [disabled]="acceptingId() === r.id"
+          (click)="accept(r)"
+        >
+          {{ acceptingId() === r.id ? 'Acceptation...' : 'Accepter cette livraison' }}
+        </button>
+      </section>
+    }
+  }
+</div>
