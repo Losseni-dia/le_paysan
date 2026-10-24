@@ -1,6 +1,6 @@
 # 07 — Plan d'exécution
 
-Statut : v1.0 — 2026-10-01. À tenir à jour au fil de l'avancement (cocher les tâches, ajouter la date de complétion).
+Statut : v1.1 — 2026-10-24. À tenir à jour au fil de l'avancement (cocher les tâches, ajouter la date de complétion).
 
 ## 1. Principe
 
@@ -49,7 +49,8 @@ Découpage en phases livrables, chacune apportant une valeur testable de bout en
 - [x] Back-office admin : liste filtrable par statut, détail, validation/rejet produit avec motif. *(2026-10-01)*
 - [x] Espace vendeur : page "Mes produits" (liste, statut, dépublier/republier un produit validé). *(2026-10-01)*
 - [x] Catalogue public : liste, recherche, filtres (catégorie, prix min/max, mode de livraison), pagination, fiche produit, fiche boutique (avec carte de localisation + lien itinéraire OpenStreetMap). *(2026-10-01 — testé de bout en bout, accès anonyme confirmé.)*
-- [x] Gestion des catégories (seed + admin : liste + création, pas de modification/suppression côté API). *(2026-10-01)*
+- [x] Gestion des catégories (seed + admin : liste + création, pas de modification/suppression côté API). *(2026-10-01 — modification/suppression ajoutées ensuite, cf. commits `e18cb09`/`f99fba2`.)*
+- [x] URLs produit/boutique avec slug plutôt que l'id numérique (`/produits/nom-produit-nom-ferme`, `/boutiques/nom-boutique`), rétro-compatible avec les anciens liens par id. *(2026-10-23, cf. commit `b692c55`.)*
 
 **Faille de sécurité corrigée en cours de route** : les photos produit n'étaient accessibles que via l'endpoint `/api/files/**` authentifié, ce qui aurait empêché leur affichage dans le catalogue public (balises `<img>` sans en-tête `Authorization`). Ajout d'une règle `permitAll` dédiée à `GET /api/files/products/**`. En creusant, constat qu'une règle `permitAll` trop large sur `/api/shops/**` exposait aussi par erreur `/api/shops/me` et `/api/shops/me/payout-account` sans authentification (resserrée aux seules routes publiques `/api/shops` et `/api/shops/{id}`), et que le logo/couverture boutique étaient stockés sous la catégorie `shop-kyc` (authentifiée) : séparés dans une nouvelle catégorie `shop-public` rendue publique en lecture, pour que la fiche boutique publique puisse les afficher (cf. `backend/.../config/SecurityConfig.java`, `backend/.../shop/ShopService.java`).
 
@@ -78,24 +79,28 @@ Découpage en phases livrables, chacune apportant une valeur testable de bout en
 **Bug corrigé en cours de route** : `ObjectMapper` (Jackson) n'était pas un bean Spring disponible à l'injection — `spring-boot-starter-webmvc` (Spring Boot 4.1.1) ne déclare la dépendance Jackson qu'en portée `runtime`, invisible au code applicatif qui en a besoin directement (ici pour parser le payload webhook). Corrigé en ajoutant `jackson-databind` en dépendance directe + un bean `ObjectMapper` explicite (`JacksonConfig`).
 
 ## 8. Phase 6 — Suivi de commande & back-office
-- [ ] Espace vendeur : liste des commandes reçues, changement de statut.
-- [ ] Espace acheteur : suivi de ses commandes.
-- [ ] Back-office admin : vue globale commandes, statistiques (ventes, commissions, boutiques actives).
-- [ ] Notifications in-app (canal obligatoire) + email en complément aux étapes clés de la commande.
+- [x] Espace vendeur : liste des commandes reçues, changement de statut. *(backend `OrderVendorController`, web `features/vendor/orders-list`, mobile `vendor_orders_screen.dart`.)*
+- [x] Espace acheteur : suivi de ses commandes. *(backend `OrderController`, web `features/account/my-orders`, mobile `orders_screen.dart`, timeline de statuts partagée web `order-timeline`.)*
+- [x] Back-office admin : vue globale commandes, statistiques (ventes, commissions, boutiques actives). *(backend `OrderAdminController`, web `features/admin/dashboard`, mobile `admin_dashboard_screen.dart`.)*
+- [x] Notifications in-app aux étapes clés de la commande. *(6 points d'envoi dans `OrderService.java`.)* — [ ] **Email en complément : non fait.** `EmailService.java` ne couvre que la réinitialisation de mot de passe, aucun template lié aux commandes.
+- [x] **Hors plan initial, ajouté le 2026-10-23/24** : refonte complète du système de livraison — livreur en inscription volontaire (compte dédié ou passage de rôle depuis un compte existant), diffusion d'une commande expédiée aux livreurs disponibles à proximité (25km), acceptation atomique (premier arrivé), le tout backend + web + mobile (cf. commit `337fa88`).
 
 ## 9. Phase 7 — Avis & Support
-- [ ] Modèle avis produit/boutique (`product_reviews`, `shop_reviews`), vérification achat livré.
-- [ ] Frontend : formulaire de notation (1-5 étoiles + commentaire) sur fiche produit/boutique achetée, affichage moyenne/nombre d'avis.
-- [ ] Back-office admin : modération des avis (masquer/réafficher, motif).
-- [ ] Formulaire de contact public (`POST /contact`), page "Contact/Support" frontend.
-- [ ] Back-office admin : file de messages de support (statuts, réponse par email).
+- [x] Modèle avis produit/boutique (`product_reviews`, `shop_reviews`), vérification achat livré.
+- [x] Formulaire de notation (1-5 étoiles + commentaire) sur fiche produit/boutique achetée, affichage moyenne/nombre d'avis. *(Web : `shared/ui/review-section`. Mobile ajouté le 2026-10-24 : `core/review/`, `product_review_section.dart`, `write_review_screen.dart` — accès direct depuis une commande livrée sans passer par la fiche produit.)*
+- [x] Back-office admin : modération des avis (masquer/réafficher, motif). *(backend `ReviewAdminController`, mobile `admin_reviews_screen.dart` ; page web à reconfirmer.)*
+- [x] Formulaire de contact public (`POST /contact`), page "Contact/Support" frontend. *(backend `ContactController`, web `features/contact`.)* — [ ] **Mobile : pas fait**, aucun écran contact.
+- [ ] Back-office admin : file de messages de support (statuts, réponse par email). **Pas fait** : la table `contact_messages` et le service existent côté backend, mais aucun `ContactAdminController`, aucune page web ni écran mobile pour la traiter.
 
 ## 10. Phase 8 — Durcissement & mise en production (post-MVP immédiat)
-- [ ] Rate limiting sur l'auth et sur le formulaire de contact.
-- [ ] Tests automatisés (unitaires + intégration) sur les flux critiques (paiement, validations).
-- [ ] Logs structurés, monitoring basique.
-- [ ] Dockerisation backend + frontend.
-- [ ] Choix hébergement + déploiement.
+
+**Audit sécurité complet réalisé le 2026-10-23, cf. [audit-securite.md](./audit-securite.md). Aucun point critique ; 4 points hauts à corriger avant prod (HTTPS backend, contrôle d'accès fin sur les fichiers KYC, verrou optimiste sur le stock produit, révocation JWT au changement de mot de passe).**
+
+- [x] Rate limiting sur l'auth (`AuthRateLimitFilter`, 20 req/min/IP sur `/api/v1/auth/**`). — [ ] **Formulaire de contact : pas couvert** (le filtre ne matche que `/auth/**`).
+- [ ] Tests automatisés (unitaires + intégration) sur les flux critiques (paiement, validations). **Quasi aucun** : 1 fichier de test backend (démarrage auto-généré), 1 `.spec.ts` frontend, 1 fichier mobile.
+- [ ] Logs structurés, monitoring basique. **Pas fait** : pas de `spring-boot-starter-actuator`/Micrometer dans le `pom.xml`.
+- [ ] Dockerisation backend + frontend. **Pas fait** : aucun `Dockerfile` ni `docker-compose.yml`.
+- [ ] Choix hébergement + déploiement. **Décision humaine en attente** — actuellement testé via tunnel ngrok vers le backend local, pas d'hébergement permanent.
 
 ## 11. Évolutions futures (hors périmètre immédiat)
 - Messagerie directe acheteur-vendeur en temps réel (chat).
@@ -110,11 +115,11 @@ Découpage en phases livrables, chacune apportant une valeur testable de bout en
 | Phase 0 | Terminé | 2026-10-01 | 2026-10-01 |
 | Phase 1 | Quasi terminé (OAuth Google en attente) | 2026-10-01 | - |
 | Phase 2 | Terminé | 2026-10-01 | 2026-10-01 |
-| Phase 3 | Terminé | 2026-10-01 | 2026-10-01 |
+| Phase 3 | Terminé (+ slugs produit/boutique) | 2026-10-01 | 2026-10-23 |
 | Phase 4 | Terminé | 2026-10-01 | 2026-10-01 |
 | Phase 5 | Quasi terminé (reversement sortant réel non confirmé en sandbox) | 2026-10-04 | 2026-10-04 |
-| Phase 6 | À faire | - | - |
-| Phase 7 | À faire | - | - |
-| Phase 8 | À faire | - | - |
+| Phase 6 | Quasi terminé (email aux étapes commande manquant ; système de livraison ajouté hors plan) | 2026-10-23 | - |
+| Phase 7 | Quasi terminé (contact mobile manquant ; pas de back-office support) | 2026-10-24 | - |
+| Phase 8 | Démarré (audit sécurité fait, rien d'autre) | 2026-10-23 | - |
 
 Ce tableau et les cases à cocher ci-dessus doivent être mis à jour au fur et à mesure de l'avancement réel du projet.

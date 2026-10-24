@@ -356,20 +356,6 @@ CREATE TABLE shop_reviews (
     UNIQUE (shop_id, buyer_user_id)
 );
 
-CREATE TABLE contact_messages (
-    id                      BIGSERIAL PRIMARY KEY,
-    user_id                 BIGINT REFERENCES users(id),
-    full_name               VARCHAR(150) NOT NULL,
-    email                   VARCHAR(255) NOT NULL,
-    subject                 VARCHAR(200) NOT NULL,
-    message                 TEXT NOT NULL,
-    status                  VARCHAR(15) NOT NULL DEFAULT 'NOUVEAU' CHECK (status IN ('NOUVEAU','EN_COURS','TRAITE')),
-    admin_response          TEXT,
-    handled_by_admin_id     BIGINT REFERENCES users(id),
-    handled_at              TIMESTAMP,
-    created_at              TIMESTAMP NOT NULL DEFAULT now()
-);
-
 CREATE TABLE account_recovery_requests (
     id                              BIGSERIAL PRIMARY KEY,
     user_id                         BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -425,7 +411,6 @@ CREATE INDEX idx_orders_shop ON orders(shop_id);
 CREATE INDEX idx_orders_status ON orders(status);
 CREATE INDEX idx_product_reviews_product_status ON product_reviews(product_id, status);
 CREATE INDEX idx_shop_reviews_shop_status ON shop_reviews(shop_id, status);
-CREATE INDEX idx_contact_messages_status ON contact_messages(status);
 CREATE INDEX idx_account_recovery_status ON account_recovery_requests(status);
 CREATE INDEX idx_vendor_payouts_status ON vendor_payouts(status);
 CREATE INDEX idx_notifications_recipient_read ON notifications(recipient_user_id, read_at);
