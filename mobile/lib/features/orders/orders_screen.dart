@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/auth/auth_service.dart';
 import '../../core/order/order.dart';
 import '../../core/order/order_service.dart';
 import '../../core/order/order_status_labels.dart';
@@ -26,11 +28,28 @@ class _OrdersScreenState extends State<OrdersScreen> {
   List<Order> _orders = [];
   bool _loading = true;
   String? _errorMessage;
+  late final AuthService _authService;
 
   @override
   void initState() {
     super.initState();
     _load();
+    // Cet ecran est garde en vie en permanence dans l'onglet principal (IndexedStack) : son
+    // premier chargement peut survenir avant la fin de la restauration de session (token lu en
+    // tache de fond). On recharge donc quand l'auth devient disponible, sinon l'erreur reste
+    // figee pour toujours (cf. bug remonte par l'utilisateur).
+    _authService = context.read<AuthService>();
+    _authService.addListener(_onAuthChanged);
+  }
+
+  void _onAuthChanged() {
+    if (_authService.isAuthenticated && _errorMessage != null) _load();
+  }
+
+  @override
+  void dispose() {
+    _authService.removeListener(_onAuthChanged);
+    super.dispose();
   }
 
   Future<void> _load() async {

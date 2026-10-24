@@ -7,6 +7,7 @@ import '../../core/order/order_service.dart';
 import '../../core/order/order_status_labels.dart';
 import '../../core/payment/payment_service.dart';
 import '../checkout/payment_pending_screen.dart';
+import 'write_review_screen.dart';
 
 const _confirmableStatuses = {'PRETE', 'EXPEDIEE', 'RECUPEREE', 'EN_ROUTE'};
 
@@ -146,25 +147,48 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         for (final item in order.items)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.productName,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.productName,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          Text(
+                            '${item.quantity} x ${item.unitPrice.toStringAsFixed(0)} FCFA',
+                            style: const TextStyle(fontSize: 12, color: Colors.black54),
+                          ),
+                        ],
                       ),
-                      Text(
-                        '${item.quantity} x ${item.unitPrice.toStringAsFixed(0)} FCFA',
-                        style: const TextStyle(fontSize: 12, color: Colors.black54),
-                      ),
-                    ],
-                  ),
+                    ),
+                    Text('${item.lineSubtotal.toStringAsFixed(0)} FCFA'),
+                  ],
                 ),
-                Text('${item.lineSubtotal.toStringAsFixed(0)} FCFA'),
+                if (order.status == 'LIVREE') ...[
+                  const SizedBox(height: 6),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => WriteReviewScreen(
+                            productId: item.productId,
+                            productName: item.productName,
+                          ),
+                        ),
+                      ),
+                      icon: const Icon(Icons.star_border, size: 18),
+                      label: const Text('Laisser un avis'),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

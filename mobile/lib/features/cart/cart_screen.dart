@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/auth/auth_service.dart';
 import '../../core/cart/cart.dart';
 import '../../core/cart/cart_service.dart';
 import '../../core/product/product_service.dart';
@@ -18,11 +19,28 @@ class _CartScreenState extends State<CartScreen> {
   bool _loading = true;
   String? _errorMessage;
   final Set<int> _busyProductIds = {};
+  late final AuthService _authService;
 
   @override
   void initState() {
     super.initState();
     _load();
+    // Cet ecran est garde en vie en permanence dans l'onglet principal (IndexedStack) : son
+    // premier chargement peut survenir avant la fin de la restauration de session (token lu en
+    // tache de fond). On recharge donc quand l'auth devient disponible, sinon l'erreur reste
+    // figee pour toujours (cf. bug remonte par l'utilisateur).
+    _authService = context.read<AuthService>();
+    _authService.addListener(_onAuthChanged);
+  }
+
+  void _onAuthChanged() {
+    if (_authService.isAuthenticated && _errorMessage != null) _load();
+  }
+
+  @override
+  void dispose() {
+    _authService.removeListener(_onAuthChanged);
+    super.dispose();
   }
 
   Future<void> _load() async {

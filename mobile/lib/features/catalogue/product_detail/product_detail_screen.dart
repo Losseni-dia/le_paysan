@@ -8,6 +8,7 @@ import '../../../core/catalogue/ci_cities.dart';
 import '../../../core/product/product.dart';
 import '../../../core/product/product_service.dart';
 import '../../auth/login/login_screen.dart';
+import 'product_review_section.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final int productId;
@@ -318,6 +319,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ),
           ),
         ),
+        const Divider(height: 32),
+        ProductReviewSection(productId: widget.productId),
       ],
     );
   }
